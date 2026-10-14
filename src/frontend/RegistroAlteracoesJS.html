@@ -1,0 +1,376 @@
+<script>
+/**
+ * ==========================================================
+ * DIRETÓRIO DE CONTATOS — DEMO
+ * Arquivo: RegistroAlteracoesJS.html v3.32 - GC por localidade
+ * ==========================================================
+ * v3.32: GC vê apenas histórico de suas localidades; sem registro
+ *        exibe "Não há alterações" em vez de "Faça login...".
+ */
+
+function carregarRegistroAlteracoes() {
+  const container =
+    document.getElementById("registro-alteracoes-container");
+
+  if (!container) return;
+
+  container.innerHTML =
+    '<div class="panel">' +
+      '<p style="text-align:center;">Carregando histórico...</p>' +
+    '</div>';
+
+  const runner = google.script.run
+    .withSuccessHandler(res => {
+      if (res?.sucesso) {
+        renderizarHistoricoGeral(res.dados || []);
+      } else {
+        const msgRawHist = String(res?.erro || "");
+        const msgLowerHist = msgRawHist.toLowerCase();
+        const ehLoginHist = msgLowerHist.indexOf("fa\u00e7a login") !== -1 || msgLowerHist.indexOf("acesso administrativo") !== -1 || msgLowerHist.indexOf("precisa estar autenticado") !== -1;
+        // Gestor de Conteúdo sem histórico nas suas Unidades vê estado vazio.
+        const ehGC = (typeof usuarioAtual !== "undefined" && usuarioAtual && String(usuarioAtual.perfil || "").toUpperCase() === "GESTOR_CONTEUDO");
+        if (ehLoginHist && ehGC) {
+          renderizarHistoricoGeral([]);
+          return;
+        }
+        if (ehLoginHist) {
+          renderizarHistoricoGeral([]); return;
+        }
+        container.innerHTML =
+          '<div class="panel">' +
+            '<p style="color:#dc2626;">Erro: ' +
+              escaparHtml(res?.erro || "Erro desconhecido.") +
+            '</p>' +
+          '</div>';
+      }
+    })
+    .withFailureHandler(erro => {
+      const msgRawF = String(erro?.message || "");
+      const ehLoginF = msgRawF.toLowerCase().indexOf("fa\u00e7a login") !== -1;
+      const ehGC2 = (typeof usuarioAtual !== "undefined" && usuarioAtual && String(usuarioAtual.perfil || "").toUpperCase() === "GESTOR_CONTEUDO");
+      if (ehLoginF && ehGC2) { renderizarHistoricoGeral([]); return; }
+      container.innerHTML =
+        '<div class="panel">' +
+          '<p style="color:#dc2626;">' +
+            escaparHtml(
+              erro?.message ||
+              "Falha ao carregar o histórico."
+            ) +
+          '</p>' +
+        '</div>';
+    });
+  runner.listarHistoricoGeral();
+}
+
+function interpretarHistorico(valor) {
+  if (!valor) return null;
+  if (typeof valor === "object") return valor;
+
+  const texto = String(valor).trim();
+
+  if (
+    !texto ||
+    texto === "{}" ||
+    texto === "null"
+  ) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(texto);
+  } catch (e) {
+    return null;
+  }
+}
+
+function valorCampo(obj, nomes) {
+  if (!obj || typeof obj !== "object") {
+    return "";
+  }
+
+  for (const nome of nomes) {
+    if (
+      Object.prototype.hasOwnProperty.call(obj, nome)
+    ) {
+      return obj[nome];
+    }
+  }
+
+  return "";
+}
+
+function normalizarHistorico(item) {
+  const antes =
+    interpretarHistorico(item.antes);
+
+  const depois =
+    interpretarHistorico(item.depois);
+
+  const usuarioBruto =
+    String(item.usuario || "").trim();
+
+  const usuarioJson =
+    interpretarHistorico(usuarioBruto);
+
+  let snapshot =
+    depois ||
+    antes ||
+    usuarioJson ||
+    {};
+
+  let usuario = usuarioBruto;
+
+  if (
+    usuarioJson &&
+    typeof usuarioJson === "object"
+  ) {
+    usuario = "";
+    snapshot = usuarioJson;
+  }
+
+  let acao =
+    String(item.acao || "").trim();
+
+  if (
+    !usuario &&
+    /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(acao)
+  ) {
+    usuario = acao;
+    acao = "CRIACAO";
+  }
+
+  return {
+    id: item.id || "",
+    telefoneId:
+      item.telefoneId ||
+      item.telefone_id ||
+      "",
+
+    localidade: String(
+      valorCampo(
+        snapshot,
+        ["localidade", "LOCALIDADE"]
+      ) || ""
+    ).trim(),
+
+    setor: String(
+      valorCampo(
+        snapshot,
+        ["setor", "SETOR"]
+      ) || ""
+    ).trim(),
+
+    data: item.data || "-",
+    acao: acao || "-",
+    usuario: usuario || "-",
+    antes: antes,
+    depois: depois,
+    snapshot: snapshot
+  };
+}
+
+function resumirContato(obj) {
+  if (!obj) return "-";
+
+  if (typeof obj !== "object") {
+    return String(obj);
+  }
+
+  const partes = [];
+
+  const telefone =
+    valorCampo(obj, [
+      "numero",
+      "telefone",
+      "TELEFONE",
+      "NUMERO"
+    ]);
+
+  const whatsapp =
+    valorCampo(obj, [
+      "whatsapp",
+      "WHATSAPP"
+    ]);
+
+  const ramal =
+    valorCampo(obj, [
+      "ramal",
+      "RAMAL"
+    ]);
+
+  const tipo =
+    valorCampo(obj, [
+      "tipo",
+      "TIPO"
+    ]);
+
+  const status =
+    valorCampo(obj, [
+      "status",
+      "STATUS"
+    ]);
+
+  if (telefone) {
+    partes.push("Telefone: " + telefone);
+  }
+
+  if (whatsapp) {
+    partes.push("WhatsApp: " + whatsapp);
+  }
+
+  if (ramal) {
+    partes.push("Ramal: " + ramal);
+  }
+
+  if (tipo) {
+    partes.push("Tipo: " + tipo);
+  }
+
+  if (status) {
+    partes.push("Status: " + status);
+  }
+
+  return partes.length
+    ? partes.join(" • ")
+    : "-";
+}
+
+function imprimirRegistroAlteracoes() {
+  const tituloOriginal =
+    document.title;
+
+  const tituloInterface =
+    document
+      .querySelector(".system-title h1")
+      ?.textContent
+      .replace(/\s+/g, " ")
+      .trim() ||
+    "Diretório de Contatos — Demo";
+
+  /*
+   * Mantém o mesmo comportamento da impressão
+   * da consulta de telefones:
+   * - mesma página;
+   * - cabeçalho do Chrome com o título da interface;
+   * - rodapé com a URL original;
+   * - sem abrir about:blank.
+   */
+  document.title =
+    tituloInterface;
+
+  window.addEventListener(
+    "afterprint",
+    function restaurarTitulo() {
+      document.title =
+        tituloOriginal;
+
+      window.removeEventListener(
+        "afterprint",
+        restaurarTitulo
+      );
+    },
+    { once: true }
+  );
+
+  window.print();
+}
+
+function renderizarHistoricoGeral(dados) {
+  const container =
+    document.getElementById(
+      "registro-alteracoes-container"
+    );
+
+  if (!container) return;
+
+  const registros =
+    Array.isArray(dados)
+      ? dados.map(normalizarHistorico)
+      : [];
+
+  const vazio =
+    registros.length === 0;
+
+  let html =
+    '<div class="panel registro-panel">' +
+
+      '<div class="registro-header">' +
+
+        '<h2>Registro de Alterações</h2>' +
+
+        '<button ' +
+          'type="button" ' +
+          'class="btn btn-secondary" ' +
+          'title="Imprimir / Salvar PDF do Registro de Alterações" ' +
+          'onclick="imprimirRegistroAlteracoes()">' +
+          '🖨️ Imprimir / Salvar PDF' +
+        '</button>' +
+
+      '</div>';
+
+  if (vazio) {
+    const ehGCvazio = (typeof usuarioAtual !== "undefined" && usuarioAtual && String(usuarioAtual.perfil || "").toUpperCase() === "GESTOR_CONTEUDO");
+    const msgVazio = ehGCvazio ? "N\u00e3o h\u00e1 altera\u00e7\u00f5es para suas localidades." : "N\u00e3o h\u00e1 altera\u00e7\u00f5es.";
+    html +=
+      '<p class="registro-vazio">' +
+        msgVazio +
+      '</p>';
+  }
+
+  html +=
+    '<div class="table-panel registro-tabela-panel">' +
+      '<table class="data-table registro-tabela">' +
+        '<thead>' +
+          '<tr>' +
+            '<th>Localidade</th>' +
+            '<th>Setor</th>' +
+            '<th>Data</th>' +
+            '<th>Ação</th>' +
+            '<th>Usuário</th>' +
+            '<th>Antes</th>' +
+            '<th>Depois</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>';
+
+  registros.forEach(item => {
+    const antes = resumirContato(item.antes);
+    const depois = resumirContato(
+      item.depois || item.snapshot
+    );
+
+    html +=
+      '<tr>' +
+        '<td>' + escaparHtml(item.localidade || "-") + '</td>' +
+        '<td>' + escaparHtml(item.setor || "-") + '</td>' +
+        '<td>' + escaparHtml(item.data || "-") + '</td>' +
+        '<td>' + escaparHtml(item.acao || "-") + '</td>' +
+        '<td>' + escaparHtml(item.usuario || "-") + '</td>' +
+        '<td>' + escaparHtml(antes) + '</td>' +
+        '<td>' + escaparHtml(depois) + '</td>' +
+      '</tr>';
+  });
+
+  html +=
+        '</tbody>' +
+      '</table>' +
+    '</div>' +
+  '</div>';
+
+  container.innerHTML = html;
+}
+
+function escaparHtml(valor) {
+  return String(
+    valor === null ||
+    valor === undefined
+      ? ""
+      : valor
+  )
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+</script>

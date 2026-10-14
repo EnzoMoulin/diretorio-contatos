@@ -1,0 +1,206 @@
+<!--
+==========================================================
+DIRETÓRIO DE CONTATOS — DEMO
+Arquivo: index.html
+==========================================================
+-->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#182235">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <title><?= sistemaNome ?></title>
+
+    <?!= include("CSS"); ?>
+    <?!= include("PolishCSS"); ?>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  </head>
+
+  <body>
+    <script>
+      var URL_SISTEMA = <?!= JSON.stringify(urlSistema || "") ?>;
+      var SISTEMA_NOME = <?!= JSON.stringify(sistemaNome || "") ?>;
+      var SISTEMA_VERSAO = <?!= JSON.stringify(sistemaVersao || "") ?>;
+      var PERFIL_ADMIN = <?!= JSON.stringify(perfilAdmin || "") ?>;
+      var SESSAO_EMAIL = <?!= JSON.stringify(sessaoEmail || "") ?>;
+      var DOMINIO_INSTITUCIONAL = <?!= JSON.stringify(dominioInstitucional || "") ?>;
+      var URL_ADMIN = <?!= JSON.stringify(urlAdmin || "") ?>;
+      var EH_CONTEXTO_ADMIN = <?!= JSON.stringify(ehContextoAdmin === true) ?>;
+      var MODO_APLICACAO = <?!= JSON.stringify(modoAplicacao || "PUBLIC") ?>;
+
+      window.URL_SISTEMA = URL_SISTEMA;
+      window.SISTEMA_NOME = SISTEMA_NOME;
+      window.SISTEMA_VERSAO = SISTEMA_VERSAO;
+      window.PERFIL_ADMIN = PERFIL_ADMIN;
+      window.SESSAO_EMAIL = SESSAO_EMAIL;
+      window.DOMINIO_INSTITUCIONAL = DOMINIO_INSTITUCIONAL;
+      window.URL_ADMIN = URL_ADMIN;
+      window.EH_CONTEXTO_ADMIN = EH_CONTEXTO_ADMIN;
+      window.MODO_APLICACAO = MODO_APLICACAO;
+    </script>
+
+    <a class="skip-link" href="#app">Ir para o conteúdo principal</a>
+    <div id="app"><?!= include("Layout"); ?></div>
+
+    <div id="modal-confirmacao-sistema" class="modal confirm-dialog" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="titulo-confirmacao-sistema">
+      <div class="panel confirm-dialog__panel">
+        <div class="confirm-dialog__body">
+          <div id="icone-confirmacao-sistema" class="confirm-dialog__icon" aria-hidden="true">?</div>
+          <h3 id="titulo-confirmacao-sistema" class="confirm-dialog__title">Confirmar ação</h3>
+          <p id="mensagem-confirmacao-sistema" class="confirm-dialog__message"></p>
+        </div>
+        <div class="confirm-dialog__actions">
+          <button type="button" id="btn-cancelar-confirmacao-sistema" class="btn btn-secondary">Cancelar</button>
+          <button type="button" id="btn-confirmar-confirmacao-sistema" class="btn btn-primary">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-perfil-usuario" class="modal profile-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="titulo-perfil-usuario">
+      <div class="panel profile-dialog__panel">
+        <div class="profile-dialog__header">
+          <div>
+            <span class="profile-dialog__eyebrow">Conta administrativa</span>
+            <h3 id="titulo-perfil-usuario">Meus dados</h3>
+          </div>
+          <button type="button" class="modal-close" onclick="fecharPerfilUsuario()" aria-label="Fechar">×</button>
+        </div>
+        <div class="profile-dialog__identity">
+          <div class="profile-dialog__avatar" aria-hidden="true">👤</div>
+          <div><small>Nome</small><strong id="perfil-usuario-nome">—</strong></div>
+        </div>
+        <div class="profile-dialog__detail"><span>E-mail institucional logado</span><strong id="perfil-usuario-email">—</strong></div>
+        <div class="profile-dialog__detail"><span>Nível de acesso</span><strong id="perfil-usuario-nivel">—</strong></div>
+        <div class="profile-dialog__access-head"><div><span>Acessos</span><small id="perfil-usuario-acessos-ajuda"></small></div></div>
+        <div id="perfil-usuario-acessos" class="profile-dialog__access-list"></div>
+        <div class="profile-dialog__footer"><button type="button" class="btn btn-secondary" onclick="fecharPerfilUsuario()">Fechar</button></div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmação de exclusão -->
+    <div id="modal-confirmar-exclusao" class="modal confirm-dialog" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="titulo-confirmar-exclusao">
+      <div class="panel confirm-dialog__panel">
+        <div class="confirm-dialog__body">
+          <div class="confirm-dialog__icon" aria-hidden="true">🗑</div>
+
+          <h3 id="titulo-confirmar-exclusao" class="confirm-dialog__title">Excluir contato</h3>
+
+          <p id="msg-confirmar-exclusao" class="confirm-dialog__message">
+            Tem certeza de que deseja excluir este registro? Esta ação não poderá ser desfeita.
+          </p>
+        </div>
+
+        <div class="confirm-dialog__actions">
+          <button type="button" class="btn btn-secondary" onclick="fecharModalExclusao()">
+            Cancelar
+          </button>
+
+          <button type="button" id="btn-confirmar-exclusao-submit" class="btn btn-danger">
+            Sim, excluir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <?!= include("Toast"); ?>
+    <?!= include("APIJS"); ?>
+    <?!= include("ToastJS"); ?>
+    <?!= include("ConsultarJS"); ?>
+    <?!= include("RegistroAlteracoesJS"); ?>
+    <?!= include("TableJS"); ?>
+    <?!= include("ModalJS"); ?>
+    <?!= include("SearchJS"); ?>
+    <?!= include("DashboardJS"); ?>
+    <?!= include("ForumNavigationJS"); ?>
+    <?!= include("MapClickFixJS"); ?>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var carregarTelefonesLegacy = window.carregarTelefones;
+        var mostrarMapaConsultaLegacy = window.mostrarMapaConsulta;
+
+        function usaNavegacaoForum() {
+          return Boolean(
+            document.getElementById("fc-content") &&
+            document.getElementById("fc-map") &&
+            typeof window.iniciarNavegacaoForum === "function"
+          );
+        }
+
+        window.carregarTelefones = function () {
+          if (usaNavegacaoForum()) {
+            window.iniciarNavegacaoForum(false);
+            return;
+          }
+          if (typeof carregarTelefonesLegacy === "function") {
+            return carregarTelefonesLegacy.apply(this, arguments);
+          }
+        };
+
+        window.mostrarMapaConsulta = function () {
+          if (usaNavegacaoForum()) {
+            try { window.iniciarNavegacaoForum(false); } catch (erro) {}
+            try {
+              if (typeof window.tentarInicializarMapa === "function") {
+                window.tentarInicializarMapa();
+              }
+            } catch (erro) {}
+            return;
+          }
+          if (typeof mostrarMapaConsultaLegacy === "function") {
+            return mostrarMapaConsultaLegacy.apply(this, arguments);
+          }
+        };
+      })();
+    </script>
+
+    <?!= include("SolicitacoesJS"); ?>
+    <?!= include("NotificacoesJS"); ?>
+    <?!= include("UsuariosJS"); ?>
+    <?!= include("AppJS"); ?>
+    <?!= include("ContatoGestaoJS"); ?>
+    <?!= include("PolishJS"); ?>
+    <?!= include("PainelV6JS"); ?>
+
+    <script>
+      (function () {
+        "use strict";
+
+        function ocultarZeroUnidadesForum() {
+          var painel = document.getElementById("fc-content");
+          if (!painel) return;
+
+          painel.querySelectorAll('.fc-card[data-forum] .fc-meta .fc-pill').forEach(function (badge) {
+            var texto = String(badge.textContent || "").trim().toLowerCase();
+            if (/^0\s+unidade(?:s)?$/.test(texto)) badge.remove();
+          });
+        }
+
+        function observarBadgesForum() {
+          var painel = document.getElementById("fc-content");
+          if (!painel || painel.__demoZeroUnidadesObserver) return;
+          painel.__demoZeroUnidadesObserver = true;
+          ocultarZeroUnidadesForum();
+          new MutationObserver(ocultarZeroUnidadesForum).observe(painel, {
+            childList: true,
+            subtree: true
+          });
+        }
+
+        observarBadgesForum();
+        document.addEventListener("DOMContentLoaded", observarBadgesForum);
+      })();
+    </script>
+  </body>
+</html>

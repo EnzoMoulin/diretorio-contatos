@@ -1,0 +1,970 @@
+<script>
+/**
+ * ==========================================================
+ * DIRETÓRIO DE CONTATOS — DEMO
+ * Arquivo: DashboardJS.html
+ * ==========================================================
+ */
+
+let todosTelefones = [];
+let setoresPorLocalidade = {};
+let telefonesPorSetor = {};
+let microrregioesPorLocalidade = {};
+let localidadesPorMicrorregiao = {};
+let ordemLocalidades = [];
+let microrregiaoSelecionada = "";
+
+// shared with ConsultarJS/SearchJS — frontend duplicate intentional; GS canonical in 02_Utils.gs.txt
+function normalizarChave(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toUpperCase();
+}
+
+function campoTelefone(item, nomes) {
+  if (!item) return "";
+
+  const chaves = Object.keys(item);
+
+  for (const nome of nomes) {
+    if (Object.prototype.hasOwnProperty.call(item, nome)) {
+      return item[nome];
+    }
+
+    const alvo = normalizarChave(nome);
+    const chave = chaves.find(c => normalizarChave(c) === alvo);
+
+    if (chave !== undefined) {
+      return item[chave];
+    }
+  }
+
+  return "";
+}
+
+function escaparConsulta(valor) {
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function escaparJs(valor) {
+  return String(valor ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\r?\n/g, "\\n");
+}
+
+function linkEnderecoDashboard(v){ var s=String(v||"").trim(); if(!s) return ""; return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s); }
+function chaveSegura(valor) {
+  return String(valor || "").replace(/[^a-zA-Z0-9]/g, "_");
+}
+
+function normalizarTexto(valor) {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function iniciarConsultaTelefones() {
+  if (
+    typeof API === "undefined" ||
+    typeof API.listarTelefones !== "function"
+  ) {
+    console.error("API.listarTelefones não está disponível.");
+    return;
+  }
+
+  API.listarTelefones(
+    function(resp) {
+      if (!resp || resp.sucesso !== true) {
+        mostrarErroConsulta(
+          resp?.erro || "Erro ao carregar telefones."
+        );
+        return;
+      }
+
+      todosTelefones = Array.isArray(resp.dados) ? resp.dados : [];
+
+      if (typeof listaTelefones !== "undefined") {
+        listaTelefones = Array.isArray(resp.dados) ? resp.dados.slice() : [];
+      }
+
+      processarDados();
+      preencherFiltroMicrorregiao();
+      renderizarLocalidades();
+      try{ if(typeof popularFiltrosConsulta==="function") popularFiltrosConsulta(); }catch(e){}
+      try{ sincronizarSolicitacoesPendentesDashboard(); }catch(e){}
+      atualizarDashboardPublico(todosTelefones);
+
+      // v3.33 guard: Gestor Conteudo e Gestor Sistema usam mapa (remove race/double render) — GS com todas localidades
+      var _isGC_dash = !!(typeof usuarioAtual!=="undefined" && usuarioAtual && (String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" || String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_SISTEMA") && usuarioAtual.logado===true);
+      if(_isGC_dash){
+        var _tvDash = document.getElementById("telefones-view");
+        if(_tvDash) _tvDash.classList.add("hidden");
+        // v3.33 GS via mapa: garante que tabela nao seja injetada no arranque; tabela acessivel via navegarParaTabelaTelefones()
+      } else {
+        if (typeof carregarFiltros === "function") {
+          try { carregarFiltros(); } catch (e) { console.error("carregarFiltros:", e); }
+        }
+
+        if (typeof atualizarTabelaComFiltros === "function") {
+          try { atualizarTabelaComFiltros(); } catch (e) { console.error("atualizarTabelaComFiltros:", e); }
+        }
+      }
+
+      /* Estado inicial: mapa visível e impressão oculta. */
+      mostrarMapaConsulta();
+    },
+    function(erro) {
+      console.error("Falha ao carregar telefones:", erro);
+
+      mostrarErroConsulta(
+        erro?.message || "Falha na comunicação com o servidor."
+      );
+    }
+  );
+}
+
+function mostrarErroConsulta(mensagem) {
+  const lista = document.getElementById("consulta-lista");
+
+  if (lista) {
+    lista.innerHTML =
+      '<div class="panel">' +
+        '<p style="color:#dc2626;">' +
+          escaparConsulta(mensagem) +
+        '</p>' +
+      '</div>';
+  }
+}
+
+function processarDados() {
+  setoresPorLocalidade = {};
+  telefonesPorSetor = {};
+  microrregioesPorLocalidade = {};
+  localidadesPorMicrorregiao = {};
+  ordemLocalidades = [];
+
+  const vistosLocalidades = {};
+  const vistosSetores = {};
+
+  todosTelefones.forEach(tel => {
+    const localidade = String(
+      campoTelefone(tel, ["localidade","LOCALIDADE","forum","FORUM","municipio","MUNICIPIO"]) || "Sem localidade"
+    ).trim();
+
+    const setor = String(
+      campoTelefone(tel, ["setor"]) || "Sem setor"
+    ).trim();
+
+    const micro = String(
+      campoTelefone(tel, ["microrregiao", "microrregião"]) ||
+      "Sem microrregião"
+    ).trim();
+
+    const chave = localidade + "||" + setor;
+
+    if (!setoresPorLocalidade[localidade]) {
+      setoresPorLocalidade[localidade] = [];
+      vistosSetores[localidade] = new Set();
+      ordemLocalidades.push(localidade);
+    }
+
+    if (!vistosSetores[localidade].has(setor)) {
+      vistosSetores[localidade].add(setor);
+      setoresPorLocalidade[localidade].push(setor);
+    }
+
+    microrregioesPorLocalidade[localidade] = micro;
+
+    if (!localidadesPorMicrorregiao[micro]) {
+      localidadesPorMicrorregiao[micro] = [];
+      vistosLocalidades[micro] = new Set();
+    }
+
+    if (!vistosLocalidades[micro].has(localidade)) {
+      vistosLocalidades[micro].add(localidade);
+      localidadesPorMicrorregiao[micro].push(localidade);
+    }
+
+    if (!telefonesPorSetor[chave]) {
+      telefonesPorSetor[chave] = [];
+    }
+
+    telefonesPorSetor[chave].push(tel);
+  });
+}
+
+function preencherFiltroMicrorregiao() {
+  const select = document.getElementById(
+    "filtro-microrregiao-consulta"
+  );
+
+  if (!select) return;
+
+  const atual = microrregiaoSelecionada;
+
+  select.innerHTML =
+    '<option value="">Selecione uma microrregião</option>';
+
+  Object.keys(localidadesPorMicrorregiao)
+    .forEach(micro => {
+      const option = document.createElement("option");
+
+      option.value = micro;
+      option.textContent = micro;
+
+      select.appendChild(option);
+    });
+
+  select.value = atual;
+}
+
+function selecionarMicrorregiaoConsulta(valor) {
+  microrregiaoSelecionada = String(valor || "").trim();
+
+  const campo = document.getElementById(
+    "campo-pesquisa-consulta"
+  );
+
+  if (campo) campo.value = "";
+
+  renderizarLocalidades();
+}
+function pesquisar(){
+  if(typeof filtrarSetoresConsultaDebounced==="function") return filtrarSetoresConsultaDebounced();
+  if(typeof filtrarSetoresConsulta==="function") return filtrarSetoresConsulta();
+}
+
+function renderizarLocalidades() {
+  const container = document.getElementById("consulta-lista");
+  if (!container) return;
+
+  const campo = document.getElementById("campo-pesquisa-consulta");
+  const termo = normalizarTexto(campo?.value || "");
+
+  let localidades;
+
+  if (termo) {
+    // v3.25 B: Busca ativa ignora microrregião e usa ordem global da planilha (ordemLocalidades = sheet order)
+    // Para Gestor Conteúdo: permite busca em todas localidades (consulta liberada), mas impressão permanece bloqueada por permissão
+    // Mantém ordemLocalidades completa para case-insensitive search; botões Imprimir/PDF já verificam podeEditarLocalidade
+    localidades = ordemLocalidades;
+  } else if (microrregiaoSelecionada) {
+    var _rawMicro = localidadesPorMicrorregiao[microrregiaoSelecionada] || [];
+    var _isGCMicro = !!(typeof usuarioAtual !== "undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO");
+    if(_isGCMicro && typeof localidadesPermitidasDoUsuario==="function"){
+      var _permMicro = localidadesPermitidasDoUsuario();
+      if(Array.isArray(_permMicro) && _permMicro.length){
+        localidades = [];
+        for(var _mi=0; _mi<_rawMicro.length; _mi++){
+          var _cm = _rawMicro[_mi];
+          var _ckm = typeof normalizarChaveTabela==="function" ? normalizarChaveTabela(_cm) : String(_cm).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+          if(_permMicro.indexOf(_ckm)!==-1) localidades.push(_cm);
+        }
+      } else {
+        localidades = _rawMicro.slice();
+      }
+    } else {
+      localidades = _rawMicro.slice();
+    }
+  } else {
+    // Sem termo e sem microrregião: entrada inicial
+    // Gestor Conteúdo vê apenas suas localidades permitidas em ordemLocalidades (sem precisar filtrar/clicar)
+    var _isGC = !!(typeof usuarioAtual !== "undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO");
+    if (_isGC) {
+      var _perm2 = null;
+      try { if (typeof localidadesPermitidasDoUsuario==="function") _perm2 = localidadesPermitidasDoUsuario(); } catch(e){ _perm2=null; }
+      if (_perm2 === null) {
+        localidades = (typeof ordemLocalidades!=="undefined" && ordemLocalidades) ? ordemLocalidades.slice() : [];
+      } else if (Array.isArray(_perm2) && _perm2.length) {
+        localidades = [];
+        for (var _j=0; _j<ordemLocalidades.length; _j++) {
+          var _cc = ordemLocalidades[_j];
+          var _cck = typeof normalizarChaveTabela==="function" ? normalizarChaveTabela(_cc) : String(_cc).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+          if (_perm2.indexOf(_cck)!==-1) localidades.push(_cc);
+        }
+      } else {
+        localidades = (typeof ordemLocalidades!=="undefined" && ordemLocalidades) ? ordemLocalidades.slice() : [];
+      }
+      if (!localidades || !localidades.length) {
+        container.innerHTML =
+          '<div class="panel consulta-lista-vazio">' +
+            'Nenhuma localidade encontrada.' +
+          '</div>';
+        return;
+      }
+    } else {
+      container.innerHTML =
+        '<div class="panel consulta-lista-vazio">' +
+          'Selecione uma Localidade no mapa para ver os detalhes.' +
+        '</div>';
+      return;
+    }
+  }
+
+  if (!localidades.length) {
+    container.innerHTML =
+      '<div class="panel consulta-lista-vazio">' +
+        'Nenhuma localidade encontrada.' +
+      '</div>';
+    return;
+  }
+
+  let html = '<div class="list-group">';
+
+  localidades.forEach(localidade => {
+    const id = chaveSegura(localidade);
+
+    html +=
+      '<div class="localidade-item" ' +
+        'data-localidade="' +
+          escaparConsulta(normalizarTexto(localidade)) +
+        '" ' +
+        'onclick="toggleLocalidade(\'' +
+          escaparJs(id) +
+        '\')">' +
+
+        '<span class="localidade-nome">' +
+          escaparConsulta(localidade) +
+        '</span>' +
+
+        '<span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">' +
+          '<span class="setor-count">' +
+            (setoresPorLocalidade[localidade] || []).length +
+            ' setores' +
+          '</span>' +
+          (function(_cc2){
+            try{
+              var _isGC2 = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO";
+              if(_isGC2){
+                var _pode=true;
+                try{ if(typeof podeEditarLocalidade==="function") _pode=podeEditarLocalidade(_cc2); else if(typeof localidadesPermitidasDoUsuario==="function"){ var _al=localidadesPermitidasDoUsuario(); if(_al!==null){ var _ck2=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(_cc2):String(_cc2).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); _pode=_al.indexOf(_ck2)!==-1; }} }catch(e){ _pode=true; }
+                if(!_pode) return "";
+              }
+            }catch(e){}
+            return '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); imprimirTodosSetoresDaLocalidade(\'' + escaparJs(_cc2) + '\')" title="Imprimir / Salvar PDF dos contatos desta Localidade">\uD83D\uDDA8\uFE0F Imprimir / Salvar PDF</button>';
+          })(localidade) +
+          (function(c){
+            try{
+              var ehGC = typeof usuarioAtual!=="undefined" && usuarioAtual && usuarioAtual.logado===true && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO";
+              if(!ehGC) return "";
+              var pode = true;
+              try{ if(typeof podeEditarLocalidade==="function") pode = podeEditarLocalidade(c); else if(typeof localidadesPermitidasDoUsuario==="function"){ var allow=localidadesPermitidasDoUsuario(); if(allow!==null){ var ck=String(c||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); pode = allow.indexOf(ck)!==-1; }} }catch(e){ pode=true; }
+              if(pode) return "";
+              var isSoli=false;
+              try{
+                var k="solicitacao_localidade_"+String(c||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+                var v=sessionStorage.getItem(k);
+                if(v){ var ts=Number(v); if(Date.now()-ts>10*60*1000){ sessionStorage.removeItem(k); } else isSoli=true; }
+              }catch(e){}
+              if(isSoli) return '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;background:#fee2e2;border-color:#fca5a5;color:#991b1b;" onclick="event.stopPropagation(); handleSolicitarLocalidadeClick(\'' + escaparJs(c) + '\', this)" title="Clique para cancelar a solicitação">✕ Cancelar</button>';
+              return '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); handleSolicitarLocalidadeClick(\'' + escaparJs(c) + '\', this)">🔓 Solicitar acesso</button>';
+            }catch(e){ return ""; }
+          })(localidade) +
+        '</span>' +
+
+      '</div>' +
+
+      '<div class="setores-list hidden" id="setores-' +
+        id +
+      '">';
+
+    (
+      setoresPorLocalidade[localidade] || []
+    ).forEach(setor => {
+      const chave =
+        localidade + "||" + setor;
+
+      html +=
+        '<div class="setor-item" ' +
+          'onclick="selecionarSetor(event,\'' +
+            escaparJs(id) +
+            '\',\'' +
+            escaparJs(setor) +
+            '\',\'' +
+            escaparJs(chave) +
+          '\')">' +
+          escaparConsulta(setor) +
+        '</div>';
+    });
+
+    html += '</div>';
+  });
+
+  container.innerHTML =
+    html + '</div>';
+
+  if (termo) {
+    filtrarSetoresConsulta();
+  }
+  try{ destacarMapaPorBusca(normalizarTexto(termo)); }catch(e){}
+  try{ if(!termo && !microrregiaoSelecionada) sincronizarSolicitacoesPendentesDashboard(); }catch(e){}
+}
+
+function toggleLocalidade(id) {
+  const el = document.getElementById(
+    "setores-" + id
+  );
+
+  if (!el) return;
+
+  const willShow = el.classList.contains("hidden");
+
+  if (willShow) {
+    try {
+      const campo = document.getElementById("campo-pesquisa-consulta");
+      const termo = normalizarTexto(campo?.value || "");
+      if (termo) {
+        const localidade = Object.keys(setoresPorLocalidade).find(c => chaveSegura(c) === id) || "";
+        const localidadeMatch = normalizarTexto(localidade).includes(termo);
+        const itens = Array.from(el.querySelectorAll(".setor-item"));
+        if (localidadeMatch) {
+          itens.forEach(s => s.style.display = "");
+        } else {
+          itens.forEach(s => {
+            const hit = normalizarTexto(s.textContent).includes(termo);
+            s.style.display = hit ? "" : "none";
+          });
+        }
+      } else {
+        Array.from(el.querySelectorAll(".setor-item")).forEach(s => s.style.display = "");
+      }
+    } catch (e) {}
+  }
+
+  el.classList.toggle("hidden");
+  try{
+    if(typeof estadoColapsadoLocalidade!=="undefined"){
+      estadoColapsadoLocalidade[id] = el.classList.contains("hidden");
+    }
+  }catch(e){}
+}
+
+function selecionarSetor(
+  evento,
+  idSeguro,
+  setor,
+  chave
+) {
+  const localidade =
+    Object.keys(setoresPorLocalidade).find(
+      c => chaveSegura(c) === idSeguro
+    ) || "";
+
+  const contatos =
+    telefonesPorSetor[chave] || [];
+
+  renderizarDetalhes(
+    localidade,
+    setor,
+    contatos
+  );
+
+  document
+    .querySelectorAll(".setor-item")
+    .forEach(el => {
+      el.style.background = "";
+    });
+
+  if (evento?.currentTarget) {
+    evento.currentTarget.style.background =
+      "#e2e8f0";
+  }
+}
+
+function atualizarDashboardPublico(telefonesRaw) {
+  // v3.27: filtra por localidades permitidas APENAS para Gestor Conteúdo — público e Gestor Sistema veem tudo
+  // v3.32 verificado: filtro correto — somente GC filtra; null=vazia significa todas (compatível com localidadesPermitidasDoUsuario que retorna null para GC sem restricao)
+  let telefones = Array.isArray(telefonesRaw) ? telefonesRaw.slice() : [];
+  try{
+    const perfil = (typeof usuarioAtual !== "undefined" && usuarioAtual) ? String(usuarioAtual.perfil || "") : "";
+    const isGC = perfil === "GESTOR_CONTEUDO" && usuarioAtual && usuarioAtual.logado === true;
+    if(isGC && typeof localidadesPermitidasDoUsuario==="function"){
+      const perm = localidadesPermitidasDoUsuario();
+      if(perm!==null){
+        if(!Array.isArray(perm) || perm.length===0){
+          // v3.32: perm vazio ou invalido para GC => tratar como sem restricao (todas) para manter compatibilidade com TableJS (length 0 => null => todas)
+          // Mantém telefones intacto (sem filtro). Antigo comportamento (telefones=[]) ocultava tudo e foi corrigido.
+        } else {
+          telefones = telefones.filter(function(item){
+            const localidade = String(campoTelefone(item, ["localidade"]) || "").trim();
+            let ck="";
+            try{
+              ck = (typeof normalizarChaveTabela==="function" ? normalizarChaveTabela(localidade) : String(localidade).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase());
+            }catch(e){ ck = String(localidade).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); }
+            return perm.indexOf(ck)!==-1;
+          });
+        }
+      }
+    }
+  }catch(eFiltro){}
+
+  const setores = new Set();
+  const tipos = new Set();
+  const porTipo = {};
+  const porLocalidade = {};
+
+  (
+    Array.isArray(telefones)
+      ? telefones
+      : []
+  ).forEach(item => {
+    const localidade = String(
+      campoTelefone(item, ["localidade"]) ||
+      "Sem localidade"
+    ).trim();
+
+    const setor = String(
+      campoTelefone(item, ["setor"]) ||
+      "Sem setor"
+    ).trim();
+
+    const tipo = String(
+      campoTelefone(item, ["tipo"]) ||
+      "Não informado"
+    ).trim();
+
+    setores.add(localidade + "||" + setor);
+    tipos.add(tipo);
+
+    porTipo[tipo] =
+      (porTipo[tipo] || 0) + 1;
+
+    porLocalidade[localidade] =
+      (porLocalidade[localidade] || 0) + 1;
+  });
+
+  atualizarTexto(
+    "total-telefones",
+    Array.isArray(telefones)
+      ? telefones.length
+      : 0
+  );
+
+  atualizarTexto(
+    "total-setores",
+    setores.size
+  );
+
+  atualizarTexto(
+    "total-tipos",
+    tipos.size
+  );
+
+  renderizarResumoDashboard(
+    document.getElementById("grafico-tipos"),
+    porTipo
+  );
+
+  renderizarResumoDashboard(
+    document.getElementById("grafico-localidades"),
+    porLocalidade
+  );
+}
+
+function atualizarTexto(id, valor) {
+  const el =
+    document.getElementById(id);
+
+  if (el) {
+    el.textContent =
+      String(valor);
+  }
+}
+
+function renderizarResumoDashboard(
+  container,
+  dados
+) {
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const entradas =
+    Object.entries(dados || {})
+      .map(([nome, valor]) => ({
+        nome,
+        valor: Number(valor) || 0
+      }))
+      .sort(
+        (a, b) =>
+          b.valor - a.valor ||
+          a.nome.localeCompare(
+            b.nome,
+            "pt-BR"
+          )
+      );
+
+  if (!entradas.length) {
+    container.innerHTML =
+      '<p style="color:#94a3b8;margin:0;">' +
+        'Nenhum contato cadastrado.' +
+      '</p>';
+    return;
+  }
+
+  entradas
+    .slice(0, 15)
+    .forEach(item => {
+      const linha =
+        document.createElement("div");
+
+      linha.style.cssText =
+        "display:flex;" +
+        "justify-content:space-between;" +
+        "align-items:center;" +
+        "gap:12px;" +
+        "padding:8px 0;" +
+        "border-bottom:1px solid #e2e8f0;";
+
+      const nome =
+        document.createElement("span");
+
+      nome.textContent =
+        item.nome;
+
+      const numero =
+        document.createElement("strong");
+
+      numero.textContent =
+        String(item.valor);
+
+      linha.append(
+        nome,
+        numero
+      );
+
+      container.appendChild(
+        linha
+      );
+    });
+}
+
+
+function chaveSolicitacaoLocalidadeGC(c){ return "solicitacao_localidade_"+String(c||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); }
+function sincronizarSolicitacoesPendentesDashboard(){
+  try{
+    if(typeof API==="undefined"||typeof API.listarSolicitacoes!=="function") return;
+    if(typeof usuarioAtual==="undefined"||!usuarioAtual||!usuarioAtual.email) return;
+    if(String(usuarioAtual.perfil||"").toUpperCase()!=="GESTOR_CONTEUDO") return;
+    var emailAtual = String(usuarioAtual.email||"").trim().toLowerCase();
+    if(!emailAtual) return;
+    API.listarSolicitacoes(function(res){
+      try{
+        if(!res||res.sucesso!==true||!Array.isArray(res.dados)) return;
+        var chavesAfetadas=false;
+        res.dados.forEach(function(s){
+          try{
+            var em=String(s.email||s.EMAIL||"").trim().toLowerCase();
+            var st=String(s.status||s.STATUS||"").trim().toUpperCase();
+            var com=String(s.localidade||s.LOCALIDADE||"").trim();
+            if(em===emailAtual && st==="PENDENTE" && com){
+              com.split(/[,;]+/).forEach(function(c){
+                var cc=String(c||"").trim(); if(!cc) return;
+                try{ window.sessionStorage.setItem(chaveSolicitacaoLocalidadeGC(cc), String(Date.now()));
+                     // tambem marca chave da TableJS (com email) para consistencia
+                     try{ if(typeof chaveSolicitacaoLocalidade==="function") window.sessionStorage.setItem(chaveSolicitacaoLocalidade(cc), String(Date.now())); }catch(e){}
+                     chavesAfetadas=true; }catch(e){}
+              });
+            }
+          }catch(e){}
+        });
+        if(chavesAfetadas){
+          try{ if(typeof renderizarLocalidades==="function") renderizarLocalidades(); }catch(e){}
+        }
+      }catch(e){}
+    }, function(){ /* sem permissao: silencioso */ });
+  }catch(e){}
+}
+function handleSolicitarLocalidadeClick(localidade, botao){
+  try{
+    var k=chaveSolicitacaoLocalidadeGC(localidade);
+    var v=null; try{ v=sessionStorage.getItem(k); }catch(e){}
+    var isSoli=false;
+    if(v){ var ts=Number(v); if(Date.now()-ts<=10*60*1000) isSoli=true; else try{ sessionStorage.removeItem(k);}catch(e){} }
+    if(isSoli){
+      confirmarAcaoSistema({titulo:"Cancelar solicitação",mensagem:"Cancelar a solicitação de acesso à localidade \""+localidade+"\"?",textoConfirmar:"Cancelar solicitação",perigo:true,icone:"×"}).then(function(confirmado){
+        if(!confirmado) return;
+        if(botao){ botao.disabled=true; botao.textContent="Cancelando..."; }
+        if(typeof API!=="undefined" && typeof API.cancelarSolicitacaoLocalidade==="function"){
+          API.cancelarSolicitacaoLocalidade(localidade, function(res){
+            if(res && res.sucesso===true){
+              try{ sessionStorage.removeItem(k);}catch(e){}
+              if(botao){ botao.textContent="🔓 Solicitar acesso"; botao.style.background=""; botao.style.borderColor=""; botao.style.color=""; botao.disabled=false; }
+              if(typeof mostrarToast==="function") mostrarToast("Solicitação cancelada.","warning");
+            } else {
+              if(botao){ botao.disabled=false; botao.textContent="✕ Cancelar"; botao.style.background="#fee2e2"; botao.style.borderColor="#fca5a5"; botao.style.color="#991b1b"; }
+              if(typeof mostrarToast==="function") mostrarToast((res&&res.erro)||"Falha ao cancelar.", "error");
+            }
+          }, function(err){
+            if(botao){ botao.disabled=false; botao.textContent="✕ Cancelar"; botao.style.background="#fee2e2"; botao.style.borderColor="#fca5a5"; botao.style.color="#991b1b"; }
+            if(typeof mostrarToast==="function") mostrarToast((err&&err.message)||"Falha ao cancelar.", "error");
+          });
+        } else {
+          try{ sessionStorage.removeItem(k);}catch(e){}
+          if(botao){ botao.textContent="🔓 Solicitar acesso"; botao.style.background=""; botao.style.borderColor=""; botao.style.color=""; botao.disabled=false; }
+        }
+      });
+      return;
+    }
+  }catch(e){}
+  if(typeof solicitarAcessoLocalidade==="function") solicitarAcessoLocalidade(localidade, botao);
+  else if(typeof API!=="undefined" && typeof API.solicitarPermissaoLocalidade==="function"){
+    if(botao){ botao.disabled=true; botao.textContent="Enviando..."; }
+    API.solicitarPermissaoLocalidade(localidade, function(res){
+      if(res && res.sucesso===true){
+        try{ sessionStorage.setItem(chaveSolicitacaoLocalidadeGC(localidade), String(Date.now())); }catch(e){}
+        if(botao){ botao.textContent="✕ Cancelar"; botao.style.background="#fee2e2"; botao.style.borderColor="#fca5a5"; botao.style.color="#991b1b"; botao.title="Clique para cancelar a solicitação"; botao.disabled=false; }
+        if(typeof mostrarToast==="function") mostrarToast("Solicitação enviada ao Gestor do Sistema. Você será avisado por e-mail quando o acesso for liberado.", "success");
+      } else {
+        if(botao){ botao.disabled=false; botao.textContent="🔓 Solicitar acesso"; }
+        if(typeof mostrarToast==="function") mostrarToast((res&&res.erro)||"Erro ao enviar a solicitação.", "error");
+      }
+    }, function(err){
+      if(botao){ botao.disabled=false; botao.textContent="🔓 Solicitar acesso"; }
+      if(typeof mostrarToast==="function") mostrarToast((err&&err.message)||"Erro ao enviar a solicitação.", "error");
+    });
+  }
+}
+
+/* ==========================================================
+ * IMPRESSÃO — Dashboard (cards + gráficos) e Localidade
+ * ========================================================== */
+function imprimirMultiplasLocalidades(listaLocalidades){
+  try{
+    var nomes = Array.isArray(listaLocalidades) ? listaLocalidades.slice() : [];
+    if(!nomes.length){ if(typeof mostrarToast==="function") mostrarToast("Nenhuma localidade para imprimir.","warning"); return; }
+    // v3.25 A: filtra para apenas permitidas se Gestor Conteúdo
+    try{
+      var _isGCm = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+      if(_isGCm && typeof localidadesPermitidasDoUsuario==="function"){
+        var _permM=localidadesPermitidasDoUsuario();
+        if(Array.isArray(_permM) && _permM.length){
+          var _filtrada=[];
+          for(var _mi=0; _mi<nomes.length; _mi++){
+            var _cm=nomes[_mi];
+            var _ckM=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(_cm): String(_cm).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+            if(_permM.indexOf(_ckM)!==-1) _filtrada.push(_cm);
+          }
+          if(_filtrada.length) nomes=_filtrada;
+          else { if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta localidade","warning"); return; }
+        }
+      }
+    }catch(e){}
+    var cardsHtml = "";
+    var totalSetores = 0;
+    for(var ci=0; ci<nomes.length; ci++){
+      var nome = String(nomes[ci]||"").trim(); if(!nome) continue;
+      var setores = null;
+      try{ setores = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nome]) ? setoresPorLocalidade[nome] : null; }catch(e){ setores=null; }
+      if(setores && setores.length){
+        totalSetores += setores.length;
+        for(var si=0; si<setores.length; si++){
+          var setor = setores[si];
+          var chave = nome + "||" + setor;
+          var regs = [];
+          try{ regs = (typeof telefonesPorSetor!=="undefined" && telefonesPorSetor[chave]) ? telefonesPorSetor[chave] : []; }catch(e2){ regs=[]; }
+          var grupos = null;
+          try{ grupos = (typeof agruparContatosDoSetor==="function") ? agruparContatosDoSetor(regs) : {telefones:[],ramais:[],whatsapps:[],emails:[],enderecos:[]}; }catch(e3){ grupos={telefones:[],ramais:[],whatsapps:[],emails:[],enderecos:[]}; }
+          cardsHtml += cardSetorHtmlLocalidade(nome, setor, grupos);
+        }
+      } else {
+        var src = [];
+        try{ if(typeof todosTelefones!=="undefined" && Array.isArray(todosTelefones) && todosTelefones.length) src=todosTelefones; else if(typeof listaTelefones!=="undefined" && Array.isArray(listaTelefones)) src=listaTelefones; }catch(e){ src=[]; }
+        var mapa = {};
+        src.filter(function(it){ var c = String((it.localidade||it.LOCALIDADE||"")).trim(); return c===nome; }).forEach(function(it){
+          var s = String((it.setor||it.SETOR||"")).trim() || "Sem setor";
+          if(!mapa[s]) mapa[s]=[];
+          mapa[s].push(it);
+        });
+        var setoresOrdenados = Object.keys(mapa).sort(function(a,b){ return a.localeCompare(b,"pt-BR"); });
+        totalSetores += setoresOrdenados.length;
+        if(!setoresOrdenados.length){
+          cardsHtml += '<div class="setor-card"><h3>'+htmlEscCards(nome)+'</h3><div class="vazio">Nenhum contato cadastrado para esta localidade.</div></div>';
+        } else {
+          for(var sj=0; sj<setoresOrdenados.length; sj++){
+            var setorJ = setoresOrdenados[sj];
+            var grupos2=null;
+            try{ grupos2=(typeof agruparContatosDoSetor==="function")?agruparContatosDoSetor(mapa[setorJ]):null; }catch(e){ grupos2=null; }
+            if(!grupos2 || (!grupos2.telefones.length && !grupos2.ramais.length && !grupos2.whatsapps.length && !grupos2.emails.length && !grupos2.enderecos.length)){
+              var g2={telefones:[],ramais:[],whatsapps:[],emails:[],enderecos:[]};
+              var vistos={};
+              function add2(tipo, val){ var tx=String(val||"").trim(); if(!tx || tx==="\u002d"||tx==="\u2013"||tx==="\u2014") return; if(vistos[tipo+":"+tx]) return; vistos[tipo+":"+tx]=1; g2[tipo].push(tx); }
+              mapa[setorJ].forEach(function(it){
+                add2("telefones", it.telefone||it.TELEFONE||it.numero||it.NUMERO);
+                add2("ramais", it.ramal||it.RAMAL);
+                add2("whatsapps", it.whatsapp||it.WHATSAPP||it.WhatsApp);
+                add2("emails", it.email||it.EMAIL||it["E-mail"]||it["eMail"]||it.E_MAIL);
+                add2("enderecos", it.endereco||it.ENDERECO||it["Endere\u00e7o"]||it["endere\u00e7o"]);
+              });
+              grupos2=g2;
+            }
+            cardsHtml += cardSetorHtmlLocalidade(nome, setorJ, grupos2);
+          }
+        }
+      }
+    }
+    var w = window.open("", "_blank");
+    if(!w){ if(typeof mostrarToast==="function") mostrarToast("Desbloqueie pop-ups para imprimir.","warning"); return; }
+    var css="body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:24px;} h1{font-size:20px;margin:0 0 4px;} .sub{color:#64748b;font-size:12px;margin-bottom:16px;} .cards{column-count:1;} .setor-card{border:1px solid #cbd5e1;border-radius:10px;padding:14px 14px 10px;margin:0 0 14px;background:#fff;break-inside:avoid;page-break-inside:avoid;box-shadow:0 1px 3px rgba(0,0,0,.06);} .setor-card h3{margin:0 0 10px;font-size:14px;font-weight:800;color:#0f172a;border-bottom:1px solid #e2e8f0;padding-bottom:6px;} .bloco{border:1px solid #e2e8f0;background:#f8fafc;border-radius:8px;padding:8px 10px;margin-bottom:8px;} .bloco-titulo{font-size:11px;font-weight:700;color:#334155;margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em;} .bloco-lista{font-size:13px;line-height:1.45;word-break:break-word;color:#0f172a;} .bloco-lista .item{padding:2px 0;} .vazio{color:#94a3b8;font-style:italic;font-size:13px;} @media print{ @page{size:A4 portrait;margin:12mm;} body{margin:0;} .setor-card{box-shadow:none;} }";
+    var tit = nomes.length===1 ? "Localidade "+nomes[0]+" \u2014 Todos os setores" : "Localidades permitidas \u2014 Todos os setores ("+nomes.length+" localidades)";
+    var html="<!DOCTYPE html><html><head><meta charset='utf-8'><title>"+htmlEscCards(tit)+"</title><style>"+css+"</style></head><body><h1>"+htmlEscCards(tit)+"</h1><div class='sub'>"+htmlEscCards(new Date().toLocaleString('pt-BR'))+" \u00b7 "+totalSetores+" setor"+(totalSetores===1?"":"es")+"</div><div class='cards'>"+cardsHtml+"</div><script>window.onload=function(){ setTimeout(function(){ window.print(); },350); }<\/script></body></html>";
+    w.document.open(); w.document.write(html); w.document.close();
+  }catch(e){ console.error(e); if(typeof mostrarToast==="function") mostrarToast("N\u00e3o foi poss\u00edvel imprimir.","error"); }
+}
+function imprimirConteudoPermitidoDashboard(){
+  try{
+    var perm = null;
+    try{ if(typeof localidadesPermitidasDoUsuario==="function") perm = localidadesPermitidasDoUsuario(); }catch(e){ perm=null; }
+    var lista = [];
+    if(perm===null){
+      lista = (typeof ordemLocalidades!=="undefined" && ordemLocalidades) ? ordemLocalidades.slice() : [];
+    } else if(Array.isArray(perm) && perm.length){
+      for(var i=0;i<ordemLocalidades.length;i++){
+        var c=ordemLocalidades[i];
+        var ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(c):String(c).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+        if(perm.indexOf(ck)!==-1) lista.push(c);
+      }
+      if(!lista.length) lista = ordemLocalidades.slice();
+    } else {
+      lista = (typeof ordemLocalidades!=="undefined" && ordemLocalidades) ? ordemLocalidades.slice() : [];
+    }
+    return imprimirMultiplasLocalidades(lista);
+  }catch(e){ console.error(e); if(typeof mostrarToast==="function") mostrarToast("N\u00e3o foi poss\u00edvel imprimir.","error"); }
+}
+if(typeof window!=="undefined"){ window.imprimirConteudoPermitidoDashboard = imprimirConteudoPermitidoDashboard; window.imprimirConteudoPermitido = imprimirConteudoPermitidoDashboard; }
+function imprimirConteudoPermitido(){ return imprimirConteudoPermitidoDashboard(); }
+function imprimirTodasLocalidades(){ return imprimirDashboardView(); }
+function imprimirDashboard(){ return imprimirDashboardView(); }
+function imprimirDashboardView(){
+  try{
+    var view = document.getElementById("dashboard-view");
+    if(!view || view.classList.contains("hidden")){
+      if(typeof mostrarView==="function"){ mostrarView("dashboard-view"); }
+      setTimeout(function(){ imprimirDashboardView(); }, 220);
+      return;
+    }
+    var tituloOriginal = document.title;
+    var tituloInterface = "";
+    try{ var el=document.querySelector(".system-title h1"); tituloInterface = el ? el.textContent.replace(/\s+/g," ").trim() : ""; }catch(e){}
+    if(!tituloInterface) tituloInterface = "Diretório de Contatos — Demo";
+    document.title = tituloInterface + " \u2014 Dashboard";
+    document.body.classList.add("print-dashboard");
+    function limpar(){
+      document.title = tituloOriginal;
+      document.body.classList.remove("print-dashboard");
+      try{ window.removeEventListener("afterprint", limpar); }catch(e){}
+    }
+    window.addEventListener("afterprint", limpar, {once:true});
+    setTimeout(function(){ try{ if(document.body.classList.contains("print-dashboard")) limpar(); }catch(e){} }, 5000);
+    window.print();
+  }catch(e){ console.error(e); if(typeof mostrarToast==="function") mostrarToast("N\u00e3o foi poss\u00edvel imprimir o dashboard.","error"); }
+}
+
+/* ----------------------------------------------------------
+ * LOCALIDADE — cartões por setor (todos os contatos + endereço)
+ * ---------------------------------------------------------- */
+function htmlEscCards(v){ return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function blocoCardsHtml(titulo, valores){
+  var lista = Array.isArray(valores) ? valores.filter(function(v){ var t=String(v||"").trim(); return t && t!=="-" && t!=="–" && t!=="—"; }) : [];
+  if(!lista.length) return '<div class="bloco"><div class="bloco-titulo">'+htmlEscCards(titulo)+'</div><div class="vazio">-</div></div>';
+  // v3.32: Endereço com link para Google Maps
+  if (String(titulo||"").toLowerCase().indexOf("endere") !== -1) {
+    var itens = lista.map(function(v){ var esc = htmlEscCards(v); var href = "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(String(v||"").trim()); return '<div class="item"><a href="'+href+'" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:none;" title="Abrir no Google Maps">'+esc+'</a></div>'; }).join("");
+    return '<div class="bloco"><div class="bloco-titulo">'+htmlEscCards(titulo)+'</div><div class="bloco-lista">'+itens+'</div></div>';
+  }
+  var itens = lista.map(function(v){ return '<div class="item">'+htmlEscCards(v)+'</div>'; }).join("");
+  return '<div class="bloco"><div class="bloco-titulo">'+htmlEscCards(titulo)+'</div><div class="bloco-lista">'+itens+'</div></div>';
+}
+function cardSetorHtmlLocalidade(localidade, setor, grupos){
+  var g = grupos || {telefones:[],ramais:[],whatsapps:[],emails:[],enderecos:[]};
+  // v3.33 ordem canônica Endereco(Top), Telefone, Ramal, WhatsApp, E-mail(Bottom)
+  return '<div class="setor-card">'
+    + '<h3>'+htmlEscCards(setor)+'</h3>'
+    + blocoCardsHtml("Endere\u00e7o", g.enderecos)
+    + blocoCardsHtml("Telefone", g.telefones)
+    + blocoCardsHtml("Ramal", g.ramais)
+    + blocoCardsHtml("WhatsApp", g.whatsapps)
+    + blocoCardsHtml("E-mail", g.emails)
+    + '</div>';
+}
+function imprimirLocalidadeSetoresCards(localidadeNome){
+  try{
+    var nome = String(localidadeNome||"").trim();
+    if(!nome){ if(typeof mostrarToast==="function") mostrarToast("Localidade n\u00e3o informada.","warning"); return; }
+    // v3.25 C: Conteudo sem permissao nao pode imprimir
+    try{
+      var _isGC_d = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+      if(_isGC_d){
+        var _podeD=false;
+        try{ if(typeof podeEditarLocalidade==="function") _podeD=podeEditarLocalidade(nome); else if(typeof localidadesPermitidasDoUsuario==="function"){ var _alD=localidadesPermitidasDoUsuario(); if(_alD===null) _podeD=true; else if(Array.isArray(_alD)){ var _ckD=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(nome):String(nome).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); _podeD=_alD.indexOf(_ckD)!==-1; } } }catch(e){ _podeD=true; }
+        if(!_podeD){ if(typeof mostrarToast==="function") mostrarToast("Sem permiss\u00e3o para imprimir esta localidade.", "warning"); return; }
+      }
+    }catch(e){}
+    var setores = null;
+    try{ setores = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nome]) ? setoresPorLocalidade[nome] : null; }catch(e){ setores=null; }
+    var cardsHtml = "";
+    var totalSetores = 0;
+    if(setores && setores.length){
+      totalSetores = setores.length;
+      setores.forEach(function(setor){
+        var chave = nome + "||" + setor;
+        var regs = [];
+        try{ regs = (typeof telefonesPorSetor!=="undefined" && telefonesPorSetor[chave]) ? telefonesPorSetor[chave] : []; }catch(e2){ regs=[]; }
+        var grupos = null;
+        try{ grupos = (typeof agruparContatosDoSetor==="function") ? agruparContatosDoSetor(regs) : {telefones:[],ramais:[],whatsapps:[],emails:[],enderecos:[]}; }catch(e3){ grupos={telefones:[],ramais:[],whatsapps:[],emails:[],enderecos:[]}; }
+        cardsHtml += cardSetorHtmlLocalidade(nome, setor, grupos);
+      });
+    } else {
+      var src = [];
+      try{ if(typeof todosTelefones!=="undefined" && Array.isArray(todosTelefones) && todosTelefones.length) src=todosTelefones; else if(typeof listaTelefones!=="undefined" && Array.isArray(listaTelefones)) src=listaTelefones; }catch(e){ src=[]; }
+      var mapa = {};
+      src.filter(function(it){ var c = String((it.localidade||it.LOCALIDADE||"")).trim(); return c===nome; }).forEach(function(it){
+        var s = String((it.setor||it.SETOR||"")).trim() || "Sem setor";
+        if(!mapa[s]) mapa[s]=[];
+        mapa[s].push(it);
+      });
+      var setoresOrdenados = Object.keys(mapa).sort(function(a,b){ return a.localeCompare(b,"pt-BR"); });
+      totalSetores = setoresOrdenados.length;
+      if(!setoresOrdenados.length){
+        cardsHtml = '<div class="setor-card"><h3>Sem setores</h3><div class="vazio">Nenhum contato cadastrado para esta localidade.</div></div>';
+      } else {
+        setoresOrdenados.forEach(function(setor){
+          var grupos=null;
+          try{ grupos=(typeof agruparContatosDoSetor==="function")?agruparContatosDoSetor(mapa[setor]):null; }catch(e){ grupos=null; }
+          if(!grupos || (!grupos.telefones.length && !grupos.ramais.length && !grupos.whatsapps.length && !grupos.emails.length && !grupos.enderecos.length)){
+            var g2={telefones:[],ramais:[],whatsapps:[],emails:[],enderecos:[]};
+            var vistos={};
+            function add(tipo, val){ var tx=String(val||"").trim(); if(!tx || tx==="-"||tx==="\u2013"||tx==="\u2014") return; if(vistos[tipo+":"+tx]) return; vistos[tipo+":"+tx]=1; g2[tipo].push(tx); }
+            mapa[setor].forEach(function(it){
+              add("telefones", it.telefone||it.TELEFONE||it.numero||it.NUMERO);
+              add("ramais", it.ramal||it.RAMAL);
+              add("whatsapps", it.whatsapp||it.WHATSAPP||it.WhatsApp);
+              add("emails", it.email||it.EMAIL||it["E-mail"]||it["eMail"]||it.E_MAIL);
+              add("enderecos", it.endereco||it.ENDERECO||it["Endere\u00e7o"]||it["endere\u00e7o"]);
+            });
+            grupos=g2;
+          }
+          cardsHtml += cardSetorHtmlLocalidade(nome, setor, grupos);
+        });
+      }
+    }
+    var w = window.open("", "_blank");
+    if(!w){ if(typeof mostrarToast==="function") mostrarToast("Desbloqueie pop-ups para imprimir.","warning"); return; }
+    var css="body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:24px;} h1{font-size:20px;margin:0 0 4px;} .sub{color:#64748b;font-size:12px;margin-bottom:16px;} .cards{column-count:1;} .setor-card{border:1px solid #cbd5e1;border-radius:10px;padding:14px 14px 10px;margin:0 0 14px;background:#fff;break-inside:avoid;page-break-inside:avoid;box-shadow:0 1px 3px rgba(0,0,0,.06);} .setor-card h3{margin:0 0 10px;font-size:14px;font-weight:800;color:#0f172a;border-bottom:1px solid #e2e8f0;padding-bottom:6px;} .bloco{border:1px solid #e2e8f0;background:#f8fafc;border-radius:8px;padding:8px 10px;margin-bottom:8px;} .bloco-titulo{font-size:11px;font-weight:700;color:#334155;margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em;} .bloco-lista{font-size:13px;line-height:1.45;word-break:break-word;color:#0f172a;} .bloco-lista .item{padding:2px 0;} .vazio{color:#94a3b8;font-style:italic;font-size:13px;} @media print{ @page{size:A4 portrait;margin:12mm;} body{margin:0;} .setor-card{box-shadow:none;} }";
+    var tit="Localidade "+nome+" \u2014 Todos os setores";
+    var html="<!DOCTYPE html><html><head><meta charset='utf-8'><title>"+htmlEscCards(tit)+"</title><style>"+css+"</style></head><body><h1>"+htmlEscCards(tit)+"</h1><div class='sub'>"+htmlEscCards(new Date().toLocaleString('pt-BR'))+" \u00b7 "+totalSetores+" setor"+(totalSetores===1?"":"es")+"</div><div class='cards'>"+cardsHtml+"</div><script>window.onload=function(){ setTimeout(function(){ window.print(); },350); }<\/script></body></html>";
+    w.document.open(); w.document.write(html); w.document.close();
+  }catch(e){ console.error(e); if(typeof mostrarToast==="function") mostrarToast("N\u00e3o foi poss\u00edvel imprimir.","error"); }
+}
+function imprimirTodosSetoresDaLocalidade(localidadeNome){ return imprimirLocalidadeSetoresCards(localidadeNome); }
+</script>

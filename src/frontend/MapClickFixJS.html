@@ -1,0 +1,179 @@
+<script>
+(function () {
+  "use strict";
+
+  function normalizarNome(valor) {
+    return String(valor == null ? "" : valor)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
+  }
+
+  function escHtml(valor) {
+    return String(valor == null ? "" : valor)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function nomeFeature(feature) {
+    var p = feature && feature.properties || {};
+    return String(p.name || p.NOME || p.NM_MUN || p.description || "").trim();
+  }
+
+  function codigoFeature(feature) {
+    var p = feature && feature.properties || {};
+    return String(p.id || p.CD_MUN || p.codmun || p.code || "").replace(/\D/g, "");
+  }
+
+  function localizarCardMunicipio(nome) {
+    var alvo = normalizarNome(nome);
+    if (!alvo) return null;
+    return Array.prototype.slice.call(
+      document.querySelectorAll('#fc-content .fc-card[data-mun]')
+    ).find(function (card) {
+      var titulo = card.querySelector("h4");
+      return normalizarNome(titulo ? titulo.textContent : "") === alvo;
+    }) || null;
+  }
+
+  function localizarOpcaoMunicipio(nome) {
+    var select = document.getElementById("fc-localidade") || document.getElementById("fc-search");
+    if (!select || String(select.tagName || "").toUpperCase() !== "SELECT") return null;
+    var alvo = normalizarNome(nome);
+    var opcao = Array.prototype.slice.call(select.options || []).find(function (item) {
+      return normalizarNome(item.textContent || "") === alvo;
+    });
+    return opcao ? { select: select, option: opcao } : null;
+  }
+
+  function executarAbertura(nome) {
+    var card = localizarCardMunicipio(nome);
+    if (card) {
+      card.click();
+      return true;
+    }
+
+    var opcao = localizarOpcaoMunicipio(nome);
+    if (opcao) {
+      opcao.select.value = opcao.option.value;
+      opcao.select.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    }
+
+    return false;
+  }
+
+  function abrirMunicipioPorNome(nome) {
+    if (executarAbertura(nome)) return true;
+
+    if (typeof window.fcInicio !== "function") return false;
+    window.fcInicio();
+
+    var tentativas = 0;
+    var timer = setInterval(function () {
+      tentativas += 1;
+      if (executarAbertura(nome) || tentativas >= 20) {
+        clearInterval(timer);
+      }
+    }, 25);
+    return true;
+  }
+
+  function camadaPossuiContatos(layer) {
+    var opcoes = layer && layer.options || {};
+    var borda = String(opcoes.color || "").toLowerCase();
+    var preenchimento = String(opcoes.fillColor || "").toLowerCase();
+    return borda === "#2563eb" || preenchimento === "#60a5fa";
+  }
+
+  function atualizarTooltipMunicipio(layer, nome) {
+    if (!layer || typeof layer.getTooltip !== "function") return;
+    var tooltip = layer.getTooltip();
+    if (!tooltip || typeof tooltip.setContent !== "function") return;
+
+    var possui = camadaPossuiContatos(layer);
+    tooltip.setContent(
+      escHtml(nome) +
+      (possui
+        ? "<br><small>Possui contatos cadastrados</small>"
+        : "<br><small>Sem contatos cadastrados</small>")
+    );
+  }
+
+  function instalarCliqueDeterministicoMapa() {
+    if (!window.L || typeof window.L.geoJSON !== "function") return false;
+    if (window.L.geoJSON.__demoMapClickFixV3) return true;
+
+    var geoJsonOriginal = window.L.geoJSON;
+
+    function geoJsonComCliqueDeterministico(data, options) {
+      var opcoesOriginais = options || {};
+      var onEachOriginal = opcoesOriginais.onEachFeature;
+      var opcoes = Object.assign({}, opcoesOriginais, {
+        onEachFeature: function (feature, layer) {
+          if (typeof onEachOriginal === "function") {
+            onEachOriginal(feature, layer);
+          }
+
+          if (!layer || typeof layer.on !== "function") return;
+          var nome = nomeFeature(feature);
+          if (!nome) return;
+
+          // O tooltip original é montado antes de a hierarquia terminar de carregar.
+          // A camada, porém, é reestilizada quando os dados chegam. Recalculamos o
+          // conteúdo no hover usando o estilo atual para não manter o status inicial.
+          layer.on("mouseover", function () {
+            atualizarTooltipMunicipio(layer, nome);
+          });
+          layer.on("tooltipopen", function () {
+            atualizarTooltipMunicipio(layer, nome);
+          });
+
+          // O handler original depende do estado existente no instante em que o
+          // GeoJSON é criado. O clique é sempre registrado e resolve a Localidade
+          // pelo nome, que permanece estável entre o GeoJSON e a tabela MUNICIPIOS.
+          layer.off("click");
+          layer.on("click", function (evento) {
+            try {
+              if (window.L && window.L.DomEvent && evento) {
+                window.L.DomEvent.stopPropagation(evento);
+              }
+            } catch (e) {}
+
+            var abriu = abrirMunicipioPorNome(nome);
+            if (!abriu) {
+              console.warn("Localidade do mapa não encontrada na navegação:", {
+                nome: nome,
+                codigoIbge: codigoFeature(feature)
+              });
+            }
+          });
+        }
+      });
+
+      return geoJsonOriginal.call(this, data, opcoes);
+    }
+
+    Object.keys(geoJsonOriginal).forEach(function (chave) {
+      try { geoJsonComCliqueDeterministico[chave] = geoJsonOriginal[chave]; } catch (e) {}
+    });
+    geoJsonComCliqueDeterministico.__demoMapClickFixV3 = true;
+    window.L.geoJSON = geoJsonComCliqueDeterministico;
+    return true;
+  }
+
+  if (!instalarCliqueDeterministicoMapa()) {
+    var tentativas = 0;
+    var timer = setInterval(function () {
+      tentativas += 1;
+      if (instalarCliqueDeterministicoMapa() || tentativas >= 40) {
+        clearInterval(timer);
+      }
+    }, 50);
+  }
+})();
+</script>

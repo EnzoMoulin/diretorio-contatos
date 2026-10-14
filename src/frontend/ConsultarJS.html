@@ -1,0 +1,2010 @@
+<script>
+/**
+ * ==========================================================
+ * DIRETÓRIO DE CONTATOS — DEMO
+ * Arquivo: ConsultarJS.html
+ * ==========================================================
+ */
+
+const URL_MAPA_ES =
+  "https://www.educacaonamao.com.br/wp-content/uploads/2019/11/mapa-districao-regioes-espirito-santo-596x1024.jpg";
+
+const URL_GEOJSON_ES =
+  "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-32-mun.json";
+
+let mapaLeaflet = null;
+let mapaLeafletOverlay = null;
+let camadaGeoJson = null;
+let camadaGeoJsonOverlay = null;
+let geoJsonCache = null;
+let municipioSelecionado = "";
+
+let tituloImpressaoLocalidade = "";
+let tituloImpressaoSetor = "";
+
+/* ==========================================================
+ * v3.25 — Helpers de permissão de impressão (Gestor Conteúdo)
+ * ========================================================== */
+function podeImprimirLocalidadeConsulta(localidade){
+  try{
+    if(typeof localidadesPermitidasDoUsuario!=="function") return true;
+    var perm = localidadesPermitidasDoUsuario();
+    if(perm===null) return true;
+    if(!Array.isArray(perm)) return true;
+    if(!perm.length) return true;
+    var ck = typeof normalizarChaveTabela==="function" ? normalizarChaveTabela(localidade) : typeof normalizarChave==="function" ? normalizarChave(localidade) : String(localidade||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+    return perm.indexOf(ck)!==-1;
+  }catch(e){ return true; }
+}
+function bloquearImpressaoSemPermissaoConsulta(localidade){
+  if(!podeImprimirLocalidadeConsulta(localidade)){
+    try{
+      if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta localidade","warning");
+      else if(typeof notificarTabela==="function") notificarTabela("Sem permissão para imprimir esta localidade","warning");
+      else console.warn("Sem permissão para imprimir esta localidade");
+    }catch(e2){}
+    return true;
+  }
+  return false;
+}
+function atualizarVisibilidadeBotoesImpressaoConsulta(){
+  try{
+    var isGC = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO";
+    if(!isGC) return;
+    var localidadeAtual = tituloImpressaoLocalidade || "";
+    if(!localidadeAtual){
+      try{ var h=document.querySelector(".detalhe-contatos-cabecalho h3"); if(h) localidadeAtual=h.textContent||""; }catch(e){}
+    }
+    var pode = !localidadeAtual || podeImprimirLocalidadeConsulta(localidadeAtual);
+    document.querySelectorAll(".detalhe-contatos-cabecalho .btn, #btn-imprimir-consulta-todos, .localidade-item .btn").forEach(function(btn){
+      var txt=(btn.textContent||"").toLowerCase();
+      if(txt.indexOf("imprimir")!==-1 || txt.indexOf("pdf")!==-1){
+        if(!pode && btn.closest && btn.closest(".detalhe-contatos-cabecalho")){
+          btn.style.display="none";
+          btn.disabled=true;
+          btn.title="Sem permissão para imprimir esta localidade";
+          btn.setAttribute("aria-disabled","true");
+        }
+      }
+    });
+    // Per-localidade buttons in list
+    document.querySelectorAll(".localidade-item").forEach(function(item){
+      var nomeEl=item.querySelector(".localidade-nome");
+      var nome=nomeEl?nomeEl.textContent:"";
+      var btn=item.nextElementSibling ? null : null;
+      // Find print button inside item
+      var printBtn=item.querySelector("button");
+      if(printBtn){
+        var t=(printBtn.textContent||"").toLowerCase();
+        if(t.indexOf("imprimir")!==-1){
+          var p=podeImprimirLocalidadeConsulta(nome);
+          printBtn.style.display=p?"":"none";
+          printBtn.disabled=!p;
+          if(!p){ printBtn.title="Sem permissão para imprimir esta localidade"; printBtn.setAttribute("aria-disabled","true"); }
+          else { printBtn.title="Imprimir / Salvar PDF dos contatos desta Localidade"; printBtn.removeAttribute("aria-disabled"); }
+        }
+      }
+    });
+  }catch(e){}
+}
+let estadoColapsadoLocalidade = {}; // v3.25: estado colapsado por localidade (true=colapsado, false=expandido)
+
+/* ==========================================================
+ * INICIALIZAÇÃO
+ * ========================================================== */
+
+function carregarTelefones() {
+  if (typeof iniciarConsultaTelefones === "function") {
+    iniciarConsultaTelefones();
+  }
+}
+
+/* ==========================================================
+ * AGRUPAMENTO
+ * ========================================================== */
+
+function contatoPreenchido(valor) {
+  const v = String(valor || "").trim();
+
+  return (
+    v !== "" &&
+    v !== "-" &&
+    v !== "–" &&
+    v !== "—"
+  );
+}
+
+function agruparContatosDoSetor(registros) {
+  const resultado = {
+    telefones: [],
+    ramais: [],
+    whatsapps: [],
+    emails: [],
+    enderecos: []
+  };
+
+  const vistos = {
+    telefones: new Set(),
+    ramais: new Set(),
+    whatsapps: new Set(),
+    emails: new Set(),
+    enderecos: new Set()
+  };
+
+  function adicionar(tipo, valor) {
+    const texto =
+      String(valor || "").trim();
+
+    if (!contatoPreenchido(texto)) {
+      return;
+    }
+    // v3.33: split múltiplos valores separados por vírgula/ponto-vírgula/quebra (telefone/ramal/whatsapp/email) — cada valor em linha própria com botão próprio
+    let partes = [texto];
+    if (tipo !== "enderecos") {
+      if (/[,;\n]/.test(texto)) {
+        partes = texto.split(/[,;\n]+/).map(function(s){ return String(s||"").trim(); }).filter(contatoPreenchido);
+        if (tipo === "telefones" || tipo === "ramais" || tipo === "whatsapps") {
+          let expandido = [];
+          partes.forEach(function(part){
+            if (part.indexOf("/") !== -1) {
+              part.split("/").forEach(function(sub){
+                let t = String(sub||"").trim();
+                if (contatoPreenchido(t)) expandido.push(t);
+              });
+            } else {
+              expandido.push(part);
+            }
+          });
+          partes = expandido;
+        }
+      } else if ((tipo === "telefones" || tipo === "ramais" || tipo === "whatsapps") && texto.indexOf("/") !== -1) {
+        partes = texto.split("/").map(function(s){ return String(s||"").trim(); }).filter(contatoPreenchido);
+      }
+    }
+    partes.forEach(function(part){
+      const t = String(part||"").trim();
+      if (!contatoPreenchido(t) || vistos[tipo].has(t)) return;
+      vistos[tipo].add(t);
+      resultado[tipo].push(t);
+    });
+  }
+
+  (
+    Array.isArray(registros)
+      ? registros
+      : []
+  ).forEach(registro => {
+    adicionar(
+      "telefones",
+      campoTelefone(registro, [
+        "telefone",
+        "TELEFONE",
+        "numero",
+        "NUMERO"
+      ])
+    );
+
+    adicionar(
+      "ramais",
+      campoTelefone(registro, [
+        "ramal",
+        "RAMAL"
+      ])
+    );
+
+    adicionar(
+      "whatsapps",
+      campoTelefone(registro, [
+        "whatsapp",
+        "WHATSAPP",
+        "WhatsApp"
+      ])
+    );
+
+    adicionar(
+      "emails",
+      campoTelefone(registro, [
+        "email",
+        "EMAIL",
+        "E-MAIL",
+        "E_MAIL"
+      ])
+    );
+
+    adicionar(
+      "enderecos",
+      campoTelefone(registro, [
+        "endereco",
+        "ENDERECO",
+        "Endereço"
+      ])
+    );
+  });
+
+  return resultado;
+}
+
+/* ==========================================================
+ * FORMATAÇÃO
+ * ========================================================== */
+
+function formatarTelefoneConsulta(valor) {
+  const numeros =
+    String(valor || "")
+      .replace(/\D/g, "");
+
+  if (!numeros) return "-";
+
+  const local =
+    numeros.startsWith("55")
+      ? numeros.slice(2)
+      : numeros;
+
+  if (
+    local.length === 11 &&
+    local.startsWith("27")
+  ) {
+    return (
+      "(" +
+      local.slice(0, 2) +
+      ") " +
+      local.slice(2, 7) +
+      "-" +
+      local.slice(7)
+    );
+  }
+
+  if (
+    local.length === 10 &&
+    local.startsWith("27")
+  ) {
+    return (
+      "(" +
+      local.slice(0, 2) +
+      ") " +
+      local.slice(2, 6) +
+      "-" +
+      local.slice(6)
+    );
+  }
+
+  return String(valor || "-");
+}
+
+function formatarWhatsappConsulta(valor) {
+  return contatoPreenchido(valor)
+    ? formatarTelefoneConsulta(valor)
+    : "-";
+}
+
+/* ==========================================================
+ * LINKS
+ * ========================================================== */
+
+function linkWhatsappConsulta(valor) {
+  const numeros =
+    String(valor || "")
+      .replace(/\D/g, "");
+
+  if (!numeros) return "";
+
+  return (
+    "https://wa.me/" +
+    (
+      numeros.startsWith("55")
+        ? numeros
+        : "55" + numeros
+    )
+  );
+}
+
+function linkTelefoneConsulta(valor) {
+  const numeros =
+    String(valor || "")
+      .replace(/\D/g, "");
+
+  if (!numeros) return "";
+
+  const local =
+    numeros.startsWith("55")
+      ? numeros.slice(2)
+      : numeros;
+
+  return "tel:+55" + local;
+}
+
+function linkEnderecoConsulta(valor){
+  var v = String(valor||"").trim();
+  if(!v) return "";
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(v);
+}
+function linkEmailConsulta(valor) {
+  return (
+    "mailto:" +
+    encodeURIComponent(
+      String(valor || "")
+    )
+  );
+}
+
+/* ==========================================================
+ * BLOCOS DE CONTATO
+ * ========================================================== */
+
+function blocoContato(
+  titulo,
+  valores,
+  formatador,
+  criadorLink,
+  classe,
+  mapaIds,
+  podeEditar
+) {
+  const lista =
+    Array.isArray(valores)
+      ? valores.filter(contatoPreenchido)
+      : [];
+
+  let html =
+    '<div class="contato-bloco">' +
+      '<div class="contato-titulo">' +
+        escaparConsulta(titulo) +
+      '</div>';
+
+  if (!lista.length) {
+    return (
+      html +
+      '<div class="contato-vazio">-</div>' +
+      '</div>'
+    );
+  }
+
+  html +=
+    '<div class="contato-lista">';
+
+  // v3.33: um contato por linha — cada valor em div própria com botão próprio se permitido (GC/GS)
+  lista.forEach(valor => {
+    const texto =
+      formatador
+        ? formatador(valor)
+        : valor;
+    const href =
+      (criadorLink && contatoPreenchido(valor))
+        ? criadorLink(valor)
+        : "";
+    const idDoValor = (mapaIds && mapaIds[valor]) ? String(mapaIds[valor]||"").trim() : "";
+    const comBotao = !!(podeEditar && idDoValor);
+    if (comBotao) {
+      html +=
+        '<div class="contato-item" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">' +
+        '<span style="flex:1;font-size:13px;word-break:break-word;">' +
+        (href
+          ? '<a class="contato-item-link ' + (classe || "") + '" href="' + escaparConsulta(href) + '"' + (classe === "whatsapp" || classe === "endereco" ? ' target="_blank" rel="noopener noreferrer"' : "") + ' style="color:' + (classe==="whatsapp" ? "#16a34a" : classe==="email" ? "#2563eb" : classe==="telefone" ? "#1d4ed8" : "#0f172a") + ';font-weight:600;text-decoration:none;">' + escaparConsulta(texto) + "</a>"
+          : '<span style="color:#0f172a;font-weight:600;">' + escaparConsulta(texto) + "</span>") +
+        "</span>" +
+        '<span style="display:flex;gap:6px;flex-shrink:0;">' +
+        '<button type="button" class="btn btn-primary" style="padding:4px 9px;font-size:11px;" onclick="abrirEditarTelefone(\'' + escaparJs(idDoValor) + '\')" title="Editar ' + escaparConsulta(titulo) + '">\u270F\uFE0F Editar</button>' +
+        '<button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px;" onclick="abrirExcluir(\'' + escaparJs(idDoValor) + '\')" title="Excluir">\uD83D\uDDD1\uFE0F Excluir</button>' +
+        "</span></div>";
+    } else if (
+      criadorLink &&
+      contatoPreenchido(valor)
+    ) {
+      const href2 =
+        criadorLink(valor);
+
+      html +=
+        '<div class="contato-item">' +
+        '<a class="contato-item-link ' +
+        (classe || "") +
+        '" href="' +
+        escaparConsulta(href2) +
+        '"' +
+        (
+          classe === "whatsapp" || classe === "endereco"
+            ? ' target="_blank" rel="noopener noreferrer"'
+            : ""
+        ) +
+        ">" +
+        escaparConsulta(texto) +
+        "</a>" +
+        "</div>";
+    } else {
+      html +=
+        '<div class="contato-item">' +
+          escaparConsulta(texto) +
+        "</div>";
+    }
+  });
+
+  return (
+    html +
+    "</div></div>"
+  );
+}
+
+/* ==========================================================
+ * MAPA PREMIUM — Leaflet interativo (Visitante)
+ * ========================================================== */
+
+function obterDensidadeLocalidade(nomeLocalidade){
+  var lista = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nomeLocalidade]) ? setoresPorLocalidade[nomeLocalidade] : [];
+  return Array.isArray(lista) ? lista.length : 0;
+}
+
+function municipioParaLocalidades(nomeMunicipio){
+  var norm = normalizarTexto(nomeMunicipio||"");
+  if(!norm) return [];
+  if(typeof ordemLocalidades==="undefined" || !ordemLocalidades || !ordemLocalidades.length) return [];
+  // Show ALL localidades of the municipio regardless of permission; filtering only applies to button visibility, not list presence.
+  // Vitória fix: localidades like "Vitória (Fórum Cível)" share base "vitoria"; parentheses stripped via normalizarTexto still allows includes match both directions.
+  // Also handle município GeoJSON name sometimes including accents/case differences.
+  var lista=[];
+  for(var i=0;i<ordemLocalidades.length;i++){
+    var c=ordemLocalidades[i];
+    var cn=normalizarTexto(c);
+    // Base comparison: extract base before parenthesis for Vitória-style disambiguation
+    var cnBase = cn.split("(")[0].trim();
+    var normBase = norm.split("(")[0].trim();
+    var match=(cn===norm || cnBase===norm || cnBase===normBase || norm.indexOf(cn)!==-1 || cn.indexOf(norm)!==-1 || normBase.indexOf(cnBase)!==-1 || cnBase.indexOf(normBase)!==-1);
+    if(!match) continue;
+    if(lista.indexOf(c)===-1) lista.push(c);
+  }
+  return lista;
+}
+
+function municipioParaLocalidade(nomeMunicipio){
+  var lista = (typeof municipioParaLocalidades==="function") ? municipioParaLocalidades(nomeMunicipio) : [];
+  if(lista && lista.length) return lista[0];
+  return "";
+}
+
+function corPorDensidade(dens){
+  if(!dens || dens===0) return "#e2e8f0";
+  if(dens<=3) return "#bfdbfe";
+  if(dens<=7) return "#60a5fa";
+  return "#1d63b8";
+}
+
+function estiloMunicipio(feature){
+  var nome = String(feature.properties.name||feature.properties.NOME||"").trim();
+  var localidades = (typeof municipioParaLocalidades==="function") ? municipioParaLocalidades(nome) : [];
+  var dens = 0;
+  for(var i=0;i<localidades.length;i++) dens += obterDensidadeLocalidade(localidades[i]);
+  var isSel = municipioSelecionado && normalizarTexto(nome)===normalizarTexto(municipioSelecionado);
+  return {
+    fillColor: isSel ? "#00adb5" : corPorDensidade(dens),
+    fillOpacity: dens===0 ? 0.35 : 0.6,
+    color: isSel ? "#0f172a" : "#ffffff",
+    weight: isSel ? 2.2 : 1.2,
+    opacity: 1
+  };
+}
+
+function aoClicarMunicipio(nomeMunicipio, feature, layer){
+  municipioSelecionado = String(nomeMunicipio||"").trim();
+  var localidades = (typeof municipioParaLocalidades==="function") ? municipioParaLocalidades(nomeMunicipio) : [];
+  var compNomes = (localidades && localidades.length) ? localidades.slice() : [];
+  if(!compNomes.length){
+    var single = municipioParaLocalidade(nomeMunicipio);
+    if(single) compNomes=[single];
+    else compNomes=[String(nomeMunicipio||"").trim()];
+  }
+  // Sort compNomes by ordemLocalidades order (sheet order)
+  try{
+    if(typeof ordemLocalidades!=="undefined" && ordemLocalidades && ordemLocalidades.length){
+      var ordemIdx={};
+      for(var _oi=0; _oi<ordemLocalidades.length; _oi++) ordemIdx[ordemLocalidades[_oi]]=_oi;
+      compNomes.sort(function(a,b){
+        var ia = ordemIdx.hasOwnProperty(a) ? ordemIdx[a] : 9999;
+        var ib = ordemIdx.hasOwnProperty(b) ? ordemIdx[b] : 9999;
+        return ia - ib;
+      });
+    }
+  }catch(eSort){}
+  // v3.30: GC clique município mostra TODAS localidades daquele município para consulta (com Solicitar/Cancelar), inicial já filtra só permitidas via aoEntrarConsultaTelefonesView/renderizarLocalidades
+  var temLocalidadeReal = false;
+  try{
+    if(typeof ordemLocalidades!=="undefined"){
+      for(var ci=0; ci<compNomes.length; ci++){
+        if(ordemLocalidades.indexOf(compNomes[ci])!==-1){ temLocalidadeReal=true; break; }
+      }
+    } else { temLocalidadeReal=true; }
+  }catch(e){ temLocalidadeReal=true; }
+  if(temLocalidadeReal){
+    // Directly render ALL localidades of this municipality (unfiltered, all micros) in ordemLocalidades order
+    try{
+      var campo = document.getElementById("campo-pesquisa-consulta");
+      if(campo) campo.value = "";
+      // Clear microrregiao selection - we show municipality's localidades directly regardless of filter
+      microrregiaoSelecionada = "";
+      var selClear = document.getElementById("filtro-microrregiao-consulta");
+      if(selClear) selClear.value = "";
+      renderizarListaLocalidadesMunicipio(compNomes, temLocalidadeReal, layer);
+      return;
+    }catch(eDirect){ /* fallback to old flow */ }
+  }
+  var micros=[];
+  var microSet={};
+  try{
+    for(var idx=0; idx<compNomes.length; idx++){
+      var cc = compNomes[idx];
+      var m = "";
+      if(typeof microrregioesPorLocalidade!=="undefined") m = String(microrregioesPorLocalidade[cc]||"").trim();
+      if(!m && typeof localidadesPorMicrorregiao!=="undefined"){
+        for(var k in localidadesPorMicrorregiao){
+          if((localidadesPorMicrorregiao[k]||[]).indexOf(cc)!==-1){ m=k; break; }
+        }
+      }
+      if(m && !microSet[m]){ microSet[m]=true; micros.push(m); }
+    }
+  }catch(e){}
+  var microEscolhida="";
+  if(micros.length===1) microEscolhida=micros[0];
+  else if(micros.length>1) microEscolhida=micros[0];
+  else if(!temLocalidadeReal){
+    try{
+      var fallbackNome = String(nomeMunicipio||"").trim();
+      if(typeof localidadesPorMicrorregiao!=="undefined"){
+        for(var k2 in localidadesPorMicrorregiao){
+          if((localidadesPorMicrorregiao[k2]||[]).indexOf(fallbackNome)!==-1){ microEscolhida=k2; break; }
+        }
+      }
+    }catch(e2){}
+  }
+  if(microEscolhida && typeof selecionarMicrorregiaoConsulta==="function"){
+    var sel = document.getElementById("filtro-microrregiao-consulta");
+    if(sel) sel.value = microEscolhida;
+    selecionarMicrorregiaoConsulta(microEscolhida);
+  }
+
+function renderizarListaLocalidadesMunicipio(compNomes, temLocalidadeReal, layer){
+  try{
+    var container = document.getElementById("consulta-lista");
+    if(!container){ return; }
+    // v3.25 C: se Gestor Conteudo filtrado e nenhum resultado, mostra mensagem
+    try{
+      var _isGC_empty = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+      if(_isGC_empty && (!compNomes || !compNomes.length)){
+        container.innerHTML='<div class="panel consulta-lista-vazio">Nenhuma Localidade com permiss\u00e3o para esta sele\u00e7\u00e3o.</div>';
+        try{
+          if(typeof camadaGeoJson!=="undefined" && camadaGeoJson && camadaGeoJson.resetStyle){
+            camadaGeoJson.eachLayer(function(l){ if(l.feature) camadaGeoJson.resetStyle(l); });
+            if(layer) layer.setStyle({fillColor:"#00adb5", fillOpacity:0.82, color:"#0f172a", weight:2.4});
+          }
+        }catch(e){}
+        return;
+      }
+    }catch(e){}
+    var html='<div class="list-group">';
+    for(var ci=0; ci<compNomes.length; ci++){
+      var localidade = compNomes[ci];
+      var id = (typeof chaveSegura==="function") ? chaveSegura(localidade) : String(localidade).replace(/[^a-zA-Z0-9]/g,"_");
+      var podeImp = true;
+      try{
+        var _isGC = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO";
+        if(_isGC){
+          if(typeof podeEditarLocalidade==="function") podeImp=podeEditarLocalidade(localidade);
+          else if(typeof localidadesPermitidasDoUsuario==="function"){ var _al=localidadesPermitidasDoUsuario(); if(_al!==null){ var _ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(localidade):String(localidade).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); podeImp=_al.indexOf(_ck)!==-1; } }
+        }
+      }catch(eP){}
+      var btnImpHtml = podeImp ? '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); imprimirTodosSetoresDaLocalidade(\''+escaparJs(localidade)+'\')" title="Imprimir / Salvar PDF dos contatos desta Localidade">\uD83D\uDDA8\uFE0F Imprimir / Salvar PDF</button>' : '';
+      var btnSolicitarHtml = "";
+      try{
+        var _ehGC2 = typeof usuarioAtual!=="undefined" && usuarioAtual && usuarioAtual.logado===true && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO";
+        if(_ehGC2){
+          var _pode2=true;
+          try{ if(typeof podeEditarLocalidade==="function") _pode2=podeEditarLocalidade(localidade); else if(typeof localidadesPermitidasDoUsuario==="function"){ var _al2=localidadesPermitidasDoUsuario(); if(_al2!==null){ var _ck2=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(localidade):String(localidade).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); _pode2=_al2.indexOf(_ck2)!==-1; }} }catch(e){ _pode2=true; }
+          if(!_pode2){
+            var _isSoli=false;
+            try{ var _k="solicitacao_localidade_"+String(localidade||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); var _v=sessionStorage.getItem(_k); if(_v){ var _ts=Number(_v); if(Date.now()-_ts>10*60*1000){ sessionStorage.removeItem(_k); } else _isSoli=true; } }catch(e){}
+            if(_isSoli) btnSolicitarHtml='<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;background:#fee2e2;border-color:#fca5a5;color:#991b1b;" onclick="event.stopPropagation(); handleSolicitarLocalidadeClick(\''+escaparJs(localidade)+'\', this)" title="Clique para cancelar a solicitação">\u2715 Cancelar</button>';
+            else btnSolicitarHtml='<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); handleSolicitarLocalidadeClick(\''+escaparJs(localidade)+'\', this)">\uD83D\uDD13 Solicitar acesso</button>';
+          }
+        }
+      }catch(eS){}
+      html+='<div class="localidade-item" data-localidade="'+escaparConsulta(normalizarTexto(localidade))+'" onclick="toggleLocalidade(\''+escaparJs(id)+'\')"><span class="localidade-nome">'+escaparConsulta(localidade)+'</span><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;"><span class="setor-count">'+((typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[localidade])? setoresPorLocalidade[localidade].length:0)+' setores</span>'+btnImpHtml+btnSolicitarHtml+'</span></div><div class="setores-list hidden" id="setores-'+id+'">';
+      var setoresC = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[localidade]) ? setoresPorLocalidade[localidade] : [];
+      for(var si=0; si<setoresC.length; si++){
+        var setorC=setoresC[si];
+        var chaveC=localidade+"||"+setorC;
+        html+='<div class="setor-item" onclick="selecionarSetor(event,\''+escaparJs(id)+'\',\''+escaparJs(setorC)+'\',\''+escaparJs(chaveC)+'\')">'+escaparConsulta(setorC)+'</div>';
+      }
+      html+='</div>';
+    }
+    container.innerHTML=html+'</div>';
+    // Highlight + estado colapsado por localidade (v3.25: GC setores fechados)
+    setTimeout(function(){
+      try{
+        var _isGC_exp = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+        var normAlvos={};
+        for(var pi=0; pi<compNomes.length; pi++){ var ncc=String(compNomes[pi]||"").trim(); if(ncc) normAlvos[normalizarTexto(ncc)]=ncc; }
+        document.querySelectorAll(".localidade-item").forEach(function(el){
+          var nomeEl = el.querySelector(".localidade-nome") ? el.querySelector(".localidade-nome").textContent : "";
+          var nNorm = normalizarTexto(nomeEl);
+          var isTarget = !!normAlvos[nNorm];
+          if(!isTarget){ for(var qa in normAlvos){ if(nNorm.indexOf(qa)!==-1 || qa.indexOf(nNorm)!==-1){ isTarget=true; break; }}}
+          el.style.outline = isTarget ? "2px solid #00adb5" : "";
+          el.style.outlineOffset = isTarget ? "2px" : "";
+          if(isTarget){
+            var idT = (typeof chaveSegura==="function") ? chaveSegura(nomeEl) : String(nomeEl).replace(/[^a-zA-Z0-9]/g,"_");
+            var sec = document.getElementById("setores-"+idT);
+            // v3.25 B: GC mantem setores fechados/colapsados; so expande ao clicar na localidade
+            if(_isGC_exp){
+              if(sec) { sec.classList.add("hidden"); estadoColapsadoLocalidade[idT]=true; }
+            } else {
+              if(sec && sec.classList.contains("hidden")) sec.classList.remove("hidden");
+            }
+          }
+        });
+        var primeiro=document.querySelector(".localidade-item");
+        if(primeiro) primeiro.scrollIntoView({behavior:"smooth", block:"nearest"});
+        if(typeof camadaGeoJson!=="undefined" && camadaGeoJson && camadaGeoJson.resetStyle){
+          camadaGeoJson.eachLayer(function(l){ if(l.feature) camadaGeoJson.resetStyle(l); });
+          if(layer) layer.setStyle({fillColor:"#00adb5", fillOpacity:0.82, color:"#0f172a", weight:2.4});
+        }
+        if(compNomes.length===1){
+          var unicoNome=compNomes[0];
+          var listaSetores = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[unicoNome]) ? setoresPorLocalidade[unicoNome] : [];
+          if(listaSetores && listaSetores.length===1 && typeof selecionarSetor==="function"){
+            var unico = listaSetores[0];
+            var idSeg = (typeof chaveSegura==="function") ? chaveSegura(unicoNome) : unicoNome;
+            var chave = unicoNome + "||" + unico;
+            selecionarSetor({currentTarget: document.querySelector('#setores-'+idSeg+' .setor-item')}, idSeg, unico, chave);
+          }
+        }
+      }catch(e2){}
+    }, 40);
+  }catch(e){ console.error(e); }
+}
+
+  // Ensure all target localidades are expanded/highlighted after microrregiao render (handles multi-microrregiao by expanding each separately if needed)
+  function aplicarDestaqueLocalidades(){
+    try{
+      var normAlvos={};
+      for(var pi=0; pi<compNomes.length; pi++){
+        var ncc = String(compNomes[pi]||"").trim();
+        if(ncc) normAlvos[normalizarTexto(ncc)]=ncc;
+      }
+      var alvos = document.querySelectorAll(".localidade-item");
+      var primeiroAlvo=null;
+      alvos.forEach(function(el){
+        var nomeEl = el.querySelector(".localidade-nome") ? el.querySelector(".localidade-nome").textContent : "";
+        var nNorm = normalizarTexto(nomeEl);
+        var isTarget = !!normAlvos[nNorm];
+        if(!isTarget && temLocalidadeReal){
+          for(var qa in normAlvos){
+            if(nNorm.indexOf(qa)!==-1 || qa.indexOf(nNorm)!==-1){ isTarget=true; break; }
+          }
+        }
+        el.style.outline = isTarget ? "2px solid #00adb5" : "";
+        el.style.outlineOffset = isTarget ? "2px" : "";
+        if(isTarget){
+          var id = (typeof chaveSegura==="function") ? chaveSegura(nomeEl) : String(nomeEl).replace(/[^a-zA-Z0-9]/g,"_");
+          var sec = document.getElementById("setores-"+id);
+          var _isGC_ap = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+          if(_isGC_ap){
+            if(sec) { sec.classList.add("hidden"); estadoColapsadoLocalidade[id]=true; }
+          } else {
+            if(sec && sec.classList.contains("hidden")) sec.classList.remove("hidden");
+          }
+          if(!primeiroAlvo) primeiroAlvo=el;
+        }
+      });
+      // If multi-microrregiao, some targets not yet in DOM — try to render remaining micros sequentially
+      if(micros.length>1){
+        for(var mi=1; mi<micros.length; mi++){
+          var mRest = micros[mi];
+          var localidadesDessaMicro = (typeof localidadesPorMicrorregiao!=="undefined" && localidadesPorMicrorregiao[mRest]) ? localidadesPorMicrorregiao[mRest] : [];
+          var inter = [];
+          for(var ii=0; ii<compNomes.length; ii++) if(localidadesDessaMicro.indexOf(compNomes[ii])!==-1) inter.push(compNomes[ii]);
+          if(!inter.length) continue;
+          // temporarily switch micro to render its localidades, then re-highlight
+          // We inject missing items directly to avoid losing first micro's DOM
+          var containerLista = document.getElementById("consulta-lista");
+          if(containerLista){
+            var existingNorms={};
+            document.querySelectorAll(".localidade-item .localidade-nome").forEach(function(n){ existingNorms[normalizarTexto(n.textContent)]=true; });
+            for(var ri=0; ri<inter.length; ri++){
+              var nomeC = inter[ri];
+              if(existingNorms[normalizarTexto(nomeC)]) continue;
+              var idC = (typeof chaveSegura==="function") ? chaveSegura(nomeC) : String(nomeC).replace(/[^a-zA-Z0-9]/g,"_");
+              if(document.getElementById("setores-"+idC)) continue;
+              // ensure list-group exists
+              var listGroup = containerLista.querySelector(".list-group");
+              if(!listGroup){
+                listGroup=document.createElement("div");
+                listGroup.className="list-group";
+                containerLista.innerHTML="";
+                containerLista.appendChild(listGroup);
+              }
+              var podeImpC = (function(_cc){ try{ if(typeof podeImprimirLocalidadeConsulta==="function") return podeImprimirLocalidadeConsulta(_cc); if(typeof podeEditarLocalidade==="function") return podeEditarLocalidade(_cc); if(typeof localidadesPermitidasDoUsuario==="function"){ var _al=localidadesPermitidasDoUsuario(); if(_al===null) return true; if(Array.isArray(_al)){ var _ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(_cc):typeof normalizarChave==="function"?normalizarChave(_cc):String(_cc).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); return _al.indexOf(_ck)!==-1; } } }catch(e){} return true; })(nomeC); var btnImpC = podeImpC ? '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); imprimirTodosSetoresDaLocalidade(\''+escaparJs(nomeC)+'\')" title="Imprimir / Salvar PDF dos contatos desta Localidade">\\uD83D\\uDDA8\\uFE0F Imprimir / Salvar PDF</button>' : ''; var htmlLocalidade='<div class="localidade-item" data-localidade="'+escaparConsulta(normalizarTexto(nomeC))+'" onclick="toggleLocalidade(\''+escaparJs(idC)+'\')"><span class="localidade-nome">'+escaparConsulta(nomeC)+'</span><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;"><span class="setor-count">'+((typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nomeC])? setoresPorLocalidade[nomeC].length:0)+' setores</span>'+btnImpC+'</span></div><div class="setores-list" id="setores-'+idC+'">';
+              var setoresC = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nomeC]) ? setoresPorLocalidade[nomeC] : [];
+              for(var si=0; si<setoresC.length; si++){
+                var setorC=setoresC[si];
+                var chaveC=nomeC+"||"+setorC;
+                htmlLocalidade+='<div class="setor-item" onclick="selecionarSetor(event,\''+escaparJs(idC)+'\',\''+escaparJs(setorC)+'\',\''+escaparJs(chaveC)+'\')">'+escaparConsulta(setorC)+'</div>';
+              }
+              htmlLocalidade+='</div>';
+              listGroup.insertAdjacentHTML('beforeend', htmlLocalidade);
+            }
+          }
+        }
+        // re-apply outline after injection
+        var alvos2 = document.querySelectorAll(".localidade-item");
+        alvos2.forEach(function(el){
+          var nomeEl2 = el.querySelector(".localidade-nome") ? el.querySelector(".localidade-nome").textContent : "";
+          var nNorm2 = normalizarTexto(nomeEl2);
+          var isTarget2 = !!normAlvos[nNorm2];
+          if(!isTarget2){
+            for(var qa2 in normAlvos){ if(nNorm2.indexOf(qa2)!==-1 || qa2.indexOf(nNorm2)!==-1){ isTarget2=true; break; }}
+          }
+          if(isTarget2){
+            el.style.outline="2px solid #00adb5";
+            el.style.outlineOffset="2px";
+            var id2=(typeof chaveSegura==="function")? chaveSegura(nomeEl2) : String(nomeEl2).replace(/[^a-zA-Z0-9]/g,"_");
+            var sec2=document.getElementById("setores-"+id2);
+            var _isGC2 = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+            if(_isGC2){
+              if(sec2) { sec2.classList.add("hidden"); estadoColapsadoLocalidade[id2]=true; }
+            } else {
+              if(sec2 && sec2.classList.contains("hidden")) sec2.classList.remove("hidden");
+            }
+          }
+        });
+        // refresh primeiroAlvo
+        if(!primeiroAlvo){
+          document.querySelectorAll(".localidade-item").forEach(function(el){
+            if(primeiroAlvo) return;
+            var n=el.querySelector(".localidade-nome")?el.querySelector(".localidade-nome").textContent:"";
+            if(normAlvos[normalizarTexto(n)]) primeiroAlvo=el;
+          });
+        }
+      }
+      if(primeiroAlvo) primeiroAlvo.scrollIntoView({behavior:"smooth", block:"nearest"});
+    }catch(e2){}
+  }
+  try{ aplicarDestaqueLocalidades(); setTimeout(aplicarDestaqueLocalidades, 90); }catch(eA){}
+  try{
+    setTimeout(function(){
+      if(typeof camadaGeoJson!=="undefined" && camadaGeoJson && camadaGeoJson.resetStyle) {
+        camadaGeoJson.eachLayer(function(l){ if(l.feature) camadaGeoJson.resetStyle(l); });
+        if(layer) layer.setStyle({fillColor:"#00adb5", fillOpacity:0.82, color:"#0f172a", weight:2.4});
+      }
+    },80);
+  }catch(eB){}
+  try{
+    if(compNomes.length===1){
+      var unicoNome=compNomes[0];
+      var listaSetores = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[unicoNome]) ? setoresPorLocalidade[unicoNome] : [];
+      if(listaSetores && listaSetores.length===1 && typeof selecionarSetor==="function"){
+        var unico = listaSetores[0];
+        var idSeg = (typeof chaveSegura==="function") ? chaveSegura(unicoNome) : unicoNome;
+        var chave = unicoNome + "||" + unico;
+        selecionarSetor({currentTarget: document.querySelector('#setores-'+idSeg+' .setor-item')}, idSeg, unico, chave);
+      }
+    }
+  }catch(e3){}
+}
+
+function construirTooltipMunicipio(nomeMunicipio){
+  var localidades = (typeof municipioParaLocalidades==="function") ? municipioParaLocalidades(nomeMunicipio) : [];
+  if(localidades && localidades.length){
+    var densTotal=0;
+    var microSet={};
+    var microLista=[];
+    for(var i=0;i<localidades.length;i++){
+      densTotal+=obterDensidadeLocalidade(localidades[i]);
+      try{
+        var mm = (typeof microrregioesPorLocalidade!=="undefined") ? String(microrregioesPorLocalidade[localidades[i]]||"").trim() : "";
+        if(mm && !microSet[mm]){ microSet[mm]=true; microLista.push(mm); }
+      }catch(e){}
+    }
+    var microStr = microLista.join(", ");
+    var nomesStr = localidades.length===1 ? localidades[0] : localidades.join(", ");
+    var linha2 = nomesStr + " \u00b7 " + densTotal + " setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
+    if(localidades.length>1) linha2 = localidades.length + " localidades: " + nomesStr + " \u00b7 " + densTotal + " setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
+    return '<div class="tooltip-premium">'+ escaparConsulta(nomeMunicipio) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
+  }
+  var localidade = municipioParaLocalidade(nomeMunicipio);
+  var dens = localidade ? obterDensidadeLocalidade(localidade) : 0;
+  var micro = "";
+  try{ if(localidade && typeof microrregioesPorLocalidade!=="undefined") micro = String(microrregioesPorLocalidade[localidade]||"").trim(); }catch(e){}
+  var linha2 = localidade ? (dens+" setor"+(dens===1?"":"es")+(micro?" \u00b7 "+micro:"")) : (micro||"Localidade sem correspond\u00eancia direta");
+  return '<div class="tooltip-premium">'+ escaparConsulta(nomeMunicipio) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
+}
+
+function initMapaLeaflet(containerId, isOverlay){
+  // v3.32 zoom maior: setView 9 e padding 6 para aproximar o mapa (demo)
+  var cont = document.getElementById(containerId);
+  if(!cont) return null;
+  if(typeof L==="undefined"){
+    var _retry = cont._leafletRetryCount || 0;
+    cont._leafletRetryCount = _retry + 1;
+    if(_retry < 5){
+      cont.innerHTML = '<div style="padding:24px;text-align:center;color:#64748b;font-size:13px;">Carregando mapa\u2026<br><small>Tentativa '+(_retry+1)+'/5 \u2014 Leaflet n\u00e3o carregou, tentando novamente.</small></div>';
+      setTimeout(function(){ if(typeof L!=="undefined") initMapaLeaflet(containerId, isOverlay); else { cont._leafletRetryCount = _retry+1; if(cont._leafletRetryCount < 5) setTimeout(function(){ initMapaLeaflet(containerId, isOverlay); }, 900); else cont.innerHTML = '<div style="padding:24px;text-align:center;color:#dc2626;font-size:13px;">Leaflet n\u00e3o carregou \u2014 verifique conex\u00e3o ou recarregue a p\u00e1gina.<br><button type="button" class="btn btn-secondary" style="margin-top:10px;padding:6px 12px;font-size:12px;" onclick="location.reload()">Recarregar</button> <button type="button" class="btn btn-secondary" style="margin-top:10px;padding:6px 10px;font-size:12px;" onclick="initMapaLeaflet(\''+containerId+'\','+(isOverlay?'true':'false')+')">Tentar novamente</button></div>'; } }, 1100 + _retry*400);
+    } else {
+      cont.innerHTML = '<div style="padding:24px;text-align:center;color:#dc2626;font-size:13px;">Leaflet n\u00e3o carregou \u2014 verifique conex\u00e3o ou recarregue a p\u00e1gina.<br><button type="button" class="btn btn-secondary" style="margin-top:10px;padding:6px 12px;font-size:12px;" onclick="location.reload()">Recarregar</button> <button type="button" class="btn btn-secondary" style="margin-top:10px;padding:6px 10px;font-size:12px;" onclick="initMapaLeaflet(\''+containerId+'\','+(isOverlay?'true':'false')+')">Tentar novamente</button></div>';
+    }
+    return null;
+  }
+  var mapa = L.map(containerId, { zoomControl:true, attributionControl:true, scrollWheelZoom:true }).setView([-19.5, -40.3], 9);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(mapa);
+
+  function carregar(){
+    if(geoJsonCache){
+      desenhar(geoJsonCache);
+      return;
+    }
+    fetch(URL_GEOJSON_ES)
+      .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+      .then(function(data){ geoJsonCache = data; desenhar(data); })
+      .catch(function(err){
+        console.error("GeoJSON ES falhou", err);
+        cont.insertAdjacentHTML("beforeend", '<div style="margin-top:10px;padding:10px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#991b1b;font-size:12px;">N\u00e3o foi poss\u00edvel carregar o mapa vetorial. <button type="button" class="btn btn-secondary" style="margin-left:8px;padding:4px 8px;font-size:11px;" onclick="initMapaLeaflet(\''+containerId+'\','+(isOverlay?'true':'false')+')">Tentar novamente</button><br><small style="color:#b45309">Exibindo mapa ilustrativo.</small></div>');
+        var fallback = document.createElement("img");
+        fallback.src = URL_MAPA_ES;
+        fallback.alt = "Mapa do Esp\u00edrito Santo";
+        fallback.style.cssText = "width:100%;max-height:360px;object-fit:contain;margin-top:10px;border-radius:10px;border:1px solid #e2e8f0;";
+        cont.appendChild(fallback);
+      });
+  }
+
+  function desenhar(data){
+    var layer = L.geoJSON(data, {
+      style: estiloMunicipio,
+      onEachFeature: function(feature, lyr){
+        var nome = String(feature.properties.name||feature.properties.NOME||"").trim();
+        lyr.bindTooltip(construirTooltipMunicipio(nome), { permanent:false, direction:"auto", className:"tooltip-premium", sticky:true });
+        lyr.on({
+          mouseover: function(e){
+            var t = e.target;
+            if(normalizarTexto(municipioSelecionado)!==normalizarTexto(nome)){
+              t.setStyle({ fillColor:"#00adb5", fillOpacity:0.78, weight:2.2, color:"#0f172a" });
+              t.bringToFront();
+            }
+          },
+          mouseout: function(e){
+            if(normalizarTexto(municipioSelecionado)===normalizarTexto(nome)){
+              e.target.setStyle({fillColor:"#00adb5", fillOpacity:0.85, weight:2.4, color:"#0f172a"});
+            } else {
+              var parent = isOverlay ? camadaGeoJsonOverlay : camadaGeoJson;
+              if(parent) parent.resetStyle(e.target);
+            }
+          },
+          click: function(e){
+            L.DomEvent.stopPropagation(e);
+            aoClicarMunicipio(nome, feature, e.target);
+          }
+        });
+      }
+    }).addTo(mapa);
+    if(isOverlay) camadaGeoJsonOverlay = layer; else camadaGeoJson = layer;
+    try{ mapa.fitBounds(layer.getBounds(), {padding:[6,6]}); }catch(e2){}
+    setTimeout(function(){ try{ mapa.invalidateSize(); if(!isOverlay) { mapa.fitBounds(layer.getBounds(), {padding:[6,6]}); } }catch(e){} }, 220);
+    layer.eachLayer(function(l){
+      l._nomeNorm = normalizarTexto(String(l.feature.properties.name||"").trim());
+    });
+  }
+
+  carregar();
+  if(isOverlay) mapaLeafletOverlay = mapa; else mapaLeaflet = mapa;
+  return mapa;
+}
+
+function resetarMapaLeaflet(){
+  try{
+    if(mapaLeaflet && camadaGeoJson){
+      municipioSelecionado = "";
+      camadaGeoJson.eachLayer(function(l){ camadaGeoJson.resetStyle(l); });
+      mapaLeaflet.fitBounds(camadaGeoJson.getBounds(), {padding:[6,6]});
+      document.querySelectorAll(".localidade-item").forEach(function(el){ el.style.outline=""; });
+    }
+  }catch(e){}
+  // v3.33 — Redefinir recarrega lista como aoEntrarConsultaTelefonesView (para todos os perfis)
+  try{
+    var cc=document.getElementById("campo-pesquisa-consulta"); if(cc) cc.value="";
+    var fC=document.getElementById("filtro-localidade-consulta"); if(fC) fC.value="";
+    var fS=document.getElementById("filtro-setor-consulta"); if(fS) fS.value="";
+    if(typeof microrregiaoSelecionada!=="undefined") microrregiaoSelecionada="";
+    var selMicro=document.getElementById("filtro-microrregiao-consulta"); if(selMicro) selMicro.value="";
+    try{ if(typeof estadoColapsadoLocalidade!=="undefined") for(var k in estadoColapsadoLocalidade) delete estadoColapsadoLocalidade[k]; }catch(e){}
+    try{ municipioSelecionado=""; }catch(e){}
+    try{ if(typeof popularFiltrosConsulta==="function") popularFiltrosConsulta(); else if(typeof atualizarFiltroSetorConsultaPorLocalidade==="function") atualizarFiltroSetorConsultaPorLocalidade(); }catch(e){}
+    if(typeof renderizarLocalidades==="function"){
+      try{ renderizarLocalidades(); }catch(e){}
+    } else if(typeof aoEntrarConsultaTelefonesView==="function"){
+      try{ aoEntrarConsultaTelefonesView(); }catch(e){}
+    }
+    try{ if(typeof filtrarListaConsultaPorLocalidadeSetor==="function") setTimeout(function(){ try{ filtrarListaConsultaPorLocalidadeSetor(); }catch(e){} }, 30); }catch(e){}
+    try{ if(typeof destacarMapaPorBusca==="function") destacarMapaPorBusca(""); }catch(e){}
+  }catch(e){}
+}
+
+function destacarMapaPorBusca(termoNorm){
+  try{
+    var parent = camadaGeoJson;
+    if(!parent) return;
+    if(!termoNorm){
+      parent.eachLayer(function(l){ parent.resetStyle(l); l.setStyle({opacity:1, fillOpacity: l.feature? estiloMunicipio(l.feature).fillOpacity : 0.5}); });
+      return;
+    }
+    parent.eachLayer(function(l){
+      var nome = l._nomeNorm || normalizarTexto(String(l.feature.properties.name||""));
+      var lista = (typeof municipioParaLocalidades==="function") ? municipioParaLocalidades(String(l.feature.properties.name||"")) : [];
+      var match = nome.indexOf(termoNorm)!==-1;
+      if(!match && lista && lista.length){
+        for(var i=0;i<lista.length;i++){
+          var cn = normalizarTexto(lista[i]);
+          if(cn.indexOf(termoNorm)!==-1 || termoNorm.indexOf(cn)!==-1){ match=true; break; }
+        }
+      } else if(!match){
+        var localidade = normalizarTexto(municipioParaLocalidade(String(l.feature.properties.name||"")));
+        match = localidade.indexOf(termoNorm)!==-1;
+      }
+      if(match){
+        l.setStyle({opacity:1, fillOpacity:0.75});
+        l.bringToFront();
+      } else {
+        l.setStyle({opacity:0.45, fillOpacity:0.18});
+      }
+    });
+  }catch(e){}
+}
+
+let mapaPendenteInit = false;
+
+function tentarInicializarMapa(){
+  var view = document.getElementById("consulta-telefones-view");
+  var mapaEl = document.getElementById("consulta-mapa");
+  var leafletCont = document.getElementById("mapa-leaflet");
+  if(!view || view.classList.contains("hidden")) return false;
+  if(!mapaEl || mapaEl.offsetParent===null) return false;
+  // already has leaflet?
+  if(mapaLeaflet && leafletCont && leafletCont.offsetHeight>40) {
+    try{ mapaLeaflet.invalidateSize(); if(camadaGeoJson) mapaLeaflet.fitBounds(camadaGeoJson.getBounds(), {padding:[6,6]}); }catch(e){}
+    return true;
+  }
+  if(leafletCont && leafletCont.offsetHeight>40){
+    if(typeof L==="undefined"){
+      try{ initMapaLeaflet("mapa-leaflet", false); }catch(e){}
+      setTimeout(function(){ try{ tentarInicializarMapa(); }catch(e){} }, 900);
+      mapaPendenteInit = true;
+      return false;
+    }
+    try{ initMapaLeaflet("mapa-leaflet", false); mapaPendenteInit=false; return true; }catch(e){ return false; }
+  }
+  // container not yet sized -> retry
+  mapaPendenteInit = true;
+  return false;
+}
+
+// observer: when consulta view becomes visible, init
+try{
+  if(typeof MutationObserver!=="undefined"){
+    var obs = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        if(m.target.id==="consulta-telefones-view" && !m.target.classList.contains("hidden")){
+          setTimeout(tentarInicializarMapa, 80);
+          setTimeout(tentarInicializarMapa, 400);
+        }
+      });
+    });
+    // attach after DOM ready
+    setTimeout(function(){
+      var v=document.getElementById("consulta-telefones-view");
+      if(v) obs.observe(v, {attributes:true, attributeFilter:["class"]});
+    }, 900);
+    // also hook mostrarView if exists
+    (function(){
+      var orig = window.mostrarView;
+      if(typeof orig==="function"){
+        window.mostrarView = function(id){
+          var r = orig.apply(this, arguments);
+          if(id==="consulta-telefones-view") setTimeout(tentarInicializarMapa, 120);
+          return r;
+        };
+      }
+    })();
+  }
+}catch(eObs){}
+
+
+
+// Keep leaflet covering whole container on resize
+try{
+  var _mapaResizeObs = new ResizeObserver(function(){ try{ if(mapaLeaflet) mapaLeaflet.invalidateSize(); }catch(e){} });
+  setTimeout(function(){
+    var c=document.getElementById("consulta-mapa");
+    if(c) _mapaResizeObs.observe(c);
+  }, 1500);
+}catch(eRO){}
+
+function renderizarMapaConsulta(){
+  var mapaEl = document.getElementById("consulta-mapa");
+  if(!mapaEl) return;
+  // if view hidden, defer — will be retried by observer / mostrarView
+  var view = document.getElementById("consulta-telefones-view");
+  if(view && view.classList.contains("hidden")){
+    mapaPendenteInit = true;
+    // ainda monta shell para quando abrir
+    mapaEl.innerHTML =
+    '<div class="mapa-panel mapa-premium">' +
+      '<div class="mapa-header">' +
+        '<div>' +
+          '<h3>Mapa Interativo</h3>' +
+          '<p>Clique em uma Localidade para filtrar Localidades, Unidades e Setores. Passe o mouse para ver detalhes.</p>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+          '<button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="resetarMapaLeaflet()">\u21ba Redefinir</button>' +
+          '<button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="abrirMapaConsulta()">\u26f6 Ampliar</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="mapa-leaflet"></div>' +
+      '<div class="mapa-legenda">' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#e2e8f0"></span> Sem setor</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#bfdbfe"></span> 1\u20133 setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#60a5fa"></span> 4\u20137 setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#1d63b8"></span> 8+ setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#00adb5"></span> Selecionado / hover</span>' +
+      '</div>' +
+    '</div>';
+    return;
+  }
+  mapaEl.innerHTML =
+    '<div class="mapa-panel mapa-premium">' +
+      '<div class="mapa-header">' +
+        '<div>' +
+          '<h3>Mapa Interativo</h3>' +
+          '<p>Clique em uma Localidade para filtrar Localidades, Unidades e Setores. Passe o mouse para ver detalhes.</p>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+          '<button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="resetarMapaLeaflet()">\u21ba Redefinir</button>' +
+          '<button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="abrirMapaConsulta()">\u26f6 Ampliar</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="mapa-leaflet"></div>' +
+      '<div class="mapa-legenda">' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#e2e8f0"></span> Sem setor</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#bfdbfe"></span> 1\u20133 setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#60a5fa"></span> 4\u20137 setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#1d63b8"></span> 8+ setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#00adb5"></span> Selecionado / hover</span>' +
+      '</div>' +
+    '</div>';
+  setTimeout(function(){ initMapaLeaflet("mapa-leaflet", false); }, 80);
+}
+
+function criarMapaOverlay(){
+  var overlay = document.getElementById("mapa-overlay");
+  if(overlay) return overlay;
+  overlay = document.createElement("div");
+  overlay.id = "mapa-overlay";
+  overlay.className = "mapa-overlay";
+  overlay.innerHTML =
+    '<div class="mapa-overlay-painel">' +
+      '<div class="mapa-overlay-header">' +
+        '<h3>Mapa Interativo \u2014 Esp\u00edrito Santo</h3>' +
+        '<button type="button" class="btn btn-secondary" onclick="fecharMapaConsulta()">\u2190 Voltar \u00e0 consulta</button>' +
+      '</div>' +
+      '<div class="mapa-overlay-area"><div id="mapa-leaflet-overlay"></div></div>' +
+    '</div>';
+  overlay.addEventListener("click", function(evento){
+    if(evento.target===overlay) fecharMapaConsulta();
+  });
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function abrirMapaConsulta(){
+  var overlay = criarMapaOverlay();
+  if(!overlay){ console.error("N\u00e3o foi poss\u00edvel criar o mapa."); return; }
+  overlay.classList.add("ativo");
+  document.body.classList.add("mapa-aberto");
+  var btnImp = document.getElementById("btn-imprimir-consulta-todos");
+  if(btnImp) btnImp.style.display="none";
+  var btnStub = document.getElementById("btn-imprimir-consulta");
+  if(btnStub) btnStub.style.display="none";
+  setTimeout(function(){
+    if(!mapaLeafletOverlay){
+      initMapaLeaflet("mapa-leaflet-overlay", true);
+    } else {
+      try{ mapaLeafletOverlay.invalidateSize(); if(camadaGeoJsonOverlay) mapaLeafletOverlay.fitBounds(camadaGeoJsonOverlay.getBounds(), {padding:[6,6]}); }catch(e){}
+    }
+  }, 120);
+}
+
+function fecharMapaConsulta(){
+  var overlay = document.getElementById("mapa-overlay");
+  if(overlay) overlay.classList.remove("ativo");
+  document.body.classList.remove("mapa-aberto");
+  var detalhes = document.getElementById("consulta-detalhes-conteudo");
+  var btnImp = document.getElementById("btn-imprimir-consulta-todos");
+  if(btnImp){
+    var isConsulta = !!(document.getElementById("consulta-telefones-view") && !document.getElementById("consulta-telefones-view").classList.contains("hidden"));
+    btnImp.style.display = isConsulta ? "" : "none";
+  }
+  var btnStub = document.getElementById("btn-imprimir-consulta");
+  if(btnStub) btnStub.style.display="none";
+  setTimeout(function(){ try{ if(mapaLeaflet) mapaLeaflet.invalidateSize(); }catch(e){} }, 120);
+}
+
+document.addEventListener("keydown", function(evento){
+  if(evento.key==="Escape" && document.body.classList.contains("mapa-aberto")) fecharMapaConsulta();
+});
+
+
+/* ==========================================================
+ * DETALHES
+ * ========================================================== */
+
+function renderizarDetalhes(
+  localidade,
+  setor,
+  registros
+) {
+  tituloImpressaoLocalidade =
+    String(localidade || "").trim();
+
+  tituloImpressaoSetor =
+    String(setor || "").trim();
+
+  const mapa =
+    document.getElementById(
+      "consulta-mapa"
+    );
+
+  const detalhes =
+    document.getElementById(
+      "consulta-detalhes-conteudo"
+    );
+
+  if (!mapa || !detalhes) {
+    console.error(
+      "Área de mapa ou detalhes não encontrada."
+    );
+
+    return;
+  }
+
+  fecharMapaConsulta();
+
+  const contatos =
+    agruparContatosDoSetor(
+      registros
+    );
+
+  const possuiContato =
+    Object.values(contatos)
+      .some(
+        lista => lista.length > 0
+      );
+
+  let html =
+    '<div class="panel detalhe-contatos-panel">';
+
+  if (!possuiContato) {
+    // Mesmo sem contatos agrupados, Gestor Conteúdo com permissão pode adicionar
+    // v3.33 vazio: GC e GS podem adicionar
+    var _ehGCVazio = false;
+    var _podeVazio = false;
+    try{
+      var _perfilVazio = typeof usuarioAtual!=="undefined" && usuarioAtual ? String(usuarioAtual.perfil||"").toUpperCase().trim() : "";
+      _ehGCVazio = typeof usuarioAtual!=="undefined" && usuarioAtual && usuarioAtual.logado===true && (_perfilVazio==="GESTOR_CONTEUDO" || _perfilVazio==="GESTOR_SISTEMA");
+      if(_ehGCVazio && typeof podeEditarLocalidade==="function") _podeVazio = podeEditarLocalidade(localidade);
+      else if(_ehGCVazio && typeof localidadesPermitidasDoUsuario==="function"){
+        var _allowV = localidadesPermitidasDoUsuario();
+        if(_allowV===null) _podeVazio = true;
+        else if(Array.isArray(_allowV)){ var _ckV = String(localidade||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); _podeVazio = _allowV.indexOf(_ckV)!==-1; }
+        if(_perfilVazio==="GESTOR_SISTEMA") _podeVazio = true;
+      } else if(_perfilVazio==="GESTOR_SISTEMA") _podeVazio = true;
+    }catch(e){ _podeVazio=false; }
+    var _btnAddVazio = "";
+    if(_ehGCVazio && _podeVazio){
+      _btnAddVazio = '<button type="button" class="btn" style="padding:6px 12px;font-size:12px;background:#16a34a;border:1px solid #16a34a;color:#fff;border-radius:6px;" onclick="abrirModalNovoTelefoneComContexto(\''+escaparJs(localidade)+'\', \''+escaparJs(setor)+'\')">+ Adicionar contato</button>';
+    }
+    // v3.25 C: esconder Imprimir/Salvar PDF para Conteudo sem permissao (somente consulta)
+    var _mostrarImprimirVazio = true;
+    try{
+      var _isGC_v = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+      if(_isGC_v && !_podeVazio) _mostrarImprimirVazio = false;
+    }catch(e){}
+    var _btnImprimirVazio = _mostrarImprimirVazio ? '<button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="imprimirDetalheSetor()" title="Imprimir / Salvar PDF dos contatos do Setor">\uD83D\uDDA8\uFE0F Imprimir / Salvar PDF</button>' : '';
+    html +=
+      '<div class="detalhe-contatos-cabecalho">' +
+        '<div><h3>' + escaparConsulta(localidade) + '</h3><h4>' + escaparConsulta(setor) + '</h4></div>' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+          _btnImprimirVazio +
+          _btnAddVazio +
+          '<button type="button" class="btn btn-secondary" onclick="mostrarMapaConsulta()">Voltar ao mapa</button>' +
+        '</div>' +
+      '</div>' +
+      '<p>Nenhum contato disponível.</p>';
+  } else {
+    // v3.33: GC e GS com mesma regra de ordem e por-linha com botões individuais
+    var perfilDetalheNorm = "";
+    try{ perfilDetalheNorm = typeof usuarioAtual!=="undefined" && usuarioAtual ? String(usuarioAtual.perfil||"").toUpperCase().trim() : ""; }catch(e){ perfilDetalheNorm=""; }
+    var ehEditorDetalhe = false;
+    var ehGestorConteudoDetalhe = false;
+    var podeEditarDetalhe = false;
+    try{
+      ehEditorDetalhe = typeof usuarioAtual!=="undefined" && usuarioAtual && usuarioAtual.logado===true && (perfilDetalheNorm==="GESTOR_CONTEUDO" || perfilDetalheNorm==="GESTOR_SISTEMA");
+      ehGestorConteudoDetalhe = ehEditorDetalhe; // compat retro: mantém alias usado no vazio
+      if(ehEditorDetalhe && typeof podeEditarLocalidade==="function") podeEditarDetalhe = podeEditarLocalidade(localidade);
+      else if(ehEditorDetalhe && typeof localidadesPermitidasDoUsuario==="function"){
+        var allowD = localidadesPermitidasDoUsuario();
+        if(allowD===null) podeEditarDetalhe = true;
+        else if(Array.isArray(allowD)){
+          var ckD = String(localidade||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+          podeEditarDetalhe = allowD.indexOf(ckD)!==-1;
+        }
+      }
+      // Gestor do Sistema sempre pode editar (podeEditarLocalidade retorna true via null), mas garante
+      if(perfilDetalheNorm==="GESTOR_SISTEMA" && typeof podeEditarLocalidade==="function"){
+        try{ podeEditarDetalhe = podeEditarLocalidade(localidade); }catch(e2){ podeEditarDetalhe = true; }
+        if(!podeEditarDetalhe) podeEditarDetalhe = true;
+      }
+    }catch(e){ podeEditarDetalhe=false; }
+
+    var btnAdicionarHtml = "";
+    if(ehGestorConteudoDetalhe && podeEditarDetalhe){
+      btnAdicionarHtml = '<button type="button" class="btn" style="padding:6px 12px;font-size:12px;background:#16a34a;border:1px solid #16a34a;color:#fff;border-radius:6px;" onclick="abrirModalNovoTelefoneComContexto(\''+escaparJs(localidade)+'\', \''+escaparJs(setor)+'\')">+ Adicionar contato</button>';
+    }
+
+    // v3.25 C: esconder Imprimir/Salvar PDF para Conteudo sem permissao
+    var _mostrarImprimirDetalhe = true;
+    try{
+      if(ehGestorConteudoDetalhe && !podeEditarDetalhe) _mostrarImprimirDetalhe = false;
+    }catch(e){}
+    var _btnImprimirDetalhe = _mostrarImprimirDetalhe ? '<button type="button" class="btn btn-secondary" style="padding:6px 10px;font-size:12px;" onclick="imprimirDetalheSetor()" title="Imprimir / Salvar PDF dos contatos do Setor">\uD83D\uDDA8\uFE0F Imprimir / Salvar PDF</button>' : '';
+    html +=
+      '<div class="detalhe-contatos-cabecalho">' +
+        '<div>' +
+          '<h3>' + escaparConsulta(localidade) + '</h3>' +
+          '<h4>' + escaparConsulta(setor) + '</h4>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+          _btnImprimirDetalhe +
+          btnAdicionarHtml +
+          '<button type="button" class="btn btn-secondary" onclick="mostrarMapaConsulta()">Voltar ao mapa</button>' +
+        '</div>' +
+      '</div>';
+
+    // v3.33 ordem canônica Endereco(Top), Telefone, Ramal, WhatsApp, E-mail(Bottom) para UC/GC/GS; GC/GS cada valor com Editar/Excluir próprio
+    if(ehEditorDetalhe && podeEditarDetalhe && Array.isArray(registros) && registros.length){
+      // v3.33: mapeia valor -> primeiro ID (com split por vírgula/ponto-vírgula para cada contato ter botão próprio)
+      var _mapEnd={}, _mapMail={}, _mapTel={}, _mapRam={}, _mapZap={};
+      function _splitParaMapa(tipo, raw){
+        let s = String(raw||"").trim(); if(!s) return [];
+        if(tipo==="enderecos") return [s];
+        let partes=[s];
+        if(/[,;\n]/.test(s)){
+          partes=s.split(/[,;\n]+/).map(function(v){ return String(v||"").trim(); }).filter(function(v){ return v && v!=="-" && v!=="–" && v!=="—"; });
+          if(tipo==="telefones"||tipo==="ramais"||tipo==="whatsapps"){
+            let exp=[]; partes.forEach(function(p){ if(p.indexOf("/")!==-1){ p.split("/").forEach(function(sub){ let t=String(sub||"").trim(); if(t && t!=="-" && t!=="–" && t!=="—") exp.push(t); }); } else exp.push(p); }); partes=exp;
+          }
+        } else if((tipo==="telefones"||tipo==="ramais"||tipo==="whatsapps") && s.indexOf("/")!==-1){
+          partes=s.split("/").map(function(v){ return String(v||"").trim(); }).filter(function(v){ return v && v!=="-" && v!=="–" && v!=="—"; });
+        }
+        return partes;
+      }
+      for(var _mi=0; _mi<registros.length; _mi++){
+        var _r = registros[_mi];
+        var _idm = String(_r.ID||_r.id||_r.Id||"").trim(); if(!_idm) continue;
+        _splitParaMapa("enderecos", campoTelefone(_r, ["endereco","ENDERECO","Endereço"])).forEach(function(v){ if(v && !_mapEnd[v]) _mapEnd[v]=_idm; });
+        _splitParaMapa("emails", campoTelefone(_r, ["email","EMAIL","E-MAIL","E_MAIL","eMail"])).forEach(function(v){ if(v && !_mapMail[v]) _mapMail[v]=_idm; });
+        _splitParaMapa("telefones", campoTelefone(_r, ["telefone","TELEFONE","numero","NUMERO"])).forEach(function(v){ if(v && !_mapTel[v]) _mapTel[v]=_idm; });
+        _splitParaMapa("ramais", campoTelefone(_r, ["ramal","RAMAL"])).forEach(function(v){ if(v && !_mapRam[v]) _mapRam[v]=_idm; });
+        _splitParaMapa("whatsapps", campoTelefone(_r, ["whatsapp","WHATSAPP","WhatsApp"])).forEach(function(v){ if(v && !_mapZap[v]) _mapZap[v]=_idm; });
+      }
+      // --- Endereco + E-mail embaixo do setor (com botoes) ---
+      // v3.33 ordem canônica com botões individuais por valor (sem agrupar com vírgula)
+      html += '<div class="contatos-publicos gc-detalhes-ordenado" style="display:grid;gap:10px;">';
+      // Endereco (top)
+      if(contatos.enderecos && contatos.enderecos.length){
+        html += '<div class="gc-bloco" style="border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;background:#f8fafc;">';
+        html += '<div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">\uD83D\uDCCD Endereço</div>';
+        for(var _ei=0; _ei<contatos.enderecos.length; _ei++){
+          var _ev = contatos.enderecos[_ei];
+          var _eid = _mapEnd[_ev]||"";
+          var _el = (typeof linkEnderecoConsulta==="function") ? linkEnderecoConsulta(_ev) : "";
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">';
+          html += '<span style="flex:1;font-size:13px;color:#0f172a;word-break:break-word;">' + (_el ? '<a href="'+escaparConsulta(_el)+'" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:none;">'+escaparConsulta(_ev)+'</a>' : escaparConsulta(_ev)) + '</span>';
+          html += '<span style="display:flex;gap:6px;flex-shrink:0;">';
+          if(_eid){ html += '<button type="button" class="btn btn-primary" style="padding:4px 9px;font-size:11px;" onclick="abrirEditarTelefone(\''+escaparJs(_eid)+'\')" title="Editar endereço">\u270F\uFE0F Editar</button><button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px;" onclick="abrirExcluir(\''+escaparJs(_eid)+'\')" title="Excluir">\uD83D\uDDD1\uFE0F Excluir</button>'; }
+          html += '</span></div>';
+        }
+        html += '</div>';
+      } else {
+        html += '<div class="gc-bloco" style="border:1px dashed #cbd5e1;border-radius:10px;padding:10px 14px;background:#f8fafc;"><div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">\uD83D\uDCCD Endereço</div><div style="font-size:13px;color:#94a3b8;">-</div></div>';
+      }
+      // Telefone
+      if(contatos.telefones && contatos.telefones.length){
+        html += '<div class="gc-bloco" style="border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;background:#fff;">';
+        html += '<div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">\uD83D\uDCDE Telefone</div>';
+        for(var _ti=0; _ti<contatos.telefones.length; _ti++){
+          var _tv = contatos.telefones[_ti];
+          var _tid = _mapTel[_tv]||"";
+          var _tf = formatarTelefoneConsulta(_tv);
+          var _tl = linkTelefoneConsulta(_tv);
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">';
+          html += '<span style="flex:1;font-size:13px;"><a class="contato-item-link telefone" href="'+escaparConsulta(_tl)+'" style="color:#1d4ed8;font-weight:600;text-decoration:none;">'+escaparConsulta(_tf)+'</a></span>';
+          html += '<span style="display:flex;gap:6px;flex-shrink:0;">';
+          if(_tid){ html += '<button type="button" class="btn btn-primary" style="padding:4px 9px;font-size:11px;" onclick="abrirEditarTelefone(\''+escaparJs(_tid)+'\')">\u270F\uFE0F Editar</button><button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px;" onclick="abrirExcluir(\''+escaparJs(_tid)+'\')">\uD83D\uDDD1\uFE0F Excluir</button>'; }
+          html += '</span></div>';
+        }
+        html += '</div>';
+      }
+      // Ramal
+      if(contatos.ramais && contatos.ramais.length){
+        html += '<div class="gc-bloco" style="border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;background:#fff;">';
+        html += '<div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">\u260E\uFE0F Ramal</div>';
+        for(var _ri2=0; _ri2<contatos.ramais.length; _ri2++){
+          var _rv = contatos.ramais[_ri2];
+          var _rid = _mapRam[_rv]||"";
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">';
+          html += '<span style="flex:1;font-size:13px;color:#0f172a;font-weight:600;">'+escaparConsulta(_rv)+'</span>';
+          html += '<span style="display:flex;gap:6px;flex-shrink:0;">';
+          if(_rid){ html += '<button type="button" class="btn btn-primary" style="padding:4px 9px;font-size:11px;" onclick="abrirEditarTelefone(\''+escaparJs(_rid)+'\')">\u270F\uFE0F Editar</button><button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px;" onclick="abrirExcluir(\''+escaparJs(_rid)+'\')">\uD83D\uDDD1\uFE0F Excluir</button>'; }
+          html += '</span></div>';
+        }
+        html += '</div>';
+      }
+      // WhatsApp
+      if(contatos.whatsapps && contatos.whatsapps.length){
+        html += '<div class="gc-bloco" style="border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;background:#fff;">';
+        html += '<div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">\uD83D\uDCAC WhatsApp</div>';
+        for(var _wi=0; _wi<contatos.whatsapps.length; _wi++){
+          var _wv = contatos.whatsapps[_wi];
+          var _wid = _mapZap[_wv]||"";
+          var _wf = formatarWhatsappConsulta(_wv);
+          var _wl = linkWhatsappConsulta(_wv);
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">';
+          html += '<span style="flex:1;font-size:13px;"><a class="contato-item-link whatsapp" href="'+escaparConsulta(_wl)+'" target="_blank" rel="noopener noreferrer" style="color:#16a34a;font-weight:600;text-decoration:none;">'+escaparConsulta(_wf)+'</a></span>';
+          html += '<span style="display:flex;gap:6px;flex-shrink:0;">';
+          if(_wid){ html += '<button type="button" class="btn btn-primary" style="padding:4px 9px;font-size:11px;" onclick="abrirEditarTelefone(\''+escaparJs(_wid)+'\')">\u270F\uFE0F Editar</button><button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px;" onclick="abrirExcluir(\''+escaparJs(_wid)+'\')">\uD83D\uDDD1\uFE0F Excluir</button>'; }
+          html += '</span></div>';
+        }
+        html += '</div>';
+      }
+      // E-mail (bottom)
+      if(contatos.emails && contatos.emails.length){
+        html += '<div class="gc-bloco" style="border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;background:#f8fafc;">';
+        html += '<div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">\u2709\uFE0F E-mail'+(contatos.emails.length>1?'s':'')+'</div>';
+        for(var _emi=0; _emi<contatos.emails.length; _emi++){
+          var _mv = contatos.emails[_emi];
+          var _mid = _mapMail[_mv]||"";
+          var _ml = linkEmailConsulta(_mv);
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;">';
+          html += '<span style="flex:1;font-size:13px;word-break:break-word;"><a class="contato-item-link email" href="'+escaparConsulta(_ml)+'" style="color:#2563eb;font-weight:600;text-decoration:none;">'+escaparConsulta(_mv)+'</a></span>';
+          html += '<span style="display:flex;gap:6px;flex-shrink:0;">';
+          if(_mid){ html += '<button type="button" class="btn btn-primary" style="padding:4px 9px;font-size:11px;" onclick="abrirEditarTelefone(\''+escaparJs(_mid)+'\')" title="Editar e-mail">\u270F\uFE0F Editar</button><button type="button" class="btn btn-danger" style="padding:4px 9px;font-size:11px;" onclick="abrirExcluir(\''+escaparJs(_mid)+'\')" title="Excluir">\uD83D\uDDD1\uFE0F Excluir</button>'; }
+          html += '</span></div>';
+        }
+        html += '</div>';
+      } else {
+        html += '<div class="gc-bloco" style="border:1px dashed #cbd5e1;border-radius:10px;padding:10px 14px;background:#f8fafc;"><div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">\u2709\uFE0F E-mail</div><div style="font-size:13px;color:#94a3b8;">-</div></div>';
+      }
+      if((!contatos.telefones||!contatos.telefones.length) && (!contatos.ramais||!contatos.ramais.length) && (!contatos.whatsapps||!contatos.whatsapps.length) && (!contatos.emails||!contatos.emails.length) && (!contatos.enderecos||!contatos.enderecos.length)){
+        html += '<div style="padding:12px 14px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;color:#94a3b8;font-size:13px;">Nenhum contato cadastrado.</div>';
+      }
+      html += '</div>';
+    } else {
+      // v3.33 ordem canônica UC sem botões mas por linha (mesma ordem GC/GS)
+      html +=
+      '<div class="contatos-publicos">' +
+        blocoContato("Endereço", contatos.enderecos, null, linkEnderecoConsulta, "endereco") +
+        blocoContato("Telefone", contatos.telefones, formatarTelefoneConsulta, linkTelefoneConsulta, "telefone") +
+        blocoContato("Ramal", contatos.ramais) +
+        blocoContato("WhatsApp", contatos.whatsapps, formatarWhatsappConsulta, linkWhatsappConsulta, "whatsapp") +
+        blocoContato("E-mail", contatos.emails, null, linkEmailConsulta, "email") +
+      "</div>";
+    }
+  }
+
+  detalhes.innerHTML =
+    html + "</div>";
+
+  mapa.style.display =
+    "none";
+
+  detalhes.style.display =
+    "block";
+
+  var btnTodos = document.getElementById("btn-imprimir-consulta-todos");
+  if (btnTodos) {
+    var isConsulta = !!(document.getElementById("consulta-telefones-view") && !document.getElementById("consulta-telefones-view").classList.contains("hidden"));
+    btnTodos.style.display = isConsulta ? "" : "none";
+  }
+  var btnStub = document.getElementById("btn-imprimir-consulta");
+  if(btnStub) btnStub.style.display="none";
+}
+
+
+function abrirModalNovoTelefoneComContexto(localidade, setor){
+  try{
+    if(typeof abrirModalNovoTelefone==="function") abrirModalNovoTelefone();
+    setTimeout(function(){
+      try{
+        var c = String(localidade||"").trim();
+        var s = String(setor||"").trim();
+        // Try known IDs for localidade/setor in modal (different modals use different IDs)
+        var idsLocalidade = ["telefone-localidade","modal-localidade","form-localidade","nova-localidade","localidade","campo-localidade"];
+        var idsSetor = ["telefone-setor","modal-setor","form-setor","nova-setor","setor","campo-setor"];
+        for(var i=0;i<idsLocalidade.length;i++){
+          var el=document.getElementById(idsLocalidade[i]);
+          if(el){ 
+            if(el.tagName==="SELECT"){
+              for(var o=0;o<el.options.length;o++) if(el.options[o].value===c || el.options[o].textContent.trim()===c){ el.value=el.options[o].value; el.dispatchEvent(new Event('change',{bubbles:true})); break; }
+              if(!el.value) el.value=c;
+            } else el.value=c;
+            break;
+          }
+        }
+        for(var j=0;j<idsSetor.length;j++){
+          var el2=document.getElementById(idsSetor[j]);
+          if(el2){
+            if(el2.tagName==="SELECT"){
+              for(var o2=0;o2<el2.options.length;o2++) if(el2.options[o2].value===s || el2.options[o2].textContent.trim()===s){ el2.value=el2.options[o2].value; el2.dispatchEvent(new Event('change',{bubbles:true})); break; }
+              if(!el2.value) el2.value=s;
+            } else el2.value=s;
+            break;
+          }
+        }
+        // Also try microrregiao auto-fill from localidade map
+        try{
+          if(c && typeof microrregioesPorLocalidade!=="undefined" && microrregioesPorLocalidade[c]){
+            var micro = microrregioesPorLocalidade[c];
+            var idsMicro=["telefone-microrregiao","modal-microrregiao","form-microrregiao"];
+            for(var k=0;k<idsMicro.length;k++){
+              var em=document.getElementById(idsMicro[k]);
+              if(em){
+                if(em.tagName==="SELECT"){
+                  for(var o3=0;o3<em.options.length;o3++) if(em.options[o3].value===micro || em.options[o3].textContent.trim()===micro){ em.value=em.options[o3].value; em.dispatchEvent(new Event('change',{bubbles:true})); break; }
+                } else em.value=micro;
+                break;
+              }
+            }
+          }
+        }catch(eM){}
+      }catch(e2){}
+    }, 220);
+  }catch(e){ try{ if(typeof abrirModalNovoTelefone==="function") abrirModalNovoTelefone(); }catch(e2){} }
+}
+
+function mostrarMapaConsulta() {
+  const mapa =
+    document.getElementById(
+      "consulta-mapa"
+    );
+
+  const detalhes =
+    document.getElementById(
+      "consulta-detalhes-conteudo"
+    );
+
+  if (!mapa || !detalhes) {
+    console.error(
+      "Área de mapa ou detalhes não encontrada."
+    );
+
+    return;
+  }
+
+  fecharMapaConsulta();
+
+  renderizarMapaConsulta();
+
+  mapa.style.display =
+    "block";
+
+  detalhes.style.display =
+    "none";
+
+  detalhes.innerHTML = "";
+
+  var btnTodosM = document.getElementById("btn-imprimir-consulta-todos");
+  if (btnTodosM) {
+    var isConsultaM = !!(document.getElementById("consulta-telefones-view") && !document.getElementById("consulta-telefones-view").classList.contains("hidden"));
+    btnTodosM.style.display = isConsultaM ? "" : "none";
+  }
+  var btnStubM = document.getElementById("btn-imprimir-consulta");
+  if(btnStubM) btnStubM.style.display="none";
+}
+
+/* ==========================================================
+ * FILTRO
+ * ========================================================== */
+
+var filtroConsultaTimer=null;
+var filtroConsultaDebounceMs = 180; // v3.25 debounce case-insensitive
+function filtrarSetoresConsultaDebounced(){
+  clearTimeout(filtroConsultaTimer);
+  filtroConsultaTimer=setTimeout(filtrarSetoresConsulta, filtroConsultaDebounceMs);
+}
+function pesquisarConsulta(){
+  filtrarSetoresConsultaDebounced();
+}
+function normalizarTextoConsulta(valor){
+  try{ if(typeof normalizarTexto==="function") return normalizarTexto(valor); }catch(e){}
+  return String(valor||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+}
+
+
+function filtrarSetoresConsulta() {
+  // v3.33: se novos filtros existem, delegar para funcao unificada (preserva pesquisa geral + ordem planilha)
+  try{
+    var hasNovos=document.getElementById("filtro-localidade-consulta")||document.getElementById("filtro-setor-consulta");
+    if(hasNovos && typeof filtrarListaConsultaPorLocalidadeSetor==="function" && !window._filtrarConsultaEmExecucao){
+      return filtrarListaConsultaPorLocalidadeSetor();
+    }
+  }catch(e){}
+  try{ if(typeof renderizarLocalidades!=="function" && typeof window.renderizarLocalidades!=="function"){ /* fallback: show all */ var all=document.querySelectorAll(".localidade-item,.setor-item"); all.forEach(function(e){ e.style.display=""; }); return; } }catch(e){}
+  const campo =
+    document.getElementById(
+      "campo-pesquisa-consulta"
+    );
+
+  // v3.25 B: normalizarTexto case-insensitive + funciona para GESTOR_CONTEUDO e USUARIO_CONSULTA
+  const termoRaw = campo?.value || "";
+  const termo =
+    (typeof normalizarTextoConsulta==="function" ? normalizarTextoConsulta(termoRaw) : (typeof normalizarTexto==="function" ? normalizarTexto(termoRaw) : String(termoRaw).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim()));
+
+  if (!termo) {
+    if(typeof renderizarLocalidades==="function"){ try{ renderizarLocalidades(); }catch(e){} } else { try{ if(typeof normalizarTexto!=="undefined" && document.querySelector(".localidade-item")) document.querySelectorAll(".localidade-item").forEach(function(el){ el.style.display=""; }); var secs=document.querySelectorAll(".setor-item"); secs.forEach(function(s){ s.style.display=""; }); }catch(e2){} }
+    return;
+  }
+
+  // Termo ativo: garante lista global em ordem da planilha (ordemLocalidades)
+  // Corrige fragilidade "no microrregião + termo" e "microrregião + termo": busca deve mostrar
+  // TODAS as localidades que casam em sheet order, ignorando microrregião. Evita loop verificando DOM.
+  if (!document.querySelector(".localidade-item")) {
+    if(typeof renderizarLocalidades==="function"){ try{ renderizarLocalidades(); }catch(e){} }
+    return;
+  }
+
+  if (termo && microrregiaoSelecionada) {
+    try {
+      if (typeof ordemLocalidades !== "undefined" && ordemLocalidades.length) {
+        const totalDOM = document.querySelectorAll(".localidade-item").length;
+        const primeiroGlobal = normalizarTexto(ordemLocalidades[0] || "");
+        const primeiroDOM = normalizarTexto(document.querySelector(".localidade-item .localidade-nome")?.textContent || "");
+        const precisaGlobal = totalDOM !== ordemLocalidades.length || (primeiroGlobal && primeiroDOM !== primeiroGlobal);
+        if (precisaGlobal) {
+          if(typeof renderizarLocalidades==="function"){ try{ renderizarLocalidades(); }catch(e){} }
+          return;
+        }
+      }
+    } catch (e) {}
+  }
+
+  document
+    .querySelectorAll(
+      ".localidade-item"
+    )
+    .forEach(
+      localidadeItem => {
+        const setoresList =
+          localidadeItem.nextElementSibling;
+
+        const nomeLocalidade =
+          normalizarTexto(
+            localidadeItem.querySelector(
+              ".localidade-nome"
+            )?.textContent || ""
+          );
+
+        const setores =
+          setoresList
+            ? Array.from(
+                setoresList.querySelectorAll(
+                  ".setor-item"
+                )
+              )
+            : [];
+
+        const localidadeEncontrada =
+          nomeLocalidade.includes(
+            termo
+          );
+
+        let setorEncontrado =
+          false;
+
+        setores.forEach(
+          setor => {
+            const encontrou =
+              normalizarTexto(
+                setor.textContent
+              ).includes(termo);
+
+            setor.style.display =
+              encontrou ? "" : "none";
+
+            if (encontrou) {
+              setorEncontrado = true;
+            }
+          }
+        );
+
+        const mostrar =
+          localidadeEncontrada ||
+          setorEncontrado;
+
+        localidadeItem.style.display =
+          mostrar ? "" : "none";
+
+        if (!setoresList) {
+          return;
+        }
+
+        if (!mostrar) {
+          setoresList.classList.add("hidden");
+          setoresList.style.display = "none";
+          setores.forEach(function(s){ s.style.display = "none"; });
+        } else if (localidadeEncontrada) {
+          // Pesquisa casou no nome da localidade → mostra TODOS os setores dela (ordem da planilha)
+          setores.forEach(function(s){ s.style.display = ""; });
+          setoresList.classList.remove("hidden");
+          setoresList.style.display = "";
+        } else {
+          // Pesquisa casou só em setor → mostra apenas setores filtrados
+          // (já filtrados acima via setorEncontrado)
+          setoresList.classList.remove("hidden");
+          setoresList.style.display = "";
+        }
+      }
+    );
+  // v3.25: atualiza visibilidade de botões Imprimir conforme permissão (Gestor Conteúdo)
+  try{ if(typeof atualizarVisibilidadeBotoesImpressaoConsulta==="function") setTimeout(atualizarVisibilidadeBotoesImpressaoConsulta, 20); }catch(e){}
+  try{ var _tNorm = (typeof normalizarTextoConsulta==="function" ? normalizarTextoConsulta(campo?.value||"") : normalizarTexto(campo?.value||"")); destacarMapaPorBusca(_tNorm); }catch(e){}
+
+}
+
+/* ==========================================================
+ * v3.33 — Filtros Localidade/Setor para Usuario de Consulta
+ * ========================================================== */
+function popularFiltrosConsulta(){
+  try{
+    var selC=document.getElementById("filtro-localidade-consulta");
+    var selS=document.getElementById("filtro-setor-consulta");
+    if(!selC || !selS) return;
+    var ordem=(typeof ordemLocalidades!=="undefined" && Array.isArray(ordemLocalidades) && ordemLocalidades.length) ? ordemLocalidades.slice() : [];
+    if(!ordem.length && typeof listaTelefones!=="undefined" && Array.isArray(listaTelefones)){
+      var vistos={};
+      listaTelefones.forEach(function(it){ var c=String(it.localidade||"").trim(); if(c && !vistos[c]){ vistos[c]=true; ordem.push(c); } });
+    }
+    if(!ordem.length && typeof setoresPorLocalidade!=="undefined"){
+      ordem=Object.keys(setoresPorLocalidade);
+    }
+    try{
+      var isGC=typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+      if(isGC && typeof localidadesPermitidasDoUsuario==="function"){
+        var perm=localidadesPermitidasDoUsuario();
+        if(Array.isArray(perm) && perm.length){
+          var filtrada=[];
+          for(var i=0;i<ordem.length;i++){
+            var cc=ordem[i];
+            var ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(cc):String(cc).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+            if(perm.indexOf(ck)!==-1) filtrada.push(cc);
+          }
+          if(filtrada.length) ordem=filtrada;
+        }
+      }
+    }catch(e){}
+    var valCAntes=String(selC.value||"");
+    selC.textContent="";
+    var optCTodos=document.createElement("option"); optCTodos.value=""; optCTodos.textContent="Todas as localidades";
+    selC.appendChild(optCTodos);
+    ordem.forEach(function(c){
+      var o=document.createElement("option");
+      o.value=String(c);
+      o.textContent=String(c);
+      selC.appendChild(o);
+    });
+    if(valCAntes && Array.from(selC.options).some(function(o){return o.value===valCAntes;})){
+      selC.value=valCAntes;
+    } else if(valCAntes){
+      selC.value="";
+    }
+    if(typeof atualizarFiltroSetorConsultaPorLocalidade==="function") atualizarFiltroSetorConsultaPorLocalidade();
+  }catch(e){ console.error("popularFiltrosConsulta",e); }
+}
+function atualizarFiltroSetorConsultaPorLocalidade(){
+  try{
+    var selC=document.getElementById("filtro-localidade-consulta");
+    var selS=document.getElementById("filtro-setor-consulta");
+    if(!selS) return;
+    var localidadeSel=selC ? String(selC.value||"").trim() : "";
+    var valorAntes=String(selS.value||"").trim();
+    var setoresSet=new Set();
+    var normSel=(typeof normalizarTexto==="function"?normalizarTexto(localidadeSel):String(localidadeSel).toLowerCase());
+    if(typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade){
+      if(localidadeSel && setoresPorLocalidade[localidadeSel]){
+        setoresPorLocalidade[localidadeSel].forEach(function(s){ if(s) setoresSet.add(String(s)); });
+      } else if(!localidadeSel){
+        if(typeof ordemLocalidades!=="undefined" && Array.isArray(ordemLocalidades) && ordemLocalidades.length){
+          ordemLocalidades.forEach(function(c){ (setoresPorLocalidade[c]||[]).forEach(function(s){ if(s) setoresSet.add(String(s)); }); });
+        } else {
+          Object.keys(setoresPorLocalidade).forEach(function(c){ (setoresPorLocalidade[c]||[]).forEach(function(s){ setoresSet.add(String(s)); }); });
+        }
+      } else {
+        var foundKey=Object.keys(setoresPorLocalidade).find(function(k){ var nk=(typeof normalizarTexto==="function"?normalizarTexto(k):String(k).toLowerCase()); return nk===normSel; });
+        if(foundKey) setoresPorLocalidade[foundKey].forEach(function(s){ setoresSet.add(String(s)); });
+      }
+    }
+    if(setoresSet.size===0 && typeof listaTelefones!=="undefined" && Array.isArray(listaTelefones)){
+      listaTelefones.forEach(function(it){
+        var c=String((typeof campoTelefone==="function"?campoTelefone(it,["localidade"]):it.localidade)||"").trim();
+        var s=String((typeof campoTelefone==="function"?campoTelefone(it,["setor"]):it.setor)||"").trim();
+        if(!s) return;
+        if(localidadeSel){
+          var nc=(typeof normalizarTexto==="function"?normalizarTexto(c):String(c).toLowerCase());
+          if(nc!==normSel) return;
+        }
+        setoresSet.add(s);
+      });
+    }
+    var listaOrdenada;
+    if(typeof ordenarPorPlanilha==="function"){
+      listaOrdenada=ordenarPorPlanilha(setoresSet,"setor");
+    } else if(typeof obterOrdemSetoresPlanilha==="function"){
+      var ordemS=obterOrdemSetoresPlanilha();
+      var idxS={}; ordemS.forEach(function(v,i){ idxS[v]=i; });
+      listaOrdenada=Array.from(setoresSet).sort(function(a,b){ var ia=idxS.hasOwnProperty(a)?idxS[a]:9999; var ib=idxS.hasOwnProperty(b)?idxS[b]:9999; return ia-ib; });
+    } else {
+      listaOrdenada=Array.from(setoresSet);
+    }
+    var atual=selS.value;
+    selS.textContent="";
+    var optTodos=document.createElement("option");
+    optTodos.value=""; optTodos.textContent="Todos os setores";
+    selS.appendChild(optTodos);
+    listaOrdenada.forEach(function(v){
+      var o=document.createElement("option");
+      o.value=String(v); o.textContent=String(v);
+      selS.appendChild(o);
+    });
+    if(valorAntes && Array.from(selS.options).some(function(o){ return o.value===valorAntes; })){
+      selS.value=valorAntes;
+    } else if(valorAntes){
+      selS.value="";
+    } else {
+      selS.value=atual;
+      if(!Array.from(selS.options).some(function(o){ return o.value===atual; })) selS.value="";
+    }
+  }catch(e){ console.error("atualizarFiltroSetorConsultaPorLocalidade",e); }
+}
+var filtroConsultaListaTimer=null;
+function filtrarListaConsultaPorLocalidadeSetorDebounced(){
+  clearTimeout(filtroConsultaListaTimer);
+  filtroConsultaListaTimer=setTimeout(filtrarListaConsultaPorLocalidadeSetor, 180);
+}
+function filtrarListaConsultaPorLocalidadeSetor(){
+  try{
+    if(window._filtrarConsultaEmExecucao) return;
+    window._filtrarConsultaEmExecucao=true;
+    var selC=document.getElementById("filtro-localidade-consulta");
+    var selS=document.getElementById("filtro-setor-consulta");
+    var campo=document.getElementById("campo-pesquisa-consulta");
+    var valC=selC ? String(selC.value||"").trim() : "";
+    var valS=selS ? String(selS.value||"").trim() : "";
+    var termoRaw=campo ? String(campo.value||"").trim() : "";
+    var termo=(typeof normalizarTextoConsulta==="function" ? normalizarTextoConsulta(termoRaw) : (typeof normalizarTexto==="function" ? normalizarTexto(termoRaw) : String(termoRaw).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim()));
+    var normC=(typeof normalizarTexto==="function" ? normalizarTexto(valC) : String(valC).toLowerCase());
+    var normS=(typeof normalizarTexto==="function" ? normalizarTexto(valS) : String(valS).toLowerCase());
+    if(!termo && !normC && !normS){
+      if(typeof renderizarLocalidades==="function"){ try{ renderizarLocalidades(); }catch(e){} }
+      try{ if(typeof destacarMapaPorBusca==="function") destacarMapaPorBusca(""); }catch(e){}
+      window._filtrarConsultaEmExecucao=false;
+      return;
+    }
+    if(!document.querySelector(".localidade-item")){
+      if(typeof renderizarLocalidades==="function"){ try{ renderizarLocalidades(); }catch(e){} }
+      if(!document.querySelector(".localidade-item")){ window._filtrarConsultaEmExecucao=false; return; }
+    }
+    if(termo && typeof ordemLocalidades!=="undefined" && ordemLocalidades.length){
+      try{
+        var totalDOM=document.querySelectorAll(".localidade-item").length;
+        var primeiroGlobal=normalizarTexto(ordemLocalidades[0]||"");
+        var primeiroDOM=normalizarTexto(document.querySelector(".localidade-item .localidade-nome")?.textContent||"");
+        var precisaGlobal=totalDOM!==ordemLocalidades.length || (primeiroGlobal && primeiroDOM!==primeiroGlobal);
+        if(precisaGlobal){
+          if(typeof renderizarLocalidades==="function"){ try{ renderizarLocalidades(); }catch(e){} }
+        }
+      }catch(e){}
+    }
+    try{
+      if(typeof atualizarFiltroSetorConsultaPorLocalidade==="function" && normC){
+        var prevS=valS;
+        var selSBefore=document.getElementById("filtro-setor-consulta");
+        var beforeVal=selSBefore?String(selSBefore.value||""):"";
+        atualizarFiltroSetorConsultaPorLocalidade();
+        var afterVal=selSBefore?String(selSBefore.value||""):"";
+        if(prevS && beforeVal!==prevS){
+          valS=String(selSBefore.value||"").trim();
+          normS=(typeof normalizarTexto==="function" ? normalizarTexto(valS) : String(valS).toLowerCase());
+        }
+      }
+    }catch(e){}
+    var hasFiltro=!!(normC || normS || termo);
+    document.querySelectorAll(".localidade-item").forEach(function(localidadeItem){
+      var setoresList=localidadeItem.nextElementSibling;
+      var nomeLocalidadeRaw=(localidadeItem.querySelector(".localidade-nome")?.textContent||"").trim();
+      var nomeLocalidadeNorm=(typeof normalizarTexto==="function" ? normalizarTexto(nomeLocalidadeRaw) : String(nomeLocalidadeRaw).toLowerCase());
+      var localidadeMatchFiltro=!normC || nomeLocalidadeNorm===normC || nomeLocalidadeNorm.indexOf(normC)!==-1 || normC.indexOf(nomeLocalidadeNorm)!==-1;
+      var localidadeMatchTermo=!termo || nomeLocalidadeNorm.includes(termo);
+      var setores=setoresList ? Array.from(setoresList.querySelectorAll(".setor-item")) : [];
+      var setorEncontrado=false;
+      setores.forEach(function(setorEl){
+        var nomeSetorNorm=(typeof normalizarTexto==="function" ? normalizarTexto(setorEl.textContent) : String(setorEl.textContent).toLowerCase());
+        var setorMatchFiltro=!normS || nomeSetorNorm===normS || nomeSetorNorm.includes(normS);
+        var setorMatchTermo=!termo || nomeSetorNorm.includes(termo);
+        var mostrarSetor=setorMatchFiltro && setorMatchTermo;
+        setorEl.style.display=mostrarSetor?"":"none";
+        if(mostrarSetor) setorEncontrado=true;
+      });
+      var mostrarLocalidade=false;
+      if(!localidadeMatchFiltro){
+        mostrarLocalidade=false;
+      } else if(normS){
+        mostrarLocalidade=setorEncontrado;
+      } else if(termo){
+        if(localidadeMatchTermo){
+          mostrarLocalidade=true;
+          setores.forEach(function(s){ s.style.display=""; });
+          setorEncontrado=setores.length>0;
+        } else {
+          mostrarLocalidade=setorEncontrado;
+        }
+      } else {
+        mostrarLocalidade=true;
+        setores.forEach(function(s){ s.style.display=""; });
+      }
+      localidadeItem.style.display=mostrarLocalidade?"":"none";
+      if(!setoresList) return;
+      if(!mostrarLocalidade){
+        setoresList.classList.add("hidden");
+        setoresList.style.display="none";
+      } else {
+        if(hasFiltro){
+          setoresList.classList.remove("hidden");
+          setoresList.style.display="";
+        }
+      }
+    });
+    try{ if(typeof destacarMapaPorBusca==="function") destacarMapaPorBusca(termo); }catch(e){}
+    try{ if(typeof atualizarVisibilidadeBotoesImpressaoConsulta==="function") setTimeout(atualizarVisibilidadeBotoesImpressaoConsulta,20); }catch(e){}
+    window._filtrarConsultaEmExecucao=false;
+  }catch(e){
+    try{ window._filtrarConsultaEmExecucao=false; }catch(e2){}
+    console.error("filtrarListaConsultaPorLocalidadeSetor",e);
+  }
+}
+(function(){
+  function tentarPopular(){
+    try{
+      var hasOrdem=(typeof ordemLocalidades!=="undefined" && Array.isArray(ordemLocalidades) && ordemLocalidades.length>0) || (typeof setoresPorLocalidade!=="undefined" && Object.keys(setoresPorLocalidade).length>0);
+      if(hasOrdem){ if(typeof popularFiltrosConsulta==="function") popularFiltrosConsulta(); return true; }
+    }catch(e){}
+    return false;
+  }
+  setTimeout(function(){ if(!tentarPopular()){ var t=0; var iv=setInterval(function(){ t++; if(tentarPopular()||t>30) clearInterval(iv); }, 350); } }, 700);
+  try{
+    var __t=0; var __iv=setInterval(function(){ __t++; if(typeof window.renderizarLocalidades==="function"){ clearInterval(__iv); var _origRC=window.renderizarLocalidades; window.renderizarLocalidades=function(){ var r=_origRC.apply(this, arguments); try{ if(typeof popularFiltrosConsulta==="function") setTimeout(popularFiltrosConsulta,20);}catch(e){} return r; }; tentarPopular(); } if(__t>40) clearInterval(__iv); }, 400);
+  }catch(e){}
+})();
+
+/* ==========================================================
+ * IMPRESSÃO / PDF — Consulta (detalhe do setor)
+ * ========================================================== */
+
+function imprimirConteudoPermitido(){
+  try{
+    if(typeof window.imprimirConteudoPermitidoDashboard==="function") return window.imprimirConteudoPermitidoDashboard();
+    if(typeof imprimirConteudoPermitidoDashboard==="function") return imprimirConteudoPermitidoDashboard();
+    if(typeof window.imprimirMultiplasLocalidades==="function"){
+      var perm=null;
+      try{ if(typeof localidadesPermitidasDoUsuario==="function") perm=localidadesPermitidasDoUsuario(); }catch(e){}
+      var lista=[];
+      if(typeof ordemLocalidades!=="undefined"&&ordemLocalidades){
+        if(perm===null) lista=ordemLocalidades.slice();
+        else if(Array.isArray(perm)&&perm.length){
+          for(var i=0;i<ordemLocalidades.length;i++){
+            var c=ordemLocalidades[i];
+            var ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(c):String(c).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+            if(perm.indexOf(ck)!==-1) lista.push(c);
+          }
+          if(!lista.length) lista=ordemLocalidades.slice();
+        } else lista=ordemLocalidades.slice();
+        if(typeof imprimirMultiplasLocalidades==="function") return imprimirMultiplasLocalidades(lista);
+      }
+      if(typeof mostrarToast==="function") mostrarToast("Impress\u00e3o em preparo","info");
+    } else if(typeof imprimirMultiplasLocalidades==="function"){
+      var perm=null;
+      try{ if(typeof localidadesPermitidasDoUsuario==="function") perm=localidadesPermitidasDoUsuario(); }catch(e){}
+      var lista=[];
+      if(typeof ordemLocalidades!=="undefined"&&ordemLocalidades){
+        if(perm===null) lista=ordemLocalidades.slice();
+        else if(Array.isArray(perm)&&perm.length){
+          for(var i=0;i<ordemLocalidades.length;i++){
+            var c=ordemLocalidades[i];
+            var ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(c):String(c).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+            if(perm.indexOf(ck)!==-1) lista.push(c);
+          }
+          if(!lista.length) lista=ordemLocalidades.slice();
+        } else lista=ordemLocalidades.slice();
+        return imprimirMultiplasLocalidades(lista);
+      }
+      if(typeof mostrarToast==="function") mostrarToast("Impress\u00e3o em preparo","info");
+    } else {
+      if(typeof mostrarToast==="function") mostrarToast("Impress\u00e3o em preparo","info");
+    }
+  }catch(e){ console.error(e); }
+}
+function imprimirDetalheSetor(){
+  try{
+    var _com = (typeof tituloImpressaoLocalidade!=="undefined") ? String(tituloImpressaoLocalidade||"").trim() : "";
+    var _isGC = typeof usuarioAtual!=="undefined" && usuarioAtual && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO" && usuarioAtual.logado===true;
+    if(_isGC && _com){
+      var _pode=false;
+      try{ if(typeof podeEditarLocalidade==="function") _pode=podeEditarLocalidade(_com); else if(typeof localidadesPermitidasDoUsuario==="function"){ var _al=localidadesPermitidasDoUsuario(); if(_al===null) _pode=true; else if(Array.isArray(_al)){ var _ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(_com):String(_com).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); _pode=_al.indexOf(_ck)!==-1; } } }catch(e){ _pode=true; }
+      if(!_pode){
+        if(typeof mostrarToast==="function") mostrarToast("Sem permiss\u00e3o para imprimir esta localidade.", "warning");
+        return;
+      }
+    }
+  }catch(e){}
+  return imprimirConsultaPDF();
+}
+
+/* ==========================================================
+ * IMPRESSÃO / PDF (detalhe)
+ * ========================================================== */
+
+function imprimirConsultaPDF() {
+  // v3.25 A: bloqueio por localidade para Gestor Conteúdo
+  try{
+    var _cPrint = (typeof tituloImpressaoLocalidade!=="undefined" && tituloImpressaoLocalidade) ? String(tituloImpressaoLocalidade||"").trim() : "";
+    if(!_cPrint){ try{ var h2=document.querySelector(".detalhe-contatos-cabecalho h3"); if(h2) _cPrint=h2.textContent||""; }catch(e){} }
+    if(_cPrint && typeof bloquearImpressaoSemPermissaoConsulta==="function" && bloquearImpressaoSemPermissaoConsulta(_cPrint)) return;
+    if(_cPrint && typeof podeImprimirLocalidadeConsulta==="function" && !podeImprimirLocalidadeConsulta(_cPrint)){
+      if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta localidade","warning");
+      return;
+    }
+  }catch(e){}
+  const tituloOriginal =
+    document.title;
+
+  const tituloInterface =
+    document
+      .querySelector(
+        ".system-title h1"
+      )
+      ?.textContent
+      .replace(/\s+/g, " ")
+      .trim() ||
+    "Diretório de Contatos — Demo";
+
+  document.title =
+    tituloInterface;
+
+  window.addEventListener(
+    "afterprint",
+    function restaurarTitulo() {
+      document.title =
+        tituloOriginal;
+
+      window.removeEventListener(
+        "afterprint",
+        restaurarTitulo
+      );
+    },
+    { once: true }
+  );
+
+  window.print();
+}
+
+</script>

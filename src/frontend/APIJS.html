@@ -1,0 +1,155 @@
+<script>
+/**
+ * ==========================================================
+ * SISTEMA DE CONTATOS DEMO — CLIENTE DE API
+ * ==========================================================
+ */
+
+function criarRunnerAPI(sucesso, erro) {
+  let runner = google.script.run.withSuccessHandler(
+    typeof sucesso === "function" ? sucesso : function () {}
+  );
+  if (typeof erro === "function") runner = runner.withFailureHandler(erro);
+  else runner = runner.withFailureHandler(function (falha) {
+    console.error("Erro na comunicação com o servidor:", falha);
+  });
+  return runner;
+}
+
+const API = {
+  usuarioAtual(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoObterUsuarioAtual();
+  },
+
+  dashboard(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoCarregarDashboardEscopadoV6();
+  },
+
+  listarTelefones(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoListarContatosEscopadosV6();
+  },
+
+  listarLocalidades(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoListarMunicipiosEscopadosV6();
+  },
+
+  pesquisarTelefones(texto, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoPesquisarContatosEscopadosV6(texto);
+  },
+
+  // Nomes legados preservados para TableJS/ModalJS.
+  criarTelefone(dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoCriarContato(dados);
+  },
+  atualizarTelefone(id, dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoAtualizarContato(id, dados);
+  },
+  excluirTelefone(id, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoExcluirContato(id);
+  },
+  historico(id, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).v4HistoricoContato(id);
+  },
+
+  // API explícita do painel hierárquico.
+  criarContato(dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoCriarContato(dados);
+  },
+  atualizarContato(id, dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoAtualizarContato(id, dados);
+  },
+  excluirContato(id, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoExcluirContato(id);
+  },
+  atualizarEnderecoLocalidade(tipo, id, dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoAtualizarEnderecoLocalidade(tipo, id, dados);
+  },
+  criarLocalidade(dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoCriarLocalidadeOrganizacional(dados);
+  },
+
+  solicitarAcesso(nome, nivel, justificativa, unidadeIds, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).solicitarAcesso(nome, nivel, justificativa, unidadeIds);
+  },
+  listarUnidadesParaAcesso(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).listarUnidadesParaAcesso();
+  },
+  listarEscoposParaAcesso(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).listarEscoposParaAcesso();
+  },
+  enviarFormularioAcesso(dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).enviarFormularioAcesso(dados);
+  },
+  listarSolicitacoes(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).listarSolicitacoes();
+  },
+  contarSolicitacoesPendentes(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).contarSolicitacoesPendentes();
+  },
+  aprovarSolicitacao(id, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).aprovarSolicitacao(id);
+  },
+  rejeitarSolicitacao(id, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).rejeitarSolicitacao(id);
+  },
+
+  // Compatibilidade para componentes antigos de solicitação/permissão.
+  solicitarPermissaoLocalidade(localidade, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).solicitarPermissaoLocalidade(localidade);
+  },
+  cancelarSolicitacaoLocalidade(localidade, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).cancelarSolicitacaoLocalidade(localidade);
+  },
+
+  listarUsuarios(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).listarUsuarios();
+  },
+  atualizarUsuario(email, dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).atualizarUsuario(email, dados);
+  },
+  criarUsuario(dados, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).criarUsuario(dados);
+  },
+  excluirUsuario(email, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).excluirUsuario(email);
+  },
+  removerMeuAcesso(tipo, id, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).removerMeuAcesso(tipo, id);
+  },
+  logout(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).encerrarSessao();
+  },
+
+  hierarquiaForum(termo, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoObterHierarquiaContatosEscopadaV6(termo || "");
+  },
+  pesquisarHierarquiaForum(termo, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoObterHierarquiaContatosEscopadaV6(termo || "");
+  },
+  validarArquiteturaForum(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).validarArquiteturaForum();
+  },
+  validarDadosReaisForumV4(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).validarDadosReaisForumV4();
+  },
+  validarDadosReaisForumV5(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).validarDadosReaisForumV5API();
+  },
+  diagnosticarDadosContatos(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).demoDiagnosticarDadosContatos();
+  },
+
+  listarNotificacoes(email, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).listarNotificacoes(email);
+  },
+  marcarNotificacaoLida(id, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).marcarNotificacaoLida(id);
+  },
+  marcarTodasLidas(email, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).marcarTodasLidas(email);
+  },
+  contarNaoLidas(email, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).contarNaoLidas(email);
+  }
+};
+</script>

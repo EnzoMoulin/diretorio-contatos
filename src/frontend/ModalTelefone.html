@@ -1,0 +1,111 @@
+<!--
+==========================================================
+DIRETÓRIO DE CONTATOS — DEMO
+Arquivo: ModalTelefone.html
+==========================================================
+-->
+
+<div id="modal-telefone" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Adicionar novo contato</h2>
+
+      <button type="button" class="modal-close" onclick="fecharModalTelefone()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="telefone-id">
+
+      <div class="form-grid">
+        <div class="form-group" id="grupo-telefone-microrregiao">
+            <label for="telefone-microrregiao">Microrregião *</label>
+          <select id="telefone-microrregiao" required onchange="onModalMicrorregiaoChange()">
+            <option value="">Selecione</option>
+          </select>
+          <input id="telefone-microrregiao-novo" type="text" class="hidden" maxlength="100" placeholder="Nova microrregião" style="margin-top:8px;display:none;">
+        </div>
+
+        <div class="form-group">
+          <label for="telefone-localidade">Localidade *</label>
+          <select id="telefone-localidade" required onchange="onModalLocalidadeChange()">
+            <option value="">Selecione</option>
+          </select>
+          <input id="telefone-localidade-novo" type="text" class="hidden" maxlength="100" placeholder="Nova localidade" style="margin-top:8px;display:none;">
+        </div>
+
+        <div class="form-group">
+          <label for="telefone-setor">Setor *</label>
+          <select id="telefone-setor" required onchange="onModalSetorChange()">
+            <option value="">Selecione</option>
+          </select>
+          <input id="telefone-setor-novo" type="text" class="hidden" maxlength="100" placeholder="Novo setor" style="margin-top:8px;display:none;">
+        </div>
+
+        <div class="form-group">
+          <label for="telefone-tipo">Tipo *</label>
+          <select id="telefone-tipo" required onchange="onModalTipoChange()">
+            <option value="">Selecione</option>
+            <option value="Telefone">Telefone</option>
+            <option value="Ramal">Ramal</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="E-mail">E-mail</option>
+          </select>
+        </div>
+
+        <div class="form-group hidden" id="grupo-telefone-numero">
+          <label for="telefone-numero">Telefone *</label>
+          <input id="telefone-numero" type="text" inputmode="tel" placeholder="(27) 0000-0000">
+        </div>
+
+        <div class="form-group hidden" id="grupo-telefone-ramal">
+          <label for="telefone-ramal">Ramal *</label>
+          <input id="telefone-ramal" type="text" inputmode="numeric">
+        </div>
+
+        <div class="form-group hidden" id="grupo-telefone-whatsapp">
+          <label for="telefone-whatsapp">WhatsApp *</label>
+          <input id="telefone-whatsapp" type="text" inputmode="tel">
+        </div>
+
+        <div class="form-group hidden" id="grupo-telefone-email">
+          <label for="telefone-email">E-mail *</label>
+          <input id="telefone-email" type="email" maxlength="150" placeholder="setor@empresa-exemplo.com.br">
+        </div>
+
+        <div class="form-group">
+          <label for="telefone-endereco">Endereço</label>
+          <input id="telefone-endereco" type="text" maxlength="300" placeholder="Endereço do setor">
+        </div>
+
+        <div class="form-group">
+          <label for="telefone-status">Status *</label>
+
+          <select id="telefone-status" required>
+            <option value="ATIVO">Ativo</option>
+            <option value="INATIVO">Inativo</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label for="telefone-observacao">Observação</label>
+
+          <textarea id="telefone-observacao" maxlength="2000"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div id="modal-mensagem-erro" class="modal-alert hidden"></div>
+
+      <div style="display: flex; gap: 8px; margin-left: auto;">
+        <button type="button" class="btn" onclick="fecharModalTelefone()">
+          Cancelar
+        </button>
+
+        <button type="button" id="btn-salvar-telefone" class="btn btn-primary"onclick="salvarTelefone()">
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,1184 @@
+<script>
+/**
+ * ==========================================================
+ * DIRETÓRIO DE CONTATOS — DEMO
+ * Arquivo: ModalJS.html v3.32 - Novo per perfil + Microrregião visibilidade
+ * ==========================================================
+ * v3.32: GC -> Novo apenas em Setor, sem menu Microrregião;
+ *        GS -> Novo em Localidade e Setor, Microrregião visível.
+ */
+
+let telefoneEditando = null;
+
+function normalizarChaveModal(v){ return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); }
+function perfilModalAtual(){ try{ return String((typeof usuarioAtual!=="undefined"&&usuarioAtual&&usuarioAtual.perfil)||"").toUpperCase(); }catch(e){return "";} }
+function ehGCModal(){ return perfilModalAtual()==="GESTOR_CONTEUDO"; }
+function ehGSModal(){ return perfilModalAtual()==="GESTOR_SISTEMA"; }
+function podeAdicionarNovoCampo(campo){
+  var c=String(campo||"").toLowerCase();
+  if(c==="microrregiao"||c==="microrregião") return ehGSModal();
+  if(c==="localidade") return ehGSModal();
+  if(c==="setor") return true;
+  return true;
+}
+function atualizarVisibilidadeModalPorPerfil(){
+  var grupoMicro=document.getElementById("grupo-telefone-microrregiao");
+  var selMicro=document.getElementById("telefone-microrregiao");
+  var inpMicro=document.getElementById("telefone-microrregiao-novo");
+  var ehGC=ehGCModal();
+  if(grupoMicro) grupoMicro.style.display = ehGC ? "none" : "";
+  if(selMicro){
+    if(ehGC){
+      selMicro.removeAttribute("required");
+      selMicro.value="";
+      if(inpMicro){ inpMicro.classList.add("hidden"); inpMicro.style.display="none"; inpMicro.value=""; }
+    } else {
+      selMicro.setAttribute("required","required");
+    }
+  }
+}
+function preencherSelectModal(id, valores, placeholder){
+  var sel=document.getElementById(id); if(!sel) return;
+  var atual=sel.value;
+  sel.textContent="";
+  var opt0=document.createElement("option"); opt0.value=""; opt0.textContent=placeholder||"Selecione"; sel.appendChild(opt0);
+  Array.from(valores||[]).sort(function(a,b){return String(a).localeCompare(String(b),"pt-BR");}).forEach(function(v){
+    var o=document.createElement("option"); o.value=String(v); o.textContent=String(v); sel.appendChild(o);
+  });
+  // v3.32: Novo por perfil (GC só Setor, GS Localidade+Setor, Microrregião só GS)
+  var campoNovo = id.indexOf("microrregiao")!==-1 ? "microrregiao" : id.indexOf("localidade")!==-1 ? "localidade" : id.indexOf("setor")!==-1 ? "setor" : "";
+  if(campoNovo && typeof podeAdicionarNovoCampo==="function" && !podeAdicionarNovoCampo(campoNovo)){
+    var opts=Array.from(sel.options).map(function(o){return o.value;});
+    if(atual && opts.indexOf(atual)!==-1) sel.value=atual;
+    return;
+  }
+  var optNovo=document.createElement("option"); optNovo.value="__NOVO__"; optNovo.textContent="Novo";
+  if (sel.options.length > 1) {
+    sel.insertBefore(optNovo, sel.options[1]);
+  } else {
+    sel.appendChild(optNovo);
+  }
+  var opts=Array.from(sel.options).map(function(o){return o.value;});
+  if(atual && opts.indexOf(atual)!==-1) sel.value=atual;
+}
+function toggleNovoCampo(selectId, inputId){
+  var sel=document.getElementById(selectId);
+  var inp=document.getElementById(inputId);
+  if(!sel || !inp) return;
+  if(sel.value==="__NOVO__"){
+    inp.classList.remove("hidden");
+    inp.style.display="";
+    try{ inp.focus(); }catch(e){}
+  } else {
+    inp.classList.add("hidden");
+    inp.style.display="none";
+    inp.value="";
+  }
+}
+function obterMicrorregioesModal(){
+  var set=new Set();
+  var allowed = (typeof localidadesPermitidasDoUsuario==="function") ? localidadesPermitidasDoUsuario() : null;
+  var src = (typeof todosTelefones!=="undefined" && Array.isArray(todosTelefones)) ? todosTelefones : [];
+  src.forEach(function(it){
+    var micro=String(it.microrregiao||it.Microrregiao||it.MICRORREGIAO||"").trim();
+    var localidade=String(it.localidade||it.Localidade||it.LOCALIDADE||"").trim();
+    if(!micro) return;
+    if(allowed!==null && localidade){
+      var ck=normalizarChaveModal(localidade);
+      if(allowed.indexOf(ck)===-1) return;
+    }
+    set.add(micro);
+  });
+  if(typeof localidadesPorMicrorregiao!=="undefined" && localidadesPorMicrorregiao){
+    Object.keys(localidadesPorMicrorregiao).forEach(function(k){
+      if(!k) return;
+      if(allowed!==null){
+        var lista=(localidadesPorMicrorregiao[k]||[]);
+        if(lista.length>0){
+          var tem=false;
+          for(var i=0;i<lista.length;i++){ if(allowed.indexOf(normalizarChaveModal(lista[i]))!==-1){ tem=true; break; } }
+          if(!tem) return;
+        } else {
+          // sem lista, mas todas permitidas? allowed empty handled as null above, so here allowed is array. If lista empty, fallback to src filtering already.
+          // não adiciona micro sem localidades permitidas
+        }
+      }
+      set.add(k);
+    });
+  }
+  if(set.size===0 && typeof ordemLocalidades!=="undefined" && Array.isArray(ordemLocalidades) && typeof microrregioesPorLocalidade!=="undefined"){
+    // último fallback: deriva microrregiões de ordemLocalidades via microrregioesPorLocalidade
+    ordemLocalidades.forEach(function(c){
+      var microTmp = microrregioesPorLocalidade[c] || "";
+      if(microTmp) {
+        if(allowed!==null && allowed.indexOf(normalizarChaveModal(c))===-1) return;
+        set.add(microTmp);
+      }
+    });
+  }
+  return Array.from(set);
+}
+function obterLocalidadesModal(micro){
+  var set=new Set();
+  var allowed2 = (typeof localidadesPermitidasDoUsuario==="function") ? localidadesPermitidasDoUsuario() : null;
+  var src2 = (typeof todosTelefones!=="undefined" && Array.isArray(todosTelefones)) ? todosTelefones : [];
+  var filtroMicro = micro ? normalizarChaveModal(micro) : "";
+  if(filtroMicro==="__NOVO__") filtroMicro="";
+  src2.forEach(function(it){
+    var m=String(it.microrregiao||it.Microrregiao||it.MICRORREGIAO||"").trim();
+    var c=String(it.localidade||it.Localidade||it.LOCALIDADE||"").trim();
+    if(!c) return;
+    if(filtroMicro && normalizarChaveModal(m)!==filtroMicro) return;
+    if(allowed2!==null){
+      var ck2=normalizarChaveModal(c);
+      if(allowed2.indexOf(ck2)===-1) return;
+    }
+    set.add(c);
+  });
+  if(typeof localidadesPorMicrorregiao!=="undefined" && localidadesPorMicrorregiao){
+    if(filtroMicro){
+      // tenta chave exata primeiro, depois normalizada
+      var chaveExata = micro && localidadesPorMicrorregiao[micro] ? micro : null;
+      if(chaveExata){
+        localidadesPorMicrorregiao[chaveExata].forEach(function(c){
+          if(allowed2===null || allowed2.indexOf(normalizarChaveModal(c))!==-1) set.add(c);
+        });
+      } else {
+        var foundKey = Object.keys(localidadesPorMicrorregiao).find(function(k){ return normalizarChaveModal(k)===filtroMicro; });
+        if(foundKey){
+          (localidadesPorMicrorregiao[foundKey]||[]).forEach(function(c){
+            if(allowed2===null || allowed2.indexOf(normalizarChaveModal(c))!==-1) set.add(c);
+          });
+        }
+      }
+    } else {
+      Object.keys(localidadesPorMicrorregiao).forEach(function(k){
+        (localidadesPorMicrorregiao[k]||[]).forEach(function(c){
+          if(allowed2===null || allowed2.indexOf(normalizarChaveModal(c))!==-1) set.add(c);
+        });
+      });
+    }
+  }
+  if(set.size===0 && !filtroMicro && typeof ordemLocalidades!=="undefined" && Array.isArray(ordemLocalidades)){
+    ordemLocalidades.forEach(function(c){
+      if(allowed2===null || allowed2.indexOf(normalizarChaveModal(c))!==-1) set.add(c);
+    });
+  }
+  return Array.from(set);
+}
+function obterSetoresModal(micro, localidade){
+  var set=new Set();
+  var src3 = (typeof todosTelefones!=="undefined" && Array.isArray(todosTelefones)) ? todosTelefones : [];
+  var fm = micro ? normalizarChaveModal(micro) : "";
+  var fc = localidade ? normalizarChaveModal(localidade) : "";
+  if(fm==="__NOVO__") fm="";
+  if(fc==="__NOVO__") fc="";
+  src3.forEach(function(it){
+    var m=String(it.microrregiao||it.Microrregiao||it.MICRORREGIAO||"").trim();
+    var c=String(it.localidade||it.Localidade||it.LOCALIDADE||"").trim();
+    var s=String(it.setor||it.Setor||it.SETOR||"").trim();
+    if(!s) return;
+    if(fm && normalizarChaveModal(m)!==fm) return;
+    if(fc && normalizarChaveModal(c)!==fc) return;
+    set.add(s);
+  });
+  if(typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade){
+    if(fc){
+      var keyExact = null;
+      if(localidade && setoresPorLocalidade[localidade]) keyExact=localidade;
+      else {
+        var found = Object.keys(setoresPorLocalidade).find(function(k){ return normalizarChaveModal(k)===fc; });
+        if(found) keyExact=found;
+      }
+      if(keyExact && setoresPorLocalidade[keyExact]) setoresPorLocalidade[keyExact].forEach(function(s){ set.add(s); });
+    } else if(fm){
+      var localidadesDaMicro = [];
+      if(typeof localidadesPorMicrorregiao!=="undefined" && localidadesPorMicrorregiao){
+        var chaveMicro = micro && localidadesPorMicrorregiao[micro] ? micro : Object.keys(localidadesPorMicrorregiao).find(function(k){ return normalizarChaveModal(k)===fm; });
+        if(chaveMicro) localidadesDaMicro = localidadesPorMicrorregiao[chaveMicro]||[];
+      }
+      if(localidadesDaMicro.length){
+        localidadesDaMicro.forEach(function(c){
+          var k2 = setoresPorLocalidade[c] ? c : Object.keys(setoresPorLocalidade).find(function(k){ return normalizarChaveModal(k)===normalizarChaveModal(c); });
+          if(k2 && setoresPorLocalidade[k2]) setoresPorLocalidade[k2].forEach(function(s){ set.add(s); });
+        });
+      } else if(set.size===0){
+        // fallback geral quando micro não tem mapeamento mas existem setores
+        Object.keys(setoresPorLocalidade).forEach(function(k){ (setoresPorLocalidade[k]||[]).forEach(function(s){ set.add(s); }); });
+      }
+    } else {
+      if(set.size===0){
+        var allowedCheck = (typeof localidadesPermitidasDoUsuario==="function") ? localidadesPermitidasDoUsuario() : null;
+        Object.keys(setoresPorLocalidade).forEach(function(k){
+          // Gestor Conteúdo: só setores de localidades permitidas
+          if(allowedCheck!==null){
+            var ckAllowed = (typeof normalizarChaveModal==="function") ? normalizarChaveModal(k) : String(k).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase();
+            if(allowedCheck.indexOf(ckAllowed)===-1) return;
+          }
+          (setoresPorLocalidade[k]||[]).forEach(function(s){ set.add(s); });
+        });
+      }
+    }
+  }
+  return Array.from(set);
+}
+function popularModalMicrorregioes(preservar){
+  var vals=obterMicrorregioesModal();
+  preencherSelectModal("telefone-microrregiao", vals, "Selecione");
+  if(preservar){
+    var sel=document.getElementById("telefone-microrregiao");
+    if(sel){
+      var opts=Array.from(sel.options).map(function(o){return o.value;});
+      if(opts.indexOf(preservar)===-1){
+        var o=document.createElement("option"); o.value=preservar; o.textContent=preservar;
+        var novoOpt=sel.querySelector('option[value="__NOVO__"]');
+        if(novoOpt) sel.insertBefore(o, novoOpt);
+        else sel.appendChild(o);
+        sel.value=preservar;
+      } else {
+        sel.value=preservar;
+      }
+    }
+  }
+  toggleNovoCampo("telefone-microrregiao","telefone-microrregiao-novo");
+}
+function popularModalLocalidades(micro, preservar){
+  var vals=obterLocalidadesModal(micro||"");
+  preencherSelectModal("telefone-localidade", vals, "Selecione");
+  if(preservar){
+    var sel2=document.getElementById("telefone-localidade");
+    if(sel2){
+      var opts2=Array.from(sel2.options).map(function(o){return o.value;});
+      if(opts2.indexOf(preservar)===-1){
+        var o2=document.createElement("option"); o2.value=preservar; o2.textContent=preservar;
+        var novoOpt2=sel2.querySelector('option[value="__NOVO__"]');
+        if(novoOpt2) sel2.insertBefore(o2, novoOpt2);
+        else sel2.appendChild(o2);
+        sel2.value=preservar;
+      } else {
+        sel2.value=preservar;
+      }
+    }
+  }
+  toggleNovoCampo("telefone-localidade","telefone-localidade-novo");
+}
+function popularModalSetores(micro, localidade, preservar){
+  var vals=obterSetoresModal(micro||"", localidade||"");
+  preencherSelectModal("telefone-setor", vals, "Selecione");
+  if(preservar){
+    var sel3=document.getElementById("telefone-setor");
+    if(sel3){
+      var opts3=Array.from(sel3.options).map(function(o){return o.value;});
+      if(opts3.indexOf(preservar)===-1){
+        var o3=document.createElement("option"); o3.value=preservar; o3.textContent=preservar;
+        var novoOpt3=sel3.querySelector('option[value="__NOVO__"]');
+        if(novoOpt3) sel3.insertBefore(o3, novoOpt3);
+        else sel3.appendChild(o3);
+        sel3.value=preservar;
+      } else {
+        sel3.value=preservar;
+      }
+    }
+  }
+  toggleNovoCampo("telefone-setor","telefone-setor-novo");
+}
+// v3.25: ordem canónica Tipo — E-mail sempre último abaixo de WhatsApp
+var ORDEM_TIPO = ["Telefone","Ramal","WhatsApp","E-mail"];
+function normalizarTipo(v){ return String(v||"").trim().toLowerCase(); }
+function indiceOrdemTipo(v){
+  var n=normalizarTipo(v);
+  for(var i=0;i<ORDEM_TIPO.length;i++){ if(normalizarTipo(ORDEM_TIPO[i])===n) return i; }
+  return 999;
+}
+function ordenarTiposLista(lista){
+  var arr=Array.isArray(lista)?lista.slice():Array.from(lista||[]);
+  arr.sort(function(a,b){
+    var ia=indiceOrdemTipo(a), ib=indiceOrdemTipo(b);
+    if(ia!==ib) return ia-ib;
+    return String(a).localeCompare(String(b),"pt-BR");
+  });
+  return arr;
+}
+function popularModalTipo(preservar){
+  var sel=document.getElementById("telefone-tipo"); if(!sel) return;
+  var atual = (preservar!==undefined && preservar!==null && String(preservar).trim()!=="") ? String(preservar).trim() : (sel.value||"");
+  sel.textContent="";
+  var opt0=document.createElement("option"); opt0.value=""; opt0.textContent="Selecione"; sel.appendChild(opt0);
+  ORDEM_TIPO.forEach(function(v){
+    var o=document.createElement("option"); o.value=v; o.textContent=v; sel.appendChild(o);
+  });
+  // Se preservar for tipo fora da ordem (legado), adiciona ao final exceto E-mail continua último
+  if(atual && ORDEM_TIPO.indexOf(atual)===-1){
+    var extra=document.createElement("option"); extra.value=atual; extra.textContent=atual;
+    // Insere antes de E-mail para manter E-mail último
+    var emailOpt=Array.from(sel.options).find(function(o){ return o.value==="E-mail"; });
+    if(emailOpt) sel.insertBefore(extra, emailOpt);
+    else sel.appendChild(extra);
+  }
+  if(atual){
+    var opts=Array.from(sel.options).map(function(o){return o.value;});
+    if(opts.indexOf(atual)!==-1) sel.value=atual;
+  }
+}
+function atualizarVisibilidadeTipo(){
+  var tipoEl=document.getElementById("telefone-tipo");
+  var tipo= tipoEl ? String(tipoEl.value||"").trim() : "";
+  var mapTipo={ "Telefone":"grupo-telefone-numero", "Ramal":"grupo-telefone-ramal", "WhatsApp":"grupo-telefone-whatsapp", "E-mail":"grupo-telefone-email" };
+  // v3.25: ordem canónica garante E-mail último; itera via ORDEM_TIPO
+  var ordemVis = (typeof ORDEM_TIPO!=="undefined" && ORDEM_TIPO.length) ? ORDEM_TIPO : Object.keys(mapTipo);
+  ordemVis.forEach(function(k){
+    var gid=mapTipo[k];
+    var el=document.getElementById(gid);
+    if(!el) return;
+    if(k===tipo) el.classList.remove("hidden");
+    else { el.classList.add("hidden"); }
+  });
+  if(tipo!=="Telefone"){ var e1=document.getElementById("telefone-numero"); if(e1) e1.value=""; }
+  if(tipo!=="Ramal"){ var e2=document.getElementById("telefone-ramal"); if(e2) e2.value=""; }
+  if(tipo!=="WhatsApp"){ var e3=document.getElementById("telefone-whatsapp"); if(e3) e3.value=""; }
+  if(tipo!=="E-mail"){ var e4=document.getElementById("telefone-email"); if(e4) e4.value=""; }
+}
+function onModalTipoChange(){ atualizarVisibilidadeTipo(); }
+function onModalMicrorregiaoChange(){
+  toggleNovoCampo("telefone-microrregiao","telefone-microrregiao-novo");
+  var micro=document.getElementById("telefone-microrregiao")?.value||"";
+  if(micro==="__NOVO__") micro="";
+  popularModalLocalidades(micro);
+  popularModalSetores(micro, "");
+  atualizarVisibilidadeTipo();
+}
+function onModalLocalidadeChange(){
+  toggleNovoCampo("telefone-localidade","telefone-localidade-novo");
+  var micro=document.getElementById("telefone-microrregiao")?.value||"";
+  if(micro==="__NOVO__") micro="";
+  var localidade=document.getElementById("telefone-localidade")?.value||"";
+  var localidadeFiltro = (localidade==="__NOVO__" ? "" : localidade);
+  popularModalSetores(micro, localidadeFiltro);
+}
+function onModalSetorChange(){
+  toggleNovoCampo("telefone-setor","telefone-setor-novo");
+}
+
+function abrirModalNovoTelefone() {
+  telefoneEditando = null;
+
+  limparFormularioTelefone();
+  limparMensagemModal();
+
+  try{
+    if(typeof atualizarVisibilidadeModalPorPerfil==="function") atualizarVisibilidadeModalPorPerfil();
+    popularModalMicrorregioes();
+    popularModalLocalidades("");
+    popularModalSetores("", "");
+    if(typeof popularModalTipo==="function") popularModalTipo("");
+    if(typeof atualizarVisibilidadeModalPorPerfil==="function") atualizarVisibilidadeModalPorPerfil();
+  }catch(ePop){}
+
+  const titulo =
+    document.getElementById(
+      "modal-titulo"
+    );
+
+  if (titulo) {
+    titulo.textContent =
+      "Adicionar novo contato";
+  }
+
+  const modal =
+    document.getElementById(
+      "modal-telefone"
+    );
+
+  if (modal) {
+    modal.classList.remove(
+      "hidden"
+    );
+
+    modal.style.display =
+      "flex";
+  }
+}
+
+function editarTelefone(id) {
+  abrirEditarTelefone(id);
+}
+
+function preencherFormularioTelefone(telefone) {
+  if (!telefone) {
+    return;
+  }
+
+  try{
+    if(typeof atualizarVisibilidadeModalPorPerfil==="function") atualizarVisibilidadeModalPorPerfil();
+    var microPre = String((telefone.microrregiao||telefone.Microrregiao||telefone.MICRORREGIAO||"")).trim();
+    var localidadePre = String((telefone.localidade||telefone.Localidade||telefone.LOCALIDADE||"")).trim();
+    var setorPre = String((telefone.setor||telefone.Setor||telefone.SETOR||"")).trim();
+    var tipoPre = String((telefone.tipo||telefone.Tipo||telefone.TIPO||"")).trim();
+    popularModalMicrorregioes(microPre);
+    popularModalLocalidades(microPre, localidadePre);
+    popularModalSetores(microPre, localidadePre, setorPre);
+    if(typeof popularModalTipo==="function") popularModalTipo(tipoPre);
+    else { var tipoSel=document.getElementById("telefone-tipo"); if(tipoSel && tipoPre) tipoSel.value=tipoPre; }
+    atualizarVisibilidadeTipo();
+    var tipoSel=document.getElementById("telefone-tipo"); if(tipoSel && tipoPre) tipoSel.value=tipoPre;
+    // esconde campos Novo ao editar (valores vêm do DB)
+    toggleNovoCampo("telefone-microrregiao","telefone-microrregiao-novo");
+    toggleNovoCampo("telefone-localidade","telefone-localidade-novo");
+    toggleNovoCampo("telefone-setor","telefone-setor-novo");
+    if(typeof atualizarVisibilidadeModalPorPerfil==="function") atualizarVisibilidadeModalPorPerfil();
+  }catch(ePre){}
+
+  const valor = (
+    campo,
+    ...alternativos
+  ) => {
+    const nomes = [
+      campo,
+      ...alternativos
+    ];
+
+    for (const nome of nomes) {
+      if (
+        telefone[nome] !==
+          undefined &&
+        telefone[nome] !==
+          null
+      ) {
+        return telefone[nome];
+      }
+    }
+
+    return "";
+  };
+
+  setValorCampo(
+    "telefone-id",
+    valor("ID", "id")
+  );
+
+  setValorCampo(
+    "telefone-microrregiao",
+    valor(
+      "microrregiao",
+      "Microrregiao"
+    )
+  );
+
+  setValorCampo(
+    "telefone-localidade",
+    valor(
+      "localidade",
+      "Localidade"
+    )
+  );
+
+  setValorCampo(
+    "telefone-setor",
+    valor(
+      "setor",
+      "Setor"
+    )
+  );
+
+  setValorCampo(
+    "telefone-tipo",
+    valor(
+      "tipo",
+      "Tipo"
+    )
+  );
+
+  setValorCampo(
+    "telefone-numero",
+    valor(
+      "numero",
+      "Numero"
+    )
+  );
+
+  setValorCampo(
+    "telefone-ramal",
+    valor(
+      "ramal",
+      "Ramal"
+    )
+  );
+
+  setValorCampo(
+    "telefone-whatsapp",
+    valor(
+      "whatsapp",
+      "Whatsapp",
+      "WhatsApp"
+    )
+  );
+
+  setValorCampo(
+    "telefone-email",
+    valor(
+      "email",
+      "EMAIL",
+      "E_MAIL",
+      "E-mail"
+    )
+  );
+
+  setValorCampo(
+    "telefone-endereco",
+    valor(
+      "endereco",
+      "ENDERECO",
+      "Endereco",
+      "Endereço"
+    )
+  );
+
+  setValorCampo(
+    "telefone-status",
+    valor(
+      "status",
+      "Status"
+    ) || "ATIVO"
+  );
+
+  setValorCampo(
+    "telefone-observacao",
+    valor(
+      "observacao",
+      "Observacao"
+    )
+  );
+}
+
+function limparFormularioTelefone() {
+  try{ atualizarVisibilidadeTipo(); }catch(e){}
+  try{
+    var n1=document.getElementById("telefone-microrregiao-novo"); if(n1){ n1.value=""; n1.classList.add("hidden"); n1.style.display="none"; }
+    var n2=document.getElementById("telefone-localidade-novo"); if(n2){ n2.value=""; n2.classList.add("hidden"); n2.style.display="none"; }
+    var n3=document.getElementById("telefone-setor-novo"); if(n3){ n3.value=""; n3.classList.add("hidden"); n3.style.display="none"; }
+  }catch(e2){}
+  const campos = [
+    "telefone-id",
+    "telefone-microrregiao",
+    "telefone-localidade",
+    "telefone-setor",
+    "telefone-tipo",
+    "telefone-numero",
+    "telefone-ramal",
+    "telefone-whatsapp",
+    "telefone-email",
+    "telefone-endereco",
+    "telefone-observacao"
+  ];
+
+  campos.forEach(id => {
+    setValorCampo(id, "");
+  });
+
+  setValorCampo(
+    "telefone-status",
+    "ATIVO"
+  );
+}
+
+function fecharModalTelefone() {
+  limparMensagemModal();
+
+  try{
+    var n1c=document.getElementById("telefone-microrregiao-novo"); if(n1c){ n1c.value=""; n1c.classList.add("hidden"); n1c.style.display="none"; }
+    var n2c=document.getElementById("telefone-localidade-novo"); if(n2c){ n2c.value=""; n2c.classList.add("hidden"); n2c.style.display="none"; }
+    var n3c=document.getElementById("telefone-setor-novo"); if(n3c){ n3c.value=""; n3c.classList.add("hidden"); n3c.style.display="none"; }
+  }catch(e3){}
+
+  const modal =
+    document.getElementById(
+      "modal-telefone"
+    );
+
+  if (modal) {
+    modal.classList.add(
+      "hidden"
+    );
+
+    modal.style.display =
+      "none";
+  }
+
+  telefoneEditando = null;
+}
+
+function obterDadosFormularioTelefone() {
+  const idCampo =
+    getValorCampo(
+      "telefone-id"
+    );
+
+  const idAtual =
+    idCampo ||
+    telefoneEditando ||
+    "";
+
+  const limparCampo = id => {
+    const valor =
+      getValorCampo(id)
+        .trim();
+
+    return valor === "-"
+      ? ""
+      : valor;
+  };
+
+  var tipoSel = limparCampo("telefone-tipo");
+  var rawNumero = limparCampo("telefone-numero");
+  var rawRamal = limparCampo("telefone-ramal");
+  var rawWhatsapp = limparCampo("telefone-whatsapp");
+  var rawEmail = limparCampo("telefone-email");
+  var numeroF="", ramalF="", whatsappF="", emailF="";
+  if(tipoSel==="Telefone") numeroF=rawNumero;
+  else if(tipoSel==="Ramal") ramalF=rawRamal;
+  else if(tipoSel==="WhatsApp") whatsappF=rawWhatsapp;
+  else if(tipoSel==="E-mail") emailF=rawEmail;
+
+  var selMicro=document.getElementById("telefone-microrregiao");
+  var selLocalidade=document.getElementById("telefone-localidade");
+  var selSetor=document.getElementById("telefone-setor");
+  var inpMicro=document.getElementById("telefone-microrregiao-novo");
+  var inpLocalidade=document.getElementById("telefone-localidade-novo");
+  var inpSetor=document.getElementById("telefone-setor-novo");
+  var microrregiaoVal = limparCampo("telefone-microrregiao");
+  var localidadeVal = limparCampo("telefone-localidade");
+  var setorVal = limparCampo("telefone-setor");
+  if(selMicro && selMicro.value==="__NOVO__" && inpMicro) microrregiaoVal = String(inpMicro.value||"").trim();
+  if(selLocalidade && selLocalidade.value==="__NOVO__" && inpLocalidade) localidadeVal = String(inpLocalidade.value||"").trim();
+  if(selSetor && selSetor.value==="__NOVO__" && inpSetor) setorVal = String(inpSetor.value||"").trim();
+  if(microrregiaoVal==="—") microrregiaoVal="";
+  if(microrregiaoVal==="-") microrregiaoVal="";
+  if(localidadeVal==="-") localidadeVal="";
+  if(setorVal==="-") setorVal="";
+  // v3.32: GC sem microrregião visível -> infere via localidade quando possível
+  if(!microrregiaoVal && typeof ehGCModal==="function" && ehGCModal() && localidadeVal){
+    try{
+      if(typeof microrregioesPorLocalidade!=="undefined" && microrregioesPorLocalidade[localidadeVal]) microrregiaoVal = String(microrregioesPorLocalidade[localidadeVal]||"").trim();
+      else if(typeof microrregioesPorLocalidade!=="undefined"){
+        var kMic = Object.keys(microrregioesPorLocalidade).find(function(k){ return normalizarChaveModal(k)===normalizarChaveModal(localidadeVal); });
+        if(kMic && microrregioesPorLocalidade[kMic]) microrregiaoVal = String(microrregioesPorLocalidade[kMic]||"").trim();
+      }
+      if(!microrregiaoVal && typeof localidadesPorMicrorregiao!=="undefined"){
+        for(var mk in localidadesPorMicrorregiao){ if((localidadesPorMicrorregiao[mk]||[]).some(function(c){ return normalizarChaveModal(c)===normalizarChaveModal(localidadeVal); })){ microrregiaoVal=mk; break; } }
+      }
+      if(!microrregiaoVal) microrregiaoVal = localidadeVal; // fallback: usa localidade como micro quando não há mapeamento
+    }catch(eInf){}
+  }
+
+  return {
+    ID: idAtual,
+    id: idAtual,
+
+    microrregiao:
+      microrregiaoVal,
+
+    localidade:
+      localidadeVal,
+
+    setor:
+      setorVal,
+
+    tipo: tipoSel,
+
+    numero: numeroF,
+
+    ramal: ramalF,
+
+    whatsapp: whatsappF,
+
+    email: emailF,
+
+    endereco:
+      limparCampo("telefone-endereco"),
+
+    status:
+      limparCampo("telefone-status"),
+
+    observacao:
+      limparCampo("telefone-observacao")
+  };
+}
+
+function exibirNotificacao(
+  mensagem,
+  tipo
+) {
+  const elemento =
+    document.getElementById(
+      "modal-mensagem-erro"
+    );
+
+  if (!elemento) {
+    return;
+  }
+
+  const sucesso =
+    tipo === "success";
+
+  elemento.textContent =
+    (
+      sucesso
+        ? "✅ "
+        : "⚠️ "
+    ) +
+    String(
+      mensagem || ""
+    );
+
+  elemento.style.backgroundColor =
+    sucesso
+      ? "#d1e7dd"
+      : "#f8d7da";
+
+  elemento.style.color =
+    sucesso
+      ? "#0f5132"
+      : "#842029";
+
+  elemento.style.borderColor =
+    sucesso
+      ? "#badbcc"
+      : "#f5c2c7";
+
+  elemento.classList.remove(
+    "hidden"
+  );
+}
+
+function limparMensagemModal() {
+  const elemento =
+    document.getElementById(
+      "modal-mensagem-erro"
+    );
+
+  if (!elemento) {
+    return;
+  }
+
+  elemento.textContent =
+    "";
+
+  elemento.classList.add(
+    "hidden"
+  );
+}
+
+function validarFormularioTelefone(
+  dados
+) {
+  const faltantes = [];
+
+  if (!dados.microrregiao && !(typeof ehGCModal==="function" && ehGCModal())) {
+    faltantes.push(
+      "Microrregião"
+    );
+  }
+
+  if (!dados.localidade) {
+    faltantes.push(
+      "Localidade"
+    );
+  }
+
+  if (!dados.setor) {
+    faltantes.push(
+      "Setor"
+    );
+  }
+
+  if (!dados.tipo) {
+    faltantes.push(
+      "Tipo"
+    );
+  }
+
+  if (!dados.status) {
+    faltantes.push(
+      "Status"
+    );
+  }
+
+  if (faltantes.length > 0) {
+    exibirNotificacao(
+      "Por favor, preencha os campos obrigatórios: " +
+        faltantes.join(", ") +
+        ".",
+      "error"
+    );
+
+    return false;
+  }
+
+  // v3.25: valida Tipo está na ordem canónica Telefone, Ramal, WhatsApp, E-mail
+  if(dados.tipo && typeof ORDEM_TIPO!=="undefined"){
+    var tipoNorm = String(dados.tipo||"").trim().toLowerCase();
+    var permitido = ORDEM_TIPO.some(function(v){ return String(v).trim().toLowerCase()===tipoNorm; });
+    if(!permitido){
+      exibirNotificacao(
+        "Tipo inválido. Use: Telefone, Ramal, WhatsApp ou E-mail (E-mail sempre último).",
+        "error"
+      );
+      return false;
+    }
+  }
+
+  const contatos = [dados.numero, dados.ramal, dados.whatsapp, dados.email].filter(function(v){ return String(v||"").trim() !== ""; });
+  if (contatos.length === 0) {
+    exibirNotificacao(
+      "Preencha ao menos um meio de contato: Telefone, Ramal, WhatsApp ou E-mail.",
+      "error"
+    );
+    return false;
+  }
+  if (contatos.length > 1) {
+    exibirNotificacao(
+      "Informe apenas um tipo de contato por vez: Telefone, Ramal, WhatsApp ou E-mail.",
+      "error"
+    );
+    return false;
+  }
+
+  // valida campo correspondente ao Tipo — ordem canónica
+  if(dados.tipo==="Telefone" && !String(dados.numero||"").trim()){
+    exibirNotificacao("Informe o número do Telefone.", "error"); return false;
+  }
+  if(dados.tipo==="Ramal" && !String(dados.ramal||"").trim()){
+    exibirNotificacao("Informe o Ramal.", "error"); return false;
+  }
+  if(dados.tipo==="WhatsApp" && !String(dados.whatsapp||"").trim()){
+    exibirNotificacao("Informe o WhatsApp.", "error"); return false;
+  }
+  if(dados.tipo==="E-mail" && !String(dados.email||"").trim()){
+    exibirNotificacao("Informe o E-mail.", "error"); return false;
+  }
+
+  return true;
+}
+
+function atualizarListaLocalTelefone(
+  registro,
+  modoEdicao,
+  idEdicao
+) {
+  if (
+    typeof listaTelefones ===
+      "undefined" ||
+    !Array.isArray(
+      listaTelefones
+    )
+  ) {
+    return;
+  }
+
+  const idRegistro =
+    String(
+      registro.ID ||
+      registro.id ||
+      idEdicao ||
+      ""
+    ).trim();
+
+  if (modoEdicao) {
+    const indice =
+      listaTelefones.findIndex(
+        item => {
+          return (
+            obterIdTelefone(item) ===
+            String(idEdicao)
+              .trim()
+          );
+        }
+      );
+
+    if (indice >= 0) {
+      listaTelefones[indice] =
+        Object.assign(
+          {},
+          listaTelefones[indice],
+          registro
+        );
+    }
+
+    if (
+      typeof todosTelefones !== "undefined" &&
+      Array.isArray(todosTelefones)
+    ) {
+      const idx2 =
+        todosTelefones.findIndex(item =>
+          String(item.ID || item.id || "").trim() === String(idEdicao).trim()
+        );
+
+      if (idx2 >= 0) {
+        todosTelefones[idx2] = Object.assign({}, todosTelefones[idx2], registro);
+      }
+    }
+  } else if (idRegistro) {
+    listaTelefones.push(registro);
+
+    if (
+      typeof todosTelefones !== "undefined" &&
+      Array.isArray(todosTelefones)
+    ) {
+      todosTelefones.push(Object.assign({}, registro));
+    }
+  }
+
+  try{ if(typeof processarDados==="function") processarDados(); }catch(e){}
+
+  if (
+    typeof carregarFiltros ===
+    "function"
+  ) {
+    carregarFiltros();
+  }
+
+  if (
+    typeof atualizarTabelaComFiltros ===
+    "function"
+  ) {
+    atualizarTabelaComFiltros();
+  } else if (
+    typeof renderizarTabela ===
+    "function"
+  ) {
+    renderizarTabela(
+      listaTelefones
+    );
+  }
+}
+
+function salvarTelefone() {
+  limparMensagemModal();
+
+  const dados =
+    obterDadosFormularioTelefone();
+
+  if (
+    !validarFormularioTelefone(
+      dados
+    )
+  ) {
+    return;
+  }
+
+  const localidadeFormulario =
+    String(
+      dados.localidade || ""
+    ).trim();
+
+  var selLocalidadeCheck=document.getElementById("telefone-localidade");
+  var isNovoLocalidade = selLocalidadeCheck && selLocalidadeCheck.value==="__NOVO__";
+  if (
+    !isNovoLocalidade &&
+    typeof podeEditarLocalidade ===
+      "function" &&
+    !podeEditarLocalidade(
+      localidadeFormulario
+    )
+  ) {
+    exibirNotificacao(
+      "Você só pode salvar telefones nas suas localidades.",
+      "error"
+    );
+
+    return;
+  }
+
+  const modoEdicao =
+    Boolean(
+      telefoneEditando
+    );
+
+  const idEdicao =
+    String(
+      telefoneEditando || ""
+    ).trim();
+
+  const botao =
+    document.getElementById(
+      "btn-salvar-telefone"
+    );
+
+  const textoOriginal =
+    botao
+      ? botao.textContent
+      : "Salvar";
+
+  if (botao) {
+    botao.disabled = true;
+    botao.textContent =
+      "Salvando...";
+  }
+
+  const restaurarBotao = () => {
+    if (botao) {
+      botao.disabled = false;
+      botao.textContent =
+        textoOriginal ||
+        "Salvar";
+    }
+  };
+
+  const sucesso = resposta => {
+    if (
+      !resposta ||
+      resposta.sucesso !== true ||
+      !resposta.dados
+    ) {
+      restaurarBotao();
+
+      exibirNotificacao(
+        resposta &&
+        resposta.erro
+          ? resposta.erro
+          : "Erro ao salvar registro.",
+        "error"
+      );
+
+      return;
+    }
+
+    const registro =
+      resposta.dados;
+
+    atualizarListaLocalTelefone(
+      registro,
+      modoEdicao,
+      idEdicao
+    );
+
+    exibirNotificacao(
+      "Telefone salvo com sucesso!",
+      "success"
+    );
+
+    setTimeout(() => {
+      fecharModalTelefone();
+      restaurarBotao();
+    }, 800);
+  };
+
+  const erro = erroServidor => {
+    restaurarBotao();
+
+    exibirNotificacao(
+      erroServidor &&
+      erroServidor.message
+        ? erroServidor.message
+        : "Erro interno ao salvar telefone.",
+      "error"
+    );
+  };
+
+  if (modoEdicao) {
+    API.atualizarTelefone(
+      idEdicao,
+      dados,
+      sucesso,
+      erro
+    );
+  } else {
+    API.criarTelefone(
+      dados,
+      sucesso,
+      erro
+    );
+  }
+}
+
+function abrirEditarTelefone(id) {
+  const telefone =
+    encontrarTelefone(id);
+
+  if (!telefone) {
+    mostrarToast(
+      "Telefone não encontrado.",
+      "error"
+    );
+
+    return;
+  }
+
+  if (
+    typeof podeEditarLocalidade ===
+      "function" &&
+    !podeEditarLocalidade(
+      String(
+        telefone.localidade || ""
+      ).trim()
+    )
+  ) {
+    mostrarToast(
+      "Você só pode editar telefones das suas localidades.",
+      "error"
+    );
+
+    return;
+  }
+
+  telefoneEditando =
+    String(id).trim();
+
+  limparMensagemModal();
+
+  preencherFormularioTelefone(
+    telefone
+  );
+
+  const titulo =
+    document.getElementById(
+      "modal-titulo"
+    );
+
+  if (titulo) {
+    titulo.textContent =
+      "Editar contato";
+  }
+
+  const modal =
+    document.getElementById(
+      "modal-telefone"
+    );
+
+  if (modal) {
+    modal.classList.remove(
+      "hidden"
+    );
+
+    modal.style.display =
+      "flex";
+  }
+}
+
+function getValorCampo(id) {
+  const elemento =
+    document.getElementById(id);
+
+  return elemento
+    ? String(
+        elemento.value || ""
+      )
+    : "";
+}
+
+function setValorCampo(
+  id,
+  valor
+) {
+  const elemento =
+    document.getElementById(id);
+
+  if (elemento) {
+    elemento.value =
+      valor === null ||
+      valor === undefined
+        ? ""
+        : valor;
+  }
+}
+</script>

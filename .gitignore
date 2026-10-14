@@ -1,0 +1,8 @@
+# IDs e credenciais locais do Clasp (nunca commitar)
+.clasp.json
+.clasprc.json
+
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

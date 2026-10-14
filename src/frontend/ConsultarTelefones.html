@@ -1,0 +1,36 @@
+<!--
+==========================================================
+DIRETÓRIO DE CONTATOS — DEMO
+Arquivo: ConsultarTelefones.html
+==========================================================
+-->
+
+<div class="telefones-container">
+
+  <button id="btn-imprimir-consulta" class="hidden" style="display:none;" onclick="imprimirConsultaPDF()" aria-hidden="true" tabindex="-1"></button>
+
+  <div class="consulta-layout">
+
+    <!-- =====================================================
+         COLUNA ESQUERDA — NAVEGAÇÃO DE CONTATOS
+         ===================================================== -->
+
+    <section id="consulta-detalhes" class="consulta-detalhes" aria-label="Contatos do DEMO">
+      <div class="fc-panel">
+        <div id="fc-content" aria-live="polite">
+          <div class="fc-empty">Carregando contatos...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         COLUNA DIREITA — MAPA RESPONSIVO
+         ===================================================== -->
+
+    <section id="consulta-mapa" class="consulta-mapa-bloco" aria-label="Mapa das Municípios (demo)">
+      <div id="fc-map" class="fc-map" role="region" aria-label="Mapa interativo das Municípios (demo)"></div>
+    </section>
+
+  </div>
+
+</div>

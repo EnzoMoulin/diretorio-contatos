@@ -1,0 +1,17 @@
+<!-- Entrada administrativa sem credenciais locais. -->
+<style>
+  .lg-wrap{max-width:560px;margin:28px auto}.lg-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 12px 28px -10px rgba(15,23,42,.18);overflow:hidden}.lg-head{background:linear-gradient(135deg,#0f172a,#1e40af);padding:24px 28px;color:#fff}.lg-head h2{margin:0 0 7px;font-size:19px}.lg-head p{margin:0;font-size:13px;line-height:1.5;opacity:.92}.lg-body{padding:24px 28px}.lg-msg{margin:0 0 18px;padding:13px 15px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;font-size:13px;line-height:1.5}.lg-btn{padding:11px 20px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}.lg-btn:disabled{opacity:.6;cursor:wait}
+</style>
+
+<div class="lg-wrap">
+  <div class="lg-card">
+    <div class="lg-head">
+      <h2>Área Administrativa</h2>
+      <p>A identidade é validada automaticamente pela conta Google conectada. O sistema não solicita nem armazena senha.</p>
+    </div>
+    <div class="lg-body">
+      <div id="login-mensagem" class="lg-msg" role="status">Clique abaixo para validar novamente sua conta Google.</div>
+      <button type="button" id="btn-login-google" class="lg-btn" onclick="entrarAreaAdministrativa()">Entrar na Área Administrativa</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,106 @@
+<!--
+==========================================================
+SISTEMA DE CONTATOS DEMO
+Arquivo: Dashboard.html
+==========================================================
+-->
+
+<div class="dashboard-container">
+  <div class="page-header dashboard-header">
+    <div>
+      <h2>Visão geral</h2>
+      <p>Indicadores consolidados da estrutura de contatos do DEMO.</p>
+    </div>
+    <div class="dashboard-header__actions">
+      <button type="button" class="btn btn-secondary" onclick="imprimirDashboardView()" title="Imprimir / Salvar PDF da tela Dashboard">
+        <span aria-hidden="true">🖨</span> Imprimir / Salvar PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="dashboard-cards" aria-label="Indicadores principais">
+    <article class="card dashboard-card">
+      <div class="dashboard-card__icon" aria-hidden="true">☎</div>
+      <div class="dashboard-card__content">
+        <div class="card-title">Contatos</div>
+        <div id="total-telefones" class="card-value" aria-live="polite">0</div>
+        <div class="dashboard-card__meta">registros ativos</div>
+      </div>
+    </article>
+
+    <article class="card dashboard-card">
+      <div class="dashboard-card__icon" aria-hidden="true">⌖</div>
+      <div class="dashboard-card__content">
+        <div class="card-title">Localidades</div>
+        <div id="total-municipios" class="card-value" aria-live="polite">0</div>
+        <div class="dashboard-card__meta">com dados cadastrados</div>
+      </div>
+    </article>
+
+    <article class="card dashboard-card">
+      <div class="dashboard-card__icon" aria-hidden="true">▣</div>
+      <div class="dashboard-card__content">
+        <div class="card-title">Fóruns</div>
+        <div id="total-foruns" class="card-value" aria-live="polite">0</div>
+        <div class="dashboard-card__meta">na hierarquia atual</div>
+      </div>
+    </article>
+
+    <article class="card dashboard-card">
+      <div class="dashboard-card__icon" aria-hidden="true">◇</div>
+      <div class="dashboard-card__content">
+        <div class="card-title">Unidades</div>
+        <div id="total-unidades" class="card-value" aria-live="polite">0</div>
+        <div class="dashboard-card__meta">unidades organizacionais</div>
+      </div>
+    </article>
+
+    <article class="card dashboard-card">
+      <div class="dashboard-card__icon" aria-hidden="true">≡</div>
+      <div class="dashboard-card__content">
+        <div class="card-title">Setores</div>
+        <div id="total-setores" class="card-value" aria-live="polite">0</div>
+        <div class="dashboard-card__meta">setores com contatos</div>
+      </div>
+    </article>
+
+    <article class="card dashboard-card">
+      <div class="dashboard-card__icon" aria-hidden="true">#</div>
+      <div class="dashboard-card__content">
+        <div class="card-title">Tipos de contato</div>
+        <div id="total-tipos" class="card-value" aria-live="polite">4</div>
+        <div class="dashboard-card__meta">Telefone, Ramal, WhatsApp e E-mail</div>
+      </div>
+    </article>
+  </div>
+
+  <div class="dashboard-grid">
+    <section class="panel dashboard-panel" aria-labelledby="dashboard-tipos-title">
+      <div class="dashboard-panel__header">
+        <div>
+          <h3 id="dashboard-tipos-title">Contatos por tipo</h3>
+          <p>Distribuição entre Telefone, Ramal, WhatsApp e E-mail</p>
+        </div>
+      </div>
+      <div id="grafico-tipos" class="chart-container" aria-label="Gráfico de contatos por tipo"></div>
+    </section>
+
+    <section class="panel dashboard-panel" aria-labelledby="dashboard-municipios-title">
+      <div class="dashboard-panel__header">
+        <div>
+          <h3 id="dashboard-municipios-title">Contatos por Localidade</h3>
+          <p>Localidades com maior volume de contatos</p>
+        </div>
+      </div>
+      <div id="grafico-localidades" class="chart-container" aria-label="Gráfico de contatos por Localidade"></div>
+    </section>
+  </div>
+
+  <aside class="panel dashboard-source-note" aria-label="Informação sobre a fonte de dados">
+    <div class="dashboard-source-note__icon" aria-hidden="true">✓</div>
+    <div>
+      <h3>Fonte de dados unificada</h3>
+      <p>Os indicadores e a aba Contatos utilizam a mesma fonte operacional. Alterações em contatos e endereços são refletidas após a atualização dos dados.</p>
+    </div>
+  </aside>
+</div>
