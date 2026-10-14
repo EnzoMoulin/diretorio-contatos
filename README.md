@@ -41,6 +41,10 @@ sempre no servidor, payloads mínimos e JSON-serializáveis.
    - `carregarDadosExemplo()` — insere a base fictícia
 4. Publique como app da Web e teste a consulta + o login demo.
 
+## Demo executável (Python, 1 comando)
+Versão portátil do mesmo domínio, zero dependências, pronta para avaliar em
+segundos: [EnzoMoulin/diretorio-contatos-demo](https://github.com/EnzoMoulin/diretorio-contatos-demo).
+
 ## Screenshots / vídeo
 `docs/` reservado — prints e vídeo curto (só tela + legendas, sem voz/webcam).
 
