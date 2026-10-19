@@ -43,7 +43,7 @@ sempre no servidor, payloads mínimos e JSON-serializáveis.
 
 ## Demo executável (Python, 1 comando)
 Versão portátil do mesmo domínio, zero dependências, pronta para avaliar em
-segundos: [EnzoMoulin/diretorio-contatos-demo](https://github.com/EnzoMoulin/diretorio-contatos-demo).
+segundos: [EnzoMoulin/diretorio-contatos-v2](https://github.com/EnzoMoulin/diretorio-contatos-v2).
 
 ## Screenshots / vídeo
 `docs/` reservado — prints e vídeo curto (só tela + legendas, sem voz/webcam).
