@@ -21,12 +21,21 @@ function mascararCopiaPessoal() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var resumo = [];
 
-  // ---- aba CONTATOS (layout: TIPO col 6, VALOR col 8) ----
+  // ---- aba CONTATOS (localiza as colunas TIPO e VALOR pelo cabeçalho) ----
   var contatos = ss.getSheetByName(CONFIG.SHEETS.CONTATOS);
   if (contatos && contatos.getLastRow() > 1) {
-    var n = contatos.getLastRow() - 1;
-    var tipos = contatos.getRange(2, 6, n, 1).getValues();
-    var valores = contatos.getRange(2, 8, n, 1).getValues();
+    var larg = contatos.getLastColumn();
+    var cab = contatos.getRange(1, 1, 1, larg).getValues()[0].map(function (h) {
+      return String(h || "").trim().toUpperCase();
+    });
+    var cTipo = cab.indexOf("TIPO") + 1;
+    var cValor = cab.indexOf("VALOR") + 1;
+    if (!cTipo || !cValor) {
+      resumo.push("CONTATOS: colunas TIPO/VALOR não encontradas");
+    } else {
+      var n = contatos.getLastRow() - 1;
+      var tipos = contatos.getRange(2, cTipo, n, 1).getValues();
+      var valores = contatos.getRange(2, cValor, n, 1).getValues();
     var tocados = 0;
     for (var i = 0; i < n; i++) {
       var tipo = String(tipos[i][0] || "").trim().toUpperCase();
@@ -48,8 +57,9 @@ function mascararCopiaPessoal() {
         tocados++;
       }
     }
-    contatos.getRange(2, 8, n, 1).setValues(valores);
+    contatos.getRange(2, cValor, n, 1).setValues(valores);
     resumo.push("CONTATOS: " + tocados + " valores mascarados em " + n + " linhas");
+    }
   } else {
     resumo.push("CONTATOS: aba não encontrada ou vazia");
   }
