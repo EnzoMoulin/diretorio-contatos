@@ -12,23 +12,35 @@ Arquivo: ConsultarTelefones.html
   <div class="consulta-layout">
 
     <!-- =====================================================
-         COLUNA ESQUERDA — NAVEGAÇÃO DE CONTATOS
+         COLUNA ESQUERDA — MAPA RESPONSIVO
          ===================================================== -->
 
-    <section id="consulta-detalhes" class="consulta-detalhes" aria-label="Contatos do DEMO">
+    <section id="consulta-mapa" class="consulta-mapa-bloco" aria-label="Mapa das comarcas">
+      <div id="fc-map" class="fc-map" role="region" aria-label="Mapa interativo das comarcas"></div>
+    </section>
+
+    <!-- =====================================================
+         COLUNA DIREITA — PAINEL DE CONTATOS
+         ===================================================== -->
+
+    <section id="consulta-detalhes" class="consulta-detalhes" aria-label="Contatos do PJES">
+      <div class="fc-page-head">
+        <div>
+          <h1 class="fc-title">Diretório Institucional de Contatos - PJES</h1>
+        </div>
+      </div>
       <div class="fc-panel">
+        <div class="fc-head" id="panel-head">
+          <div>
+            <h2 class="fc-title">Contatos do PJES</h2>
+            <p class="fc-subtitle">Consulte a estrutura completa por Comarca → Fórum → Unidade → Setor → Contatos. Selecione uma comarca no mapa ao lado, no menu suspenso ou na lista abaixo.</p>
+          </div>
+        </div>
+        <span class="fc-pill fc-total-localidades" id="loc-count"></span>
         <div id="fc-content" aria-live="polite">
           <div class="fc-empty">Carregando contatos...</div>
         </div>
       </div>
-    </section>
-
-    <!-- =====================================================
-         COLUNA DIREITA — MAPA RESPONSIVO
-         ===================================================== -->
-
-    <section id="consulta-mapa" class="consulta-mapa-bloco" aria-label="Mapa das Municípios (demo)">
-      <div id="fc-map" class="fc-map" role="region" aria-label="Mapa interativo das Municípios (demo)"></div>
     </section>
 
   </div>
