@@ -12,8 +12,8 @@ const CONFIG = {
   },
 
   WEB_APP: {
-    URL_PUBLICA: "",
-    URL_ADMIN: "",
+    URL_PUBLICA: "https://script.google.com/macros/s/AKfycbxZ5Gab4wpc9BC205Hvjngi_xfRz9JZA9ZsWDltwH6im4Fe39wc623wZ-iXtdIQXU4Q/exec",
+    URL_ADMIN: "https://script.google.com/macros/s/AKfycbx9-Bs4ImbasQdIMV3pJwSBu_oS8CTgyrGeh8XpkOlQ-QAUak5tcLp1pY81TAFSqPwK_Q/exec",
     PERMITIR_IFRAME: false
   },
 

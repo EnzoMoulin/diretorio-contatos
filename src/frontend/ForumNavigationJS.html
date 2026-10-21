@@ -57,10 +57,15 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
       var com = { id: m.id, nome: m.nome, total: m.qtdContatos || 0,
         n_foruns: (m.foruns || []).length, n_unidades: 0, n_setores: 0 };
       (m.foruns || []).forEach(function (f) {
-        var fr = { id: f.id, nome: f.nome, comarca_id: m.id, endereco: f.endereco,
-          total: f.qtdContatos || 0, n_unidades: 0, n_setores: 0 };
-        IDX.forum[f.id] = fr;
-        (f.nos || []).forEach(function (no) { indexarNo(no, fr, null); });
+      var fr = { id: f.id, nome: f.nome, comarca_id: m.id, endereco: f.endereco,
+        total: f.qtdContatos || 0, n_unidades: 0, n_setores: 0 };
+      IDX.forum[f.id] = fr;
+      (f.nos || []).forEach(function (no) { indexarNo(no, fr, null); });
+      if (f.contatos && f.contatos.length) {
+        IDX.setor["forumdir-" + f.id] = { id: "forumdir-" + f.id, nome: f.nome,
+          forum_id: f.id, unidade_id: "", comarca_id: m.id,
+          total: f.contatos.length, contatos: f.contatos };
+      }
         fr.n_unidades = Object.keys(IDX.unidade).filter(function (k) { return IDX.unidade[k].forum_id === f.id; }).length;
         fr.n_setores = Object.keys(IDX.setor).filter(function (k) { return IDX.setor[k].forum_id === f.id; }).length;
         com.n_unidades += fr.n_unidades;
@@ -75,7 +80,7 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
     var tipo = String(no.tipo || "").toUpperCase();
     if (UNI_TIPOS[tipo]) {
       var u = { id: no.id, nome: no.nome, forum_id: fr.id, comarca_id: fr.comarca_id,
-        total: no.qtdContatos || 0, n_setores: 0 };
+        total: no.qtdContatos || 0, n_setores: 0, contatos: no.contatos || [] };
       IDX.unidade[no.id] = u;
       (no.filhos || []).forEach(function (f) { indexarNo(f, fr, u); });
       u.n_setores = Object.keys(IDX.setor).filter(function (k) { return IDX.setor[k].unidade_id === no.id; }).length;
@@ -88,29 +93,63 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
     }
   }
 
-  /* Contatos sem setor (nível de fórum/unidade) -> "Contatos gerais", como na v2. */
+  /* Contatos sem setor -> "Contatos gerais" (sob a própria unidade ou sob
+     "Atendimento geral"); nós órfãos com contato viram cards; vazios somem. */
   function agruparGerais() {
+    var k, s, u, fid;
+    Object.keys(IDX.unidade).forEach(function (k) {
+      var u = IDX.unidade[k];
+      if (u.contatos && u.contatos.length && !u.virtual) {
+        var sid = "auto-c-" + k;
+        IDX.setor[sid] = { id: sid, nome: "Contatos gerais", forum_id: u.forum_id,
+          unidade_id: k, comarca_id: u.comarca_id, total: u.contatos.length,
+          contatos: u.contatos, virtual: true };
+      }
+      delete u.contatos;
+    });
     var orfaos = Object.keys(IDX.setor).filter(function (k) { return !IDX.setor[k].unidade_id; });
-    if (!orfaos.length) return;
     var porForum = {};
     orfaos.forEach(function (k) {
       var s = IDX.setor[k];
+      if (!s.contatos || !s.contatos.length) { delete IDX.setor[k]; return; }
       (porForum[s.forum_id] = porForum[s.forum_id] || []).push(s);
     });
     Object.keys(porForum).forEach(function (fid) {
       var fr = IDX.forum[fid];
       if (!fr) return;
-      var uid = "auto-u-" + fid, sid = "auto-s-" + fid;
-      IDX.unidade[uid] = { id: uid, nome: "Atendimento geral", forum_id: fid,
-        comarca_id: fr.comarca_id, total: 0, n_setores: 1, virtual: true };
-      var contatos = [];
+      var uid = "auto-u-" + fid;
+      if (!IDX.unidade[uid]) {
+        IDX.unidade[uid] = { id: uid, nome: "Atendimento geral", forum_id: fid,
+          comarca_id: fr.comarca_id, total: 0, n_setores: 0, virtual: true };
+      }
+      var gerais = [];
       porForum[fid].forEach(function (s) {
-        (s.contatos || []).forEach(function (c) { contatos.push(c); });
-        delete IDX.setor[s.id];
+        if (String(s.id).indexOf("forumdir-") === 0) {
+          (s.contatos || []).forEach(function (c) { gerais.push(c); });
+          delete IDX.setor[s.id];
+        } else {
+          s.unidade_id = uid;
+        }
       });
-      IDX.setor[sid] = { id: sid, nome: "Contatos gerais", forum_id: fid,
-        unidade_id: uid, comarca_id: fr.comarca_id, total: contatos.length,
-        contatos: contatos, virtual: true };
+      if (gerais.length) {
+        var sid = "auto-s-" + fid;
+        IDX.setor[sid] = { id: sid, nome: "Contatos gerais", forum_id: fid,
+          unidade_id: uid, comarca_id: fr.comarca_id, total: gerais.length,
+          contatos: gerais, virtual: true };
+      }
+      if (!Object.keys(IDX.setor).some(function (k) { return IDX.setor[k].unidade_id === uid; })) {
+        delete IDX.unidade[uid];
+      }
+    });
+    Object.keys(IDX.setor).forEach(function (k) {
+      if (!IDX.setor[k].contatos || !IDX.setor[k].contatos.length) delete IDX.setor[k];
+    });
+    Object.keys(IDX.unidade).forEach(function (k) {
+      var tem = Object.keys(IDX.setor).some(function (j) { return IDX.setor[j].unidade_id === k; });
+      if (!tem) delete IDX.unidade[k];
+    });
+    Object.keys(IDX.forum).forEach(function (fid) {
+      var fr = IDX.forum[fid];
       fr.n_unidades = Object.keys(IDX.unidade).filter(function (k) { return IDX.unidade[k].forum_id === fid; }).length;
       fr.n_setores = Object.keys(IDX.setor).filter(function (k) { return IDX.setor[k].forum_id === fid; }).length;
     });
@@ -127,9 +166,11 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
   function normalizar(c, s) {
     var t = String(c.tipo || "").toUpperCase().replace(/[^A-Z]/g, "");
     var valor = c.valor || "";
+    var uni = IDX.unidade[s.unidade_id] || {};
     return { id: c.id, setor_id: s.id, unidade_id: s.unidade_id, forum_id: s.forum_id,
       comarca_id: s.comarca_id, nome: c.descricao || valor, cargo: c.tipo || "",
       telefone: t === "EMAIL" ? "" : valor, email: t === "EMAIL" ? valor : "",
+      sv: s.virtual ? 1 : 0, uv: uni.virtual ? 1 : 0,
       setor: s.nome || "", unidade: (IDX.unidade[s.unidade_id] || {}).nome || "",
       forum: (IDX.forum[s.forum_id] || {}).nome || "",
       comarca: (coms.filter(function (x) { return String(x.id) === String(s.comarca_id); })[0] || {}).nome || "" };
@@ -365,10 +406,14 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
       var porUni = {};
       ctts2.forEach(function (c) { porUni[c.unidade_id] = (porUni[c.unidade_id] || 0) + 1; });
       var nSet2 = unis.reduce(function (a, u) { return a + (u.n_setores || 0); }, 0);
-      box.innerHTML = '<button class="fc-back" data-back="com">← ' + esc(nomeLimpo("sel-com")) + "</button>" +
+      var gerais2 = ctts2.filter(function (c) { return c.sv && c.uv; });
+      box.innerHTML = '<button type="button" class="fc-back" data-back="com">← ' + esc(nomeLimpo("sel-com")) + "</button>" +
         '<div class="fc-head"><div><h2 class="fc-title">' + esc(nomeLimpo("sel-for")) + "</h2>" +
         "<p class=\"fc-subtitle\">" + unis.length + " Unidades · " + nSet2 + " Setores · " + ctts2.length + " Contatos</p></div></div>" +
         chainHtml() +
+        '<div id="sel-slot"></div>' +
+        (gerais2.length ? '<div class="fc-section"><h3>Contatos gerais</h3>' +
+          gerais2.map(function (c) { return cardContato(c, ""); }).join("") + "</div>" : "") +
         '<div class="fc-section"><h3>Unidades</h3>' +
         unis.map(function (u) {
           return cardNivel("uni", u.id, u.nome,
