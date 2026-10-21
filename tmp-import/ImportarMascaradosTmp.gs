@@ -4,7 +4,7 @@
  * Como rodar: selecione "importarMascaradosTudo" e clique em Executar.
  * Autoriza quando pedir. Leva ~1-2 min. Confira o Log ao final.
  */
-var _BASE_CSV = "https://raw.githubusercontent.com/EnzoMoulin/diretorio-contatos/main/tmp-import/";
+var _BASE_CSV = "https://raw.githubusercontent.com/EnzoMoulin/diretorio-contatos/master/tmp-import/";
 var _ABAS = ["MUNICIPIOS", "FORUM", "UNIDADES_ORGANIZACIONAIS", "CONTATOS", "TELEFONES_UTEIS"];
 var _PLANILHAS = {
   publica: "1P-gMnCpQVETWbJxOjiPDdv0TikVxMB5S-Wu-zbUiHSY",
