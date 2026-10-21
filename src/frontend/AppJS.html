@@ -23,7 +23,7 @@ function usuarioVisitante(estado) {
     podeSolicitarAcesso: false,
     unidadeIds: [],
     unidades: [],
-    localidades: []
+    comarcas: []
   };
 }
 
@@ -290,37 +290,37 @@ function atualizarInterfaceUsuario() {
       configBadge.className = "config-conta-badge " + badgeClasse;
     }
 
-    var localidadesWrap = document.getElementById("config-conta-localidades-wrap");
-    var localidadesList = document.getElementById("config-conta-localidades");
+    var comarcasWrap = document.getElementById("config-conta-comarcas-wrap");
+    var comarcasList = document.getElementById("config-conta-comarcas");
     var escopoHint = document.getElementById("config-conta-escopo-hint");
-    if (localidadesWrap && localidadesList) {
+    if (comarcasWrap && comarcasList) {
       var unidadesUsuario = Array.isArray(usuario.unidades) ? usuario.unidades : [];
-      localidadesList.innerHTML = "";
+      comarcasList.innerHTML = "";
       if (logado && perfil === "GESTOR_SISTEMA") {
         var chipAll = document.createElement("span");
-        chipAll.className = "config-localidade-chip config-localidade-chip--all";
+        chipAll.className = "config-comarca-chip config-comarca-chip--all";
         chipAll.textContent = "Escopo global";
-        localidadesList.appendChild(chipAll);
-        localidadesWrap.classList.remove("hidden");
+        comarcasList.appendChild(chipAll);
+        comarcasWrap.classList.remove("hidden");
         if (escopoHint) escopoHint.textContent = "Gestor do Sistema — acesso e edição ilimitadas.";
       } else if (logado && perfil === "GESTOR_CONTEUDO" && unidadesUsuario.length) {
         unidadesUsuario.forEach(function(unidade){
           var chip = document.createElement("span");
-          chip.className = "config-localidade-chip";
+          chip.className = "config-comarca-chip";
           chip.textContent = [unidade.municipio, unidade.forum, unidade.caminhoTexto || unidade.nome || unidade.id].filter(Boolean).join(" › ");
-          localidadesList.appendChild(chip);
+          comarcasList.appendChild(chip);
         });
-        localidadesWrap.classList.remove("hidden");
+        comarcasWrap.classList.remove("hidden");
         if (escopoHint) escopoHint.textContent = "Gestor de Conteúdo — edição limitada às Unidades acima.";
       } else if (logado && perfil === "GESTOR_CONTEUDO") {
         var chipSemEscopo = document.createElement("span");
-        chipSemEscopo.className = "config-localidade-chip";
+        chipSemEscopo.className = "config-comarca-chip";
         chipSemEscopo.textContent = "Nenhuma Unidade vinculada";
-        localidadesList.appendChild(chipSemEscopo);
-        localidadesWrap.classList.remove("hidden");
-        if (escopoHint) escopoHint.textContent = "Gestor de Conteúdo — sem localidades vinculadas.";
+        comarcasList.appendChild(chipSemEscopo);
+        comarcasWrap.classList.remove("hidden");
+        if (escopoHint) escopoHint.textContent = "Gestor de Conteúdo — sem Fóruns ou Unidades vinculados.";
       } else {
-        localidadesWrap.classList.add("hidden");
+        comarcasWrap.classList.add("hidden");
       }
     }
   } catch (ePrem) {}
@@ -503,11 +503,11 @@ function atualizarInterfaceUsuario() {
         escopoInfo.textContent = "";
         escopoInfo.style.display = "none";
       } else if (logado && perfil === "GESTOR_SISTEMA") {
-        subtitulo.textContent = "Gerenciamento de contatos do Empresa Exemplo";
+        subtitulo.textContent = "Gerenciamento de contatos do Poder Judiciário do Estado do Espírito Santo";
         escopoInfo.textContent = "Gestor do Sistema — escopo global.";
         escopoInfo.style.display = "block";
       } else {
-        subtitulo.textContent = "Gerenciamento de contatos do Empresa Exemplo";
+        subtitulo.textContent = "Gerenciamento de contatos do Poder Judiciário do Estado do Espírito Santo";
         escopoInfo.style.display = "none";
       }
     }
@@ -552,7 +552,7 @@ function atualizarInterfaceUsuario() {
       btnUsuarios.style.display = (ehGestorSistema && isUsuarios) ? "" : "none";
     }
     // Compatibilidade: esconde stubs legados permanentemente
-    ["btn-imprimir-todas-localidades","btn-imprimir-todos-numeros","btn-imprimir-esta-pagina","btn-imprimir-consulta"].forEach(function(id){
+    ["btn-imprimir-todas-comarcas","btn-imprimir-todos-numeros","btn-imprimir-esta-pagina","btn-imprimir-consulta"].forEach(function(id){
       var el=document.getElementById(id);
       if(el){ el.style.display="none"; el.classList.add("hidden"); el.setAttribute("aria-hidden","true"); }
     });
@@ -673,7 +673,7 @@ function fazerLogin() {
  * - Visitante -> aba de Consulta (mapa + lista somente leitura)
  */
 function navegarParaTelefones() {
-  // v3.33 GS usa mapa (consulta-telefones-view) com todas localidades, igual GC mas sem restricao
+  // v3.33 GS usa mapa (consulta-telefones-view) com todas comarcas, igual GC mas sem restricao
   try{
     var _pNav = (typeof usuarioAtual!=="undefined" && usuarioAtual) ? String(usuarioAtual.perfil||"").toUpperCase() : "";
     var _lNav = !!(typeof usuarioAtual!=="undefined" && usuarioAtual && usuarioAtual.logado===true);
@@ -843,10 +843,10 @@ function resetarTelefonesView(){
   try{
     // v3.30: reset Telefones para todos níveis ao sair/entrar
     if(typeof filtroAtual!=="undefined"){
-      filtroAtual.texto=""; filtroAtual.microrregiao=""; filtroAtual.localidade=""; filtroAtual.tipo=""; filtroAtual.setor="";
+      filtroAtual.texto=""; filtroAtual.microrregiao=""; filtroAtual.comarca=""; filtroAtual.tipo=""; filtroAtual.setor="";
       var c1=document.getElementById("campo-pesquisa"); if(c1) c1.value="";
       var c2=document.getElementById("filtro-microrregiao"); if(c2) c2.value="";
-      var c3=document.getElementById("filtro-localidade"); if(c3) c3.value="";
+      var c3=document.getElementById("filtro-comarca"); if(c3) c3.value="";
       var c4=document.getElementById("filtro-setor"); if(c4) c4.value="";
       var c5=document.getElementById("filtro-tipo"); if(c5) c5.value="";
       if(typeof carregarFiltros==="function") try{ carregarFiltros(); }catch(e){}
@@ -857,9 +857,9 @@ function resetarTelefonesView(){
     if(cc) cc.value="";
     if(typeof municipioSelecionado!=="undefined") municipioSelecionado="";
     if(typeof microrregiaoSelecionada!=="undefined") microrregiaoSelecionada="";
-    // GC: ao reentrar, mostrar só permitidas via renderizarLocalidades (que já filtra para GC)
+    // GC: ao reentrar, mostrar só permitidas via renderizarComarcas (que já filtra para GC)
     // Para todos, limpar lista e estado colapsado
-    try{ if(typeof estadoColapsadoLocalidade!=="undefined") for(var k in estadoColapsadoLocalidade) delete estadoColapsadoLocalidade[k]; }catch(e){}
+    try{ if(typeof estadoColapsadoComarca!=="undefined") for(var k in estadoColapsadoComarca) delete estadoColapsadoComarca[k]; }catch(e){}
     // If currently in telefones/consulta, re-render de forma limpa será feito por aoEntrarConsultaTelefonesView ou carregarFiltros
   }catch(e){}
 }
@@ -869,13 +869,13 @@ function aoEntrarConsultaTelefonesView(){
     var isGC = _perfAE==="GESTOR_CONTEUDO";
     var isGS = _perfAE==="GESTOR_SISTEMA";
     if(!isGC && !isGS) return; // v3.33 GS tambem entra via mapa
-    // If list empty or showing placeholder, render only allowed localidades in ordemLocalidades order
+    // If list empty or showing placeholder, render only allowed comarcas in ordemComarcas order
     var container = document.getElementById("consulta-lista");
     if(!container) return;
     var vazia = container.querySelector(".consulta-lista-vazio");
-    var hasItems = !!container.querySelector(".localidade-item");
+    var hasItems = !!container.querySelector(".comarca-item");
     if(vazia || !hasItems){
-      if(typeof renderizarLocalidades==="function") renderizarLocalidades();
+      if(typeof renderizarComarcas==="function") renderizarComarcas();
     }
     // Also ensure search input cleared
     var campo = document.getElementById("campo-pesquisa-consulta");
@@ -895,7 +895,7 @@ function fecharPerfilUsuario() {
 }
 
 function textoAcessoPerfil(acesso) {
-  return acesso.caminhoTexto || acesso.nome || acesso.id || "Localidade";
+  return acesso.caminhoTexto || acesso.nome || acesso.id || "Fórum";
 }
 
 function abrirPerfilUsuario() {
@@ -915,7 +915,7 @@ function abrirPerfilUsuario() {
   const ajuda = document.getElementById("perfil-usuario-acessos-ajuda");
   ajuda.textContent = ehGestorSistema
     ? "Permissão global do sistema"
-    : "Você pode remover uma localidade quando não precisar mais dela";
+    : "Você pode remover um Fórum ou uma Unidade quando não precisar mais deles";
 
   if (ehGestorSistema) {
     const total = document.createElement("div");
@@ -927,7 +927,7 @@ function abrirPerfilUsuario() {
     if (!acessos.length) {
       const vazio = document.createElement("div");
       vazio.className = "profile-access-empty";
-      vazio.textContent = "Nenhum acesso por localidade vinculado.";
+      vazio.textContent = "Nenhum acesso por Fórum ou Unidade vinculado.";
       lista.appendChild(vazio);
     } else {
       acessos.forEach(function(acesso) {
@@ -958,7 +958,7 @@ function abrirPerfilUsuario() {
 function confirmarRemocaoMeuAcesso(acesso, botao) {
   confirmarAcaoSistema({
     titulo: "Remover acesso",
-    mensagem: 'Você deixará de acessar e editar a localidade "' + textoAcessoPerfil(acesso) + '". Deseja continuar?',
+    mensagem: 'Você deixará de acessar e editar o Fórum ou a Unidade "' + textoAcessoPerfil(acesso) + '". Deseja continuar?',
     textoConfirmar: "Remover acesso",
     perigo: true,
     icone: "−"
