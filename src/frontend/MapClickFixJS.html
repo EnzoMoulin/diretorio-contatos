@@ -41,7 +41,7 @@
   }
 
   function localizarOpcaoMunicipio(nome) {
-    var select = document.getElementById("fc-localidade") || document.getElementById("fc-search");
+    var select = document.getElementById("fc-municipio") || document.getElementById("fc-search");
     if (!select || String(select.tagName || "").toUpperCase() !== "SELECT") return null;
     var alvo = normalizarNome(nome);
     var opcao = Array.prototype.slice.call(select.options || []).find(function (item) {
