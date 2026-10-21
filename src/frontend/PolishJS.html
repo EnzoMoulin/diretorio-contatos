@@ -18,13 +18,6 @@
     if (!topbar) return;
 
     var titulo = topbar.querySelector(".system-title");
-    if (titulo && !titulo.querySelector(".topbar__eyebrow")) {
-      var eyebrow = document.createElement("span");
-      eyebrow.className = "topbar__eyebrow";
-      eyebrow.textContent = "Diretório institucional";
-      titulo.insertBefore(eyebrow, titulo.firstChild);
-    }
-
     var actions = null;
     Array.prototype.slice.call(topbar.children).forEach(function (filho) {
       if (filho !== titulo && filho.tagName === "DIV" && !filho.classList.contains("topbar__mobile-menu")) actions = filho;
