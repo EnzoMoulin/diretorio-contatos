@@ -1,12 +1,12 @@
-"ID","NOME","TIPO","VALOR","ATIVO"
-"UTL0001","Ajudes","Telefone","(27) 3232-XXXX","TRUE"
-"UTL0002","Banestes (SAC)","Telefone","0800 727  XXXX","TRUE"
-"UTL0003","Banestes (Ouvidoria)","Telefone","0800 727  XXXX","TRUE"
-"UTL0004","Corregedoria Geral da Justiça","Telefone","(27) 3145-XXXX","TRUE"
-"UTL0005","Escola da Magistratura (EMES)","Telefone","(27) 3145-XXXX","TRUE"
-"UTL0006","Escola da Magistratura (EMES)","Telefone","(27) 3145-XXXX","TRUE"
-"UTL0007","IPAJM (Perícia)","Telefone","0800 283  XXXX","TRUE"
-"UTL0008","IPAJM (Perícia)","Telefone","(27) 3381-XXXX","TRUE"
-"UTL0009","IPAJM (Perícia)","Telefone","(27) 3381-XXXX","TRUE"
-"UTL0010","Sindijudiciário","Telefone","(27) 3357-XXXX","TRUE"
-"UTL0011","Ordem dos Advogados do Brasil (OAB)","Telefone","(27) 3232. XXXX","TRUE"
+ID,NOME,TIPO,VALOR,ATIVO
+UTL0001,Ajudes,Telefone,(27) 3232-XXXX,TRUE
+UTL0002,Banestes (SAC),Telefone,0800 727  XXXX,TRUE
+UTL0003,Banestes (Ouvidoria),Telefone,0800 727  XXXX,TRUE
+UTL0004,Corregedoria Geral da Justiça,Telefone,(27) 3145-XXXX,TRUE
+UTL0005,Escola da Magistratura (EMES),Telefone,(27) 3145-XXXX,TRUE
+UTL0006,Escola da Magistratura (EMES),Telefone,(27) 3145-XXXX,TRUE
+UTL0007,IPAJM (Perícia),Telefone,0800 283  XXXX,TRUE
+UTL0008,IPAJM (Perícia),Telefone,(27) 3381-XXXX,TRUE
+UTL0009,IPAJM (Perícia),Telefone,(27) 3381-XXXX,TRUE
+UTL0010,Sindijudiciário,Telefone,(27) 3357-XXXX,TRUE
+UTL0011,Ordem dos Advogados do Brasil (OAB),Telefone,(27) 3232. XXXX,TRUE
