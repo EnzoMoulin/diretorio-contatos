@@ -331,7 +331,8 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
     var box = $("fc-content");
     if (!box) return;
     if (!sel.set && !sel.uni && !sel.for && !sel.com) {
-      box.innerHTML = '<div class="fc-section"><h3>Comarcas e órgãos</h3>' + coms.map(function (c) {
+      box.innerHTML = (coms.length ? '<span class="fc-pill fc-total-localidades">' + coms.length + (coms.length == 1 ? " Comarca" : " Comarcas") + "</span>" : "") +
+      '<div class="fc-section"><h3>Comarcas e órgãos</h3>' + coms.map(function (c) {
         return cardNivel("com", c.id, c.nome,
           pill(c.n_foruns || 0, "Fórum", "Fóruns") +
           pill(c.n_unidades || 0, "Unidade", "Unidades") +

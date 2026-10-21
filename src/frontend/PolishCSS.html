@@ -628,8 +628,6 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
 .fc-contato-valor {color:#1d4ed8;font-size:14px;font-weight:700;text-decoration:none;overflow-wrap:anywhere}
 .fc-contato-actions {display:flex;gap:5px}
 .fc-empty {padding:20px;border:1px dashed #cbd5e1;border-radius:12px;color:#64748b;text-align:center}
-.fc-contato {align-items:flex-start;flex-direction:column}
-.fc-contato-side {justify-content:flex-start}
 body[data-theme="dark"] .fc-card {background:#1e293b;border-color:#334155}
 body[data-theme="dark"] .fc-card h4,body[data-theme="dark"] .fc-contato h4 {color:#f8fafc}
 body[data-theme="dark"] .fc-pill {background:#0f172a;color:#cbd5e1}
@@ -645,9 +643,7 @@ body[data-theme="dark"] .fc-back {color:#93c5fd}
 .sidebar-header span {display:block;margin-top:3px;font-size:12px;line-height:1.35;color:#cbd5e1;opacity:.86}
 /* ================= original: painel consulta + mapa ================= */
 .consulta-layout {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,2vw,24px);align-items:stretch}
-.consulta-layout {grid-template-columns:1fr}
 #view-consulta .consulta-layout {flex:1 1 auto;min-height:0;height:auto}
-#view-consulta .consulta-layout {height:auto;min-height:0}
 .fc-panel {max-height:100%}
 .fc-panel {width:100%;min-height:0;overflow-y:auto;background:#fff;border:1px solid #cbd5e1;border-radius:16px;padding:clamp(16px,2vw,24px);box-shadow:0 6px 18px rgba(15,23,42,.11);display:flex;flex-direction:column}
 .fc-panel #lista {padding-bottom:16px}
@@ -688,9 +684,4 @@ body[data-theme="dark"] .fc-subtitle,body[data-theme="dark"] .manual-section-hea
 body[data-theme="dark"] .fc-section h3 {color:#f8fafc}
 body[data-theme="dark"] .fc-total-localidades {background:#1e3a8a;color:#bfdbfe}
 body[data-theme="dark"] .fc-map-legenda {background:rgba(30,41,59,.94);border-color:#475569;color:#cbd5e1}
-.consulta-layout {grid-template-columns:1fr}
-.fc-panel {border:0;box-shadow:none;height:auto;overflow:visible}
-.fc-contato,.fc-card {break-inside:avoid}
-#print-area {display:block!important}
-#lista,.fc-search,#sel-row,.fc-back,.fc-bottom-nav,#crumb {display:none!important}
 </style>
