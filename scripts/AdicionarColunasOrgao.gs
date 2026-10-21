@@ -1,0 +1,74 @@
+/**
+ * COMPLETAR COLUNAS DO ORGAO (rodar 1x em cada planilha mascarada).
+ * SEM COPIAR ID: o script usa a planilha em que ele foi colado.
+ *
+ * Como rodar (2 min por planilha):
+ * 1. Abra a planilha mascarada (a Pública primeiro, depois a Privada).
+ * 2. Menu Extensões > Apps Script (abre uma nova guia).
+ * 3. Apague o conteúdo do arquivo Code.gs e cole TODO o conteúdo deste
+ *    arquivo no lugar (ou crie com + > Script e cole lá).
+ * 4. Salve (Ctrl+S), escolha a função "completarColunasOrgao" na barra
+ *    de ferramentas (ao lado de "Depurar") e clique em Executar.
+ * 5. Na primeira vez o Google pede autorização: clique em Revisar
+ *    permissões > escolha sua conta > Avançado > Acessar (projeto
+ *    não verificado) > Permitir. É o seu próprio script, sem risco.
+ * 6. Aguarde ~30s e confira em Execuções (relógio, à esquerda) a
+ *    mensagem "OK" e as contagens UNIDADES_ORGANIZACIONAIS: 179 e
+ *    CONTATOS: 286.
+ * 7. Repita os passos 1–6 na outra planilha mascarada.
+ *
+ * O que faz: garante as colunas TIPO/ENDERECO/CEP/EMAIL/OBSERVACAO em
+ * MUNICIPIOS (preenche a linha do Orgao MUN0000 com os dados publicos
+ * oficiais) e MUNICIPIO_ID em UNIDADES_ORGANIZACIONAIS e CONTATOS
+ * (liga os 179 nos + 286 contatos do Orgao). Nao toca em telefone,
+ * ramal, whatsapp ou e-mail (ja mascarados).
+ */
+const UO_ORGAO = ["UNI0642","UNI0643","UNI0644","UNI0645","UNI0646","UNI0647","UNI0648","UNI0649","UNI0650","UNI0651","UNI0652","UNI0653","UNI0654","UNI0655","UNI0656","UNI0657","UNI0658","UNI0659","UNI0660","UNI0661","UNI0662","UNI0681","UNI0682","UNI0683","UNI0684","UNI0685","UNI0686","UNI0687","UNI0688","UNI0689","UNI0690","UNI0691","UNI0692","UNI0693","UNI0694","UNI0695","UNI0696","UNI0697","UNI0698","UNI0699","UNI0700","UNI0701","UNI0702","UNI0703","UNI0704","UNI0705","UNI0706","UNI0707","UNI0708","UNI0709","UNI0710","UNI0711","UNI0712","UNI0713","UNI0714","UNI0715","UNI0716","UNI0717","UNI0718","UNI0719","UNI0720","UNI0721","UNI0722","UNI0723","UNI0724","UNI0725","UNI0726","UNI0727","UNI0728","UNI0729","UNI0730","UNI0731","UNI0732","UNI0733","UNI0734","UNI0735","UNI0736","UNI0737","UNI0738","UNI0739","UNI0740","UNI0741","UNI0742","UNI0743","UNI0744","UNI0745","UNI0746","UNI0747","UNI0748","UNI0749","UNI0750","UNI0751","UNI0752","UNI0753","UNI0754","UNI0755","UNI0756","UNI0757","UNI0758","UNI0759","UNI0760","UNI0761","UNI0762","UNI0763","UNI0764","UNI0765","UNI0766","UNI0767","UNI0768","UNI0769","UNI0770","UNI0771","UNI0772","UNI0773","UNI0774","UNI0775","UNI0776","UNI0777","UNI0778","UNI0779","UNI0780","UNI0781","UNI0782","UNI0783","UNI0784","UNI0785","UNI0786","UNI0787","UNI0788","UNI0789","UNI0790","UNI0791","UNI0792","UNI0793","UNI0794","UNI0795","UNI0796","UNI0797","UNI0798","UNI0799","UNI0800","UNI0801","UNI0802","UNI0803","UNI0804","UNI0805","UNI0806","UNI0807","UNI0808","UNI0809","UNI0810","UNI0811","UNI0812","UNI0813","UNI0814","UNI0815","UNI0816","UNI0817","UNI0818","UNI0819","UNI0820","UNI0821","UNI0822","UNI0823","UNI0824","UNI0825","UNI0826","UNI0827","UNI0828","UNI0829","UNI0830","UNI0831","UNI0832","UNI0833","UNI0834","UNI0835","UNI0836","UNI0837","UNI0838"];
+const CT_ORGAO = ["C001484","C001485","C001486","C001487","C001488","C001489","C001490","C001491","C001492","C001493","C001494","C001495","C001496","C001497","C001498","C001499","C001500","C001501","C001502","C001503","C001504","C001505","C001506","C001507","C001508","C001509","C001510","C001511","C001512","C001513","C001514","C001515","C001516","C001517","C001518","C001519","C001520","C001521","C001522","C001523","C001524","C001525","C001526","C001527","C001528","C001529","C001530","C001531","C001532","C001533","C001534","C001535","C001536","C001537","C001538","C001539","C001540","C001541","C001542","C001543","C001544","C001545","C001546","C001547","C001548","C001549","C001550","C001551","C001552","C001553","C001554","C001555","C001556","C001557","C001558","C001559","C001560","C001561","C001562","C001563","C001564","C001565","C001566","C001567","C001568","C001569","C001570","C001571","C001572","C001573","C001574","C001575","C001576","C001577","C001578","C001579","C001580","C001581","C001582","C001583","C001584","C001585","C001586","C001587","C001588","C001589","C001590","C001591","C001592","C001593","C001594","C001595","C001596","C001597","C001598","C001599","C001600","C001601","C001602","C001603","C001604","C001605","C001606","C001607","C001608","C001609","C001610","C001611","C001612","C001613","C001614","C001615","C001616","C001617","C001618","C001619","C001620","C001621","C001622","C001623","C001624","C001625","C001626","C001627","C001628","C001629","C001630","C001631","C001632","C001633","C001634","C001635","C001636","C001637","C001638","C001639","C001640","C001641","C001642","C001643","C001644","C001645","C001646","C001647","C001648","C001649","C001650","C001651","C001652","C001653","C001654","C001655","C001656","C001657","C001658","C001659","C001660","C001661","C001662","C001663","C001664","C001665","C001666","C001667","C001668","C001669","C001670","C001671","C001672","C001673","C001674","C001675","C001676","C001677","C001678","C001679","C001680","C001681","C001682","C001683","C001684","C001685","C001686","C001687","C001688","C001689","C001690","C001691","C001692","C001693","C001694","C001695","C001696","C001697","C001698","C001699","C001700","C001701","C001702","C001703","C001704","C001705","C001706","C001707","C001708","C001709","C001710","C001711","C001712","C001713","C001714","C001715","C001716","C001717","C001718","C001719","C001720","C001721","C001722","C001723","C001724","C001725","C001726","C001727","C001728","C001729","C001730","C001731","C001732","C001733","C001734","C001735","C001736","C001737","C001738","C001739","C001740","C001741","C001742","C001743","C001744","C001745","C001746","C001747","C001748","C001749","C001750","C001751","C001752","C001753","C001754","C001755","C001756","C001757","C001758","C001759","C001760","C001761","C001762","C001763","C001764","C001765","C001766","C001767","C001768","C001769"];
+
+function completarColunasOrgao() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error("Rode este script a partir da planilha (Extensoes > Apps Script).");
+
+  const mun = ss.getSheetByName("MUNICIPIOS");
+  const hMun = mun.getRange(1, 1, 1, mun.getLastColumn()).getValues()[0].map(String);
+  ["TIPO", "ENDERECO", "CEP", "EMAIL", "OBSERVACAO"].forEach(function (h) {
+    if (hMun.indexOf(h) === -1) {
+      mun.getRange(1, hMun.length + 1).setValue(h);
+      hMun.push(h);
+    }
+  });
+  const idCol = hMun.indexOf("ID");
+  const vals = mun.getRange(2, 1, mun.getLastRow() - 1, hMun.length).getValues();
+  vals.forEach(function (r) {
+    if (String(r[idCol]) === "MUN0000") {
+      r[hMun.indexOf("TIPO")] = "ORGAO";
+      r[hMun.indexOf("ENDERECO")] = "Rua Desembargador Homero Mafra, n\u00ba 60 - Enseada do Su\u00e1, Vit\u00f3ria/ES";
+      r[hMun.indexOf("CEP")] = "29050-275";
+      r[hMun.indexOf("OBSERVACAO")] = "Cat\u00e1logo Ramais TJES - agosto/2026";
+    }
+  });
+  mun.getRange(2, 1, vals.length, hMun.length).setValues(vals);
+
+  [["UNIDADES_ORGANIZACIONAIS", UO_ORGAO], ["CONTATOS", CT_ORGAO]].forEach(function (par) {
+    const sh = ss.getSheetByName(par[0]);
+    const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(String);
+    let mi = head.indexOf("MUNICIPIO_ID");
+    if (mi === -1) {
+      mi = head.length;
+      sh.getRange(1, mi + 1).setValue("MUNICIPIO_ID");
+      head.push("MUNICIPIO_ID");
+    }
+    const ids = {};
+    par[1].forEach(function (id) { ids[id] = true; });
+    const idC = head.indexOf("ID");
+    const rows = sh.getRange(2, 1, sh.getLastRow() - 1, head.length).getValues();
+    let n = 0;
+    rows.forEach(function (r) {
+      if (ids[String(r[idC])]) { r[mi] = "MUN0000"; n++; }
+    });
+    sh.getRange(2, 1, rows.length, head.length).setValues(rows);
+    Logger.log(par[0] + ": " + n + " linhas ligadas ao Orgao.");
+  });
+  Logger.log("OK");
+}

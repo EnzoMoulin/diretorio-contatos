@@ -72,7 +72,7 @@
     var porMunicipio = {};
 
     contatos.forEach(function (item) {
-      var municipio = texto(item, ["municipio", "localidade", "MUNICIPIO", "LOCALIDADE"]) || "Não informado";
+      var municipio = texto(item, ["municipio", "comarca", "MUNICIPIO", "COMARCA"]) || "Não informado";
       var forumId = texto(item, ["forumId", "FORUM_ID"]);
       var forum = texto(item, ["forum", "FORUM"]);
       var unidadeId = texto(item, ["unidadeId", "UNIDADE_ID"]);
@@ -97,7 +97,7 @@
     atualizarTextoSeguro("total-setores", setores.size);
     atualizarTextoSeguro("total-tipos", tipos.size);
     renderResumo("grafico-tipos", porTipo);
-    renderResumo("grafico-localidades", porMunicipio);
+    renderResumo("grafico-comarcas", porMunicipio);
   };
 
   function contarSetores(lista) {
