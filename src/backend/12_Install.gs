@@ -400,7 +400,7 @@ function criarAbaSetores(spreadsheet) {
  * V4 — Cria aba CONTATOS (FORUM/UNIDADE/SETOR -> CONTATOS).
  */
 function criarAbaContatos(spreadsheet) {
-  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.CONTATOS, ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","UNIDADE_ID","SETOR_ID","TIPO","DESCRICAO","VALOR","ORDEM","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","OBSERVACAO"]);
+  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.CONTATOS, ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","TIPO","DESCRICAO","VALOR","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","ORDEM","OBSERVACAO"]);
 }
 
 /**

@@ -284,10 +284,7 @@ function construirHierarquiaForumContatos(opcoes) {
   DB.read(shContatos).forEach(function(linha, indice) {
     const id = _fcTexto(_fcCampo(mapaContatos, linha, ["ID"]));
     if (!id || !paraBoolean(_fcCampo(mapaContatos, linha, ["ATIVO"], true))) return;
-    const candidatosNo = ["UNIDADE_ORGANIZACIONAL_ID", "SETOR_ID", "UNIDADE_ID"]
-      .map(function(campo) { return _fcTexto(_fcCampo(mapaContatos, linha, [campo], "")); })
-      .filter(Boolean);
-    const noId = candidatosNo.find(function(candidato) { return !!nos[candidato]; }) || candidatosNo[0] || "";
+    const noId = _fcTexto(_fcCampo(mapaContatos, linha, ["UNIDADE_ORGANIZACIONAL_ID"]));
     const forumIdInformado = _fcTexto(_fcCampo(mapaContatos, linha, ["FORUM_ID"]));
     const municipioIdInformado = _fcTexto(_fcCampo(mapaContatos, linha, ["MUNICIPIO_ID"]));
     const forumId = noId && nos[noId] ? nos[noId].forumId : forumIdInformado;

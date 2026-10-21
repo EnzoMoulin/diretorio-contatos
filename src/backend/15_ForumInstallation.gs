@@ -21,7 +21,7 @@ function instalarSistemaForum(segredo) {
     // Fontes de migração/rollback; a consulta operacional V5 não depende destas abas.
     garantirAbaForumV4(ss, CONFIG.SHEETS.UNIDADES, ["ID","FORUM_ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO","OBSERVACAO"]);
     garantirAbaForumV4(ss, CONFIG.SHEETS.SETORES, ["ID","UNIDADE_ID","NOME","ENDERECO","CEP","OBSERVACAO","ORDEM","ATIVO"]);
-    garantirAbaForumV4(ss, CONFIG.SHEETS.CONTATOS, ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","UNIDADE_ID","SETOR_ID","TIPO","DESCRICAO","VALOR","ORDEM","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","OBSERVACAO"]);
+    garantirAbaForumV4(ss, CONFIG.SHEETS.CONTATOS, ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","TIPO","DESCRICAO","VALOR","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","ORDEM","OBSERVACAO"]);
 
     // Demais abas operacionais permanecem, mas TELEFONES não é criada.
     garantirAbaForumV4(ss, CONFIG.SHEETS.TELEFONES_UTEIS, ["ID","NOME","TIPO","VALOR","ATIVO"]);
