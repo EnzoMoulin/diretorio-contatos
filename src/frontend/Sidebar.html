@@ -16,14 +16,14 @@ Arquivo: Sidebar.html
     </div>
 
     <nav class="sidebar-menu" aria-label="Navegação principal">
-      <button type="button" id="menu-dashboard" class="menu-item" onclick="mostrarView('dashboard-view')">
+      <button type="button" id="menu-dashboard" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('dashboard-view')">
         <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="4" rx="1.5"></rect><rect x="14" y="11" width="7" height="10" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
         <span>Dashboard</span>
       </button>
 
-      <button type="button" id="menu-telefones" class="menu-item active" onclick="navegarParaTelefones()">
-        <span class="icon" aria-hidden="true">☎</span>
-        <span>Contatos</span>
+      <button type="button" id="menu-telefones" class="menu-item active" data-view="consulta" onclick="navegarParaTelefones()">
+        <span class="icon" aria-hidden="true">📞</span>
+        <span>Consulta</span>
       </button>
 
       <button type="button" id="menu-login" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="entrarAreaAdministrativa()">
@@ -53,17 +53,17 @@ Arquivo: Sidebar.html
         <span>Usuários</span>
       </button>
 
-      <button type="button" id="menu-alteracoes" class="menu-item" onclick="mostrarView('registro-alteracoes-view')">
+      <button type="button" id="menu-alteracoes" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('registro-alteracoes-view')">
         <span class="icon" aria-hidden="true">≡</span>
         <span>Registro de Alterações</span>
       </button>
 
-      <button type="button" id="menu-configuracoes" class="menu-item" onclick="mostrarView('configuracoes-view')">
+      <button type="button" id="menu-configuracoes" class="menu-item" data-view="config" onclick="mostrarView('configuracoes-view')">
         <span class="icon" aria-hidden="true">⚙</span>
         <span>Configurações</span>
       </button>
 
-      <button type="button" id="menu-manual" class="menu-item" onclick="mostrarView('manual-view')">
+      <button type="button" id="menu-manual" class="menu-item" data-view="manual" onclick="mostrarView('manual-view')">
         <span class="icon" aria-hidden="true">?</span>
         <span>Manual do Usuário</span>
       </button>

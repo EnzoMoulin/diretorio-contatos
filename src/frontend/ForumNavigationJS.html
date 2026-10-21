@@ -2,6 +2,7 @@
 ==========================================================
 NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
 (port da v2 Python: mesma UI; dados via google.script.run)
+(espelho do public.js da v2; índice client-side sobre a hierarquia original)
 ==========================================================
 */
 <script>
@@ -11,8 +12,14 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
   var sel = { com: "", for: "", uni: "", set: "" };
   var coms = [];
   var IDX = { forum: {}, unidade: {}, setor: {} };
+  var UNI_TIPOS = { UNIDADE: 1, VARA: 1, JUIZADO: 1, SECRETARIA: 1, OUVIDORIA: 1, ESCOLA: 1, GABINETE: 1, ASSESSORIA: 1, COMISSAO: 1, COORDENADORIA: 1 };
 
   function $(id) { return document.getElementById(id); }
+
+  function norm(s) {
+    return String(s || "").toLowerCase().replace(/[áàãâä]/g, "a").replace(/[éèêë]/g, "e")
+      .replace(/[íìîï]/g, "i").replace(/[óòõôö]/g, "o").replace(/[úùûü]/g, "u").replace(/ç/g, "c");
+  }
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (m) {
@@ -61,11 +68,12 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
       });
       coms.push(com);
     });
+    agruparGerais();
   }
 
   function indexarNo(no, fr, paiUni) {
     var tipo = String(no.tipo || "").toUpperCase();
-    if (tipo === "UNIDADE") {
+    if (UNI_TIPOS[tipo]) {
       var u = { id: no.id, nome: no.nome, forum_id: fr.id, comarca_id: fr.comarca_id,
         total: no.qtdContatos || 0, n_setores: 0 };
       IDX.unidade[no.id] = u;
@@ -80,6 +88,53 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
     }
   }
 
+  /* Contatos sem setor (nível de fórum/unidade) -> "Contatos gerais", como na v2. */
+  function agruparGerais() {
+    var orfaos = Object.keys(IDX.setor).filter(function (k) { return !IDX.setor[k].unidade_id; });
+    if (!orfaos.length) return;
+    var porForum = {};
+    orfaos.forEach(function (k) {
+      var s = IDX.setor[k];
+      (porForum[s.forum_id] = porForum[s.forum_id] || []).push(s);
+    });
+    Object.keys(porForum).forEach(function (fid) {
+      var fr = IDX.forum[fid];
+      if (!fr) return;
+      var uid = "auto-u-" + fid, sid = "auto-s-" + fid;
+      IDX.unidade[uid] = { id: uid, nome: "Atendimento geral", forum_id: fid,
+        comarca_id: fr.comarca_id, total: 0, n_setores: 1, virtual: true };
+      var contatos = [];
+      porForum[fid].forEach(function (s) {
+        (s.contatos || []).forEach(function (c) { contatos.push(c); });
+        delete IDX.setor[s.id];
+      });
+      IDX.setor[sid] = { id: sid, nome: "Contatos gerais", forum_id: fid,
+        unidade_id: uid, comarca_id: fr.comarca_id, total: contatos.length,
+        contatos: contatos, virtual: true };
+      fr.n_unidades = Object.keys(IDX.unidade).filter(function (k) { return IDX.unidade[k].forum_id === fid; }).length;
+      fr.n_setores = Object.keys(IDX.setor).filter(function (k) { return IDX.setor[k].forum_id === fid; }).length;
+    });
+    coms.forEach(function (c) {
+      c.n_unidades = 0; c.n_setores = 0;
+      Object.keys(IDX.forum).forEach(function (k) {
+        var f = IDX.forum[k];
+        if (String(f.comarca_id) === String(c.id)) { c.n_unidades += f.n_unidades; c.n_setores += f.n_setores; }
+      });
+    });
+  }
+
+  /* contato da v1 {tipo, descricao, valor} -> formato de exibição */
+  function normalizar(c, s) {
+    var t = String(c.tipo || "").toUpperCase().replace(/[^A-Z]/g, "");
+    var valor = c.valor || "";
+    return { id: c.id, setor_id: s.id, unidade_id: s.unidade_id, forum_id: s.forum_id,
+      comarca_id: s.comarca_id, nome: c.descricao || valor, cargo: c.tipo || "",
+      telefone: t === "EMAIL" ? "" : valor, email: t === "EMAIL" ? valor : "",
+      setor: s.nome || "", unidade: (IDX.unidade[s.unidade_id] || {}).nome || "",
+      forum: (IDX.forum[s.forum_id] || {}).nome || "",
+      comarca: (coms.filter(function (x) { return String(x.id) === String(s.comarca_id); })[0] || {}).nome || "" };
+  }
+
   function contatosDo(filtro) {
     var out = [];
     Object.keys(IDX.setor).forEach(function (k) {
@@ -88,75 +143,16 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
       if (filtro.forum_id && String(s.forum_id) !== String(filtro.forum_id)) return;
       if (filtro.unidade_id && String(s.unidade_id) !== String(filtro.unidade_id)) return;
       if (filtro.setor_id && String(s.id) !== String(filtro.setor_id)) return;
-      (s.contatos || []).forEach(function (c) {
-        out.push({ id: c.id, setor_id: s.id, unidade_id: s.unidade_id, forum_id: s.forum_id,
-          comarca_id: s.comarca_id, setor: s.nome,
-          unidade: (IDX.unidade[s.unidade_id] || {}).nome || "",
-          forum: (IDX.forum[s.forum_id] || {}).nome || "",
-          comarca: (coms.filter(function (x) { return String(x.id) === String(s.comarca_id); })[0] || {}).nome || "",
-          tipo: c.tipo, descricao: c.descricao, valor: c.valor });
-      });
+      (s.contatos || []).forEach(function (c) { out.push(normalizar(c, s)); });
     });
     return out;
   }
 
   /* ---- navegação ---- */
-  function ensureSelRow() {
-    var box = $("fc-content");
-    if (!$("sel-row") && box) {
-      var row = document.createElement("div");
-      row.className = "fc-selects-row";
-      row.id = "sel-row";
-      row.innerHTML =
-        '<select id="sel-com" class="fc-select" aria-label="Comarca"><option value="">Selecione a Comarca/Órgão</option></select>' +
-        '<select id="sel-for" class="fc-select hidden" aria-label="Fórum" disabled><option value="">Fórum…</option></select>' +
-        '<select id="sel-uni" class="fc-select hidden" aria-label="Unidade" disabled><option value="">Unidade…</option></select>' +
-        '<select id="sel-set" class="fc-select hidden" aria-label="Setor" disabled><option value="">Setor…</option></select>';
-      box.parentNode.insertBefore(row, box);
-      $("sel-com").onchange = function () { onCom(); };
-      $("sel-for").onchange = function () { onFor(); };
-      $("sel-uni").onchange = function () { onUni(); };
-      $("sel-set").onchange = function () { onSet(); };
-    }
-  }
-
-  function ensureBottomNav() {
-    if ($("fc-bottom-nav")) return;
-    var panel = document.querySelector(".fc-panel");
-    if (!panel) return;
-    var nav = document.createElement("div");
-    nav.className = "fc-bottom-nav";
-    nav.id = "fc-bottom-nav";
-    nav.innerHTML =
-      '<div class="nav-group"><button type="button" class="fc-back hidden" id="btn-voltar">← Voltar</button>' +
-      '<button type="button" class="fc-back hidden" id="btn-topo">↑ Voltar ao topo</button></div>' +
-      '<button type="button" class="fc-btn hidden" id="btn-print">🖨️ Imprimir / Salvar PDF</button>';
-    panel.appendChild(nav);
-    $("btn-voltar").onclick = function () {
-      if (sel.set) navTo(sel.com, sel.for, sel.uni);
-      else if (sel.uni) navTo(sel.com, sel.for);
-      else if (sel.for) navTo(sel.com);
-      else if (sel.com) navTo("");
-    };
-    $("btn-topo").onclick = function () {
-      document.querySelector(".fc-panel").scrollTo({ top: 0, behavior: "smooth" });
-    };
-    $("btn-print").onclick = imprimirEscopo;
-  }
-
-  function refreshBottomNav() {
-    var bv = $("btn-voltar"), bt = $("btn-topo"), bp = $("btn-print");
-    if (!bv) return;
-    bv.classList.toggle("hidden", !(sel.com || sel.for || sel.uni || sel.set));
-    bp.classList.toggle("hidden", !sel.com);
-    var panel = document.querySelector(".fc-panel");
-    bt.classList.toggle("hidden", !(panel && panel.scrollHeight > panel.clientHeight + 1));
-  }
-
   function loadComs() {
     var s = $("sel-com");
     if (!s) return;
-    s.innerHTML = '<option value="">Selecione a Comarca/Órgão</option>' +
+    s.innerHTML = '<option value="">Selecione uma comarca</option>' +
       coms.map(function (c) {
         return '<option value="' + esc(c.id) + '">' + esc(c.nome) + " (" + (c.total || 0) + ")</option>";
       }).join("");
@@ -263,53 +259,38 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
       '<div class="fc-meta">' + meta + "</div></div>";
   }
 
-  function valorLink(c) {
-    var v = String(c.valor || "");
-    var t = String(c.tipo || "").toUpperCase().replace(/[^A-Z]/g, "");
-    if (!v) return "";
-    if (t === "EMAIL") return '<a class="fc-contato-valor" href="mailto:' + esc(v) + '">' + esc(v) + "</a>";
-    if (t === "TELEFONE" || t === "RAMAL") {
-      var tel = v.replace(/\D/g, "");
-      return '<a class="fc-contato-valor" href="tel:' + esc(tel) + '">' + esc(v) + "</a>";
-    }
-    if (t === "WHATSAPP") {
-      var zap = v.replace(/\D/g, "");
-      return '<a class="fc-contato-valor" href="https://wa.me/55' + esc(zap) + '" target="_blank" rel="noopener">' + esc(v) + "</a>";
-    }
-    return '<span class="fc-contato-valor">' + esc(v) + "</span>";
-  }
-
   function cardContato(c, caminho) {
+    var tel = c.telefone
+      ? '<a class="fc-contato-valor" href="tel:' + esc(String(c.telefone).replace(/\D/g, "")) + '">' + esc(c.telefone) + "</a>" +
+        '<button type="button" class="fc-copy-btn" data-copy="' + esc(c.telefone) + '" title="Copiar">⧉</button>' : "";
+    var mail = c.email
+      ? '<a class="fc-contato-valor" href="mailto:' + esc(c.email) + '">' + esc(c.email) + "</a>" +
+        '<button type="button" class="fc-copy-btn" data-copy="' + esc(c.email) + '" title="Copiar">⧉</button>' : "";
     return '<div class="fc-contato"><div class="fc-contato-main">' +
-      '<span class="fc-contato-tipo">' + esc(c.descricao || c.tipo || "") + (caminho ? " · " + esc(caminho) : "") + "</span>" +
-      "<h4>" + esc(c.descricao || c.tipo || "") + "</h4></div>" +
-      '<div class="fc-contato-side">' + valorLink(c) +
-      '<button type="button" class="fc-copy-btn" data-copy="' + esc(c.valor) + '" title="Copiar">⧉</button></div></div>';
+      '<span class="fc-contato-tipo">' + esc(c.cargo || "") + (caminho ? " · " + esc(caminho) : "") + "</span>" +
+      "<h4>" + esc(c.nome) + "</h4></div>" +
+      '<div class="fc-contato-side">' + tel + mail + "</div></div>";
   }
 
   function printRow(c, caminho) {
     return '<div class="fc-contato"><div class="fc-contato-main">' +
-      '<span class="fc-contato-tipo">' + esc(c.descricao || c.tipo || "") + (caminho ? " · " + esc(caminho) : "") + "</span>" +
-      "<h4>" + esc(c.descricao || "") + "</h4></div><div class=\"fc-contato-side\">" +
-      (c.valor ? '<span class="fc-contato-valor">' + esc(c.valor) + "</span>" : "") + "</div></div>";
+      '<span class="fc-contato-tipo">' + esc(c.cargo || "") + (caminho ? " · " + esc(caminho) : "") + "</span>" +
+      "<h4>" + esc(c.nome) + '</h4></div><div class="fc-contato-side">' +
+      (c.telefone ? '<span class="fc-contato-valor">' + esc(c.telefone) + "</span>" : "") +
+      (c.email ? '<span class="fc-contato-valor">' + esc(c.email) + "</span>" : "") + "</div></div>";
   }
 
   function imprimirEscopo() {
     var filtro = {}, titulo = "";
-    if (sel.set) { filtro.setor_id = sel.set; titulo = nomeLimpo("sel-set"); }
-    else if (sel.uni) { filtro.unidade_id = sel.uni; titulo = nomeLimpo("sel-uni"); }
-    else if (sel.for) { filtro.forum_id = sel.for; titulo = nomeLimpo("sel-for"); }
-    else if (sel.com) { filtro.comarca_id = sel.com; titulo = nomeLimpo("sel-com"); }
+    if (sel.set) { filtro.setor_id = sel.set; titulo = optLabel("sel-set"); }
+    else if (sel.uni) { filtro.unidade_id = sel.uni; titulo = optLabel("sel-uni"); }
+    else if (sel.for) { filtro.forum_id = sel.for; titulo = optLabel("sel-for"); }
+    else if (sel.com) { filtro.comarca_id = sel.com; titulo = optLabel("sel-com"); }
     else return;
+    titulo = titulo.replace(/ \(\d+\)$/, "");
     var ctts = contatosDo(filtro);
-    var area = $("print-area");
-    if (!area) {
-      area = document.createElement("div");
-      area.id = "print-area";
-      area.style.display = "none";
-      document.body.appendChild(area);
-    }
-    area.innerHTML = "<h2>" + esc(titulo) + "</h2><p>" + ctts.length + " contato(s)</p>" +
+    $("print-area").innerHTML = '<h2 class="fc-title">' + esc(titulo) + "</h2>" +
+      '<p class="fc-subtitle">' + ctts.length + " contato(s)</p>" +
       ctts.map(function (c) {
         return printRow(c, sel.set ? "" : c.comarca + " · " + c.forum + " · " + c.unidade + " · " + c.setor);
       }).join("");
@@ -319,20 +300,35 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
   function sync() {
     var row = $("sel-row");
     if (row) row.classList.toggle("hidden", !!(sel.for || sel.uni || sel.set));
+    $("loc-count").classList.toggle("hidden", !!sel.com);
+    $("panel-head").classList.toggle("hidden", !!sel.com);
+    $("btn-print").classList.toggle("hidden", !sel.com);
+    var bv = $("btn-voltar");
+    if (!sel.com && !sel.for && !sel.uni && !sel.set) bv.classList.add("hidden");
+    else {
+      bv.classList.remove("hidden");
+      bv.onclick = function () {
+        if (sel.set) navTo(sel.com, sel.for, sel.uni);
+        else if (sel.uni) navTo(sel.com, sel.for);
+        else if (sel.for) navTo(sel.com);
+        else if (sel.com) navTo("");
+        else buscar();
+      };
+    }
     if (typeof destacarComarcaMapa === "function") {
       var com = coms.filter(function (x) { return String(x.id) === String(sel.com); })[0];
       destacarComarcaMapa(sel.com && com ? com.nome : "");
     }
     buscar();
-    refreshBottomNav();
   }
 
   function buscar() {
-    var box = $("fc-content");
+    var box = $("lista");
     if (!box) return;
+    var selRow = $("sel-row");
+    if (selRow && box.parentNode) box.parentNode.insertBefore(selRow, box);
     if (!sel.set && !sel.uni && !sel.for && !sel.com) {
-      box.innerHTML = (coms.length ? '<span class="fc-pill fc-total-localidades">' + coms.length + (coms.length == 1 ? " Comarca" : " Comarcas") + "</span>" : "") +
-      '<div class="fc-section"><h3>Comarcas e órgãos</h3>' + coms.map(function (c) {
+      box.innerHTML = '<div class="fc-section"><h3>Comarcas</h3>' + coms.map(function (c) {
         return cardNivel("com", c.id, c.nome,
           pill(c.n_foruns || 0, "Fórum", "Fóruns") +
           pill(c.n_unidades || 0, "Unidade", "Unidades") +
@@ -351,7 +347,8 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
       box.innerHTML = '<button class="fc-back" data-back="home">← Comarcas</button>' +
         '<div class="fc-head"><div><h2 class="fc-title">' + esc(com.nome || "") + "</h2>" +
         "<p class=\"fc-subtitle\">" + fors.length + " Fóruns · " + nUni + " Unidades · " + nSet + " Setores · " + ctts.length + " Contatos</p></div></div>" +
-        '<div class="fc-section"><h3>Fóruns e órgãos</h3>' +
+        '<div id="sel-slot"></div>' +
+        '<div class="fc-section"><h3>Fóruns</h3>' +
         fors.map(function (f) {
           return cardNivel("for", f.id, f.nome,
             '<span class="fc-pill fc-pill-type">Fórum</span>' +
@@ -359,6 +356,8 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
             pill(f.n_setores || 0, "Setor", "Setores") +
             pill(porFor[f.id] || 0, "contato", "contatos"));
         }).join("") + "</div>";
+      var slot = $("sel-slot"), row2 = $("sel-row");
+      if (slot && row2) slot.appendChild(row2);
     } else if (!sel.set && !sel.uni && sel.for) {
       var unis = Object.keys(IDX.unidade).map(function (k) { return IDX.unidade[k]; })
         .filter(function (u) { return String(u.forum_id) === String(sel.for); });
@@ -411,70 +410,97 @@ NAVEGAÇÃO DE CONTATOS — COMARCA > FÓRUM > UNIDADE > SETOR
           return cardContato(c, sel.set ? "" : c.comarca + " · " + c.forum + " · " + c.unidade + " · " + c.setor);
         }).join("") + "</div>";
     }
-    bindLista(box);
-    refreshBottomNav();
+    var bt = $("btn-topo"), panel = document.querySelector(".fc-panel");
+    if (bt && panel) bt.classList.toggle("hidden", panel.scrollHeight <= panel.clientHeight + 1);
+    bindNav();
   }
 
-  function bindLista(box) {
-    bindChain(box);
-    box.querySelectorAll("[data-copy]").forEach(function (b) {
-      b.onclick = function () {
-        var done = function () {
+  function bindNav() {
+    bindChain($("lista"));
+    var cps = document.querySelectorAll("#lista [data-copy]");
+    for (var i = 0; i < cps.length; i++) {
+      (function (b) {
+        b.onclick = function () {
           var t = b.textContent;
-          b.textContent = "✓";
-          setTimeout(function () { b.textContent = t; }, 1200);
+          function done() {
+            b.textContent = "✓";
+            setTimeout(function () { b.textContent = t; }, 1200);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(b.getAttribute("data-copy")).then(done, done);
+          } else done();
         };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(b.dataset.copy).then(done).catch(done);
-        } else done();
-      };
-    });
-    box.querySelectorAll("[data-nav]").forEach(function (el) {
-      el.onclick = function () {
-        var id = el.dataset.id, t = el.dataset.nav;
-        if (t === "com") navTo(id);
-        else if (t === "for") navTo(sel.com, id);
-        else if (t === "uni") navTo(sel.com, sel.for, id);
-        else if (t === "set") navTo(sel.com, sel.for, sel.uni, id);
-      };
-    });
-    box.querySelectorAll("[data-back]").forEach(function (el) {
-      el.onclick = function () {
-        var t = el.dataset.back;
-        if (t === "home") navTo("");
-        else if (t === "com") navTo(sel.com);
-        else if (t === "for") navTo(sel.com, sel.for);
-        else if (t === "uni") navTo(sel.com, sel.for, sel.uni);
-      };
-    });
+      })(cps[i]);
+    }
+    var els = document.querySelectorAll("#lista [data-nav]");
+    for (var j = 0; j < els.length; j++) {
+      (function (el) {
+        el.onclick = function () {
+          var id = el.getAttribute("data-id"), t = el.getAttribute("data-nav");
+          if (t === "com") navTo(id);
+          else if (t === "for") navTo(sel.com, id);
+          else if (t === "uni") navTo(sel.com, sel.for, id);
+          else if (t === "set") navTo(sel.com, sel.for, sel.uni, id);
+        };
+      })(els[j]);
+    }
+    var bks = document.querySelectorAll("#lista [data-back]");
+    for (var k = 0; k < bks.length; k++) {
+      (function (el) {
+        el.onclick = function () {
+          var t = el.getAttribute("data-back");
+          if (t === "home") navTo("");
+          else if (t === "com") navTo(sel.com);
+          else if (t === "for") navTo(sel.com, sel.for);
+          else if (t === "uni") navTo(sel.com, sel.for, sel.uni);
+        };
+      })(bks[k]);
+    }
   }
 
   function iniciarNavegacaoForum(forcar) {
-    ensureSelRow();
-    ensureBottomNav();
-    if (!coms.length) {
-      var box = $("fc-content");
-      if (box) box.innerHTML = '<div class="fc-empty">Carregando contatos...</div>';
-      api("obterHierarquiaPublicaForum", "").then(function (dados) {
-        indexar(dados);
-        loadComs();
-        sync();
-        if (typeof window.initMapa === "function") {
-          window.initMapa("fc-map", null, coms, function (nome) {
-            var ach = coms.filter(function (c) {
-              return window.norm(c.nome) === window.norm(nome);
-            })[0];
-            if (ach) navTo(ach.id);
-          });
-        }
-        if (typeof destacarComarcaMapa === "function") destacarComarcaMapa("");
-      }).catch(function (e) {
-        var box2 = $("fc-content");
-        if (box2) box2.innerHTML = '<div class="fc-empty">Não foi possível carregar os contatos. ' + esc((e && e.message) || e) + "</div>";
-      });
-    } else {
+    if (!$("lista") || !$("map")) return;
+    if (window.__navForumOK && !forcar) { sync(); return; }
+    window.__navForumOK = true;
+    api("obterHierarquiaPublicaForum").then(function (dados) {
+      indexar(dados || {});
+      $("loc-count").textContent = coms.length + (coms.length === 1 ? " Comarca" : " Comarcas");
+      loadComs();
+      $("sel-com").onchange = function () { onCom(); };
+      $("sel-for").onchange = function () { onFor(); };
+      $("sel-uni").onchange = function () { onUni(); };
+      $("sel-set").onchange = function () { onSet(); };
+      $("btn-topo").onclick = function () {
+        document.querySelector(".fc-panel").scrollTo({ top: 0, behavior: "smooth" });
+      };
+      $("btn-print").onclick = imprimirEscopo;
+      var itens = document.querySelectorAll('.menu-item[data-view]');
+      for (var i = 0; i < itens.length; i++) {
+        (function (btn) {
+          btn.onclick = function () {
+            var all = document.querySelectorAll(".menu-item");
+            for (var j = 0; j < all.length; j++) all[j].classList.remove("active");
+            btn.classList.add("active");
+            if (typeof mostrarView === "function") {
+              var v = btn.getAttribute("data-view");
+              mostrarView(v === "consulta" ? "consulta-telefones-view" : v === "config" ? "configuracoes-view" : "manual-view");
+            }
+            sel.com = ""; sel.for = ""; sel.uni = ""; sel.set = "";
+            sync();
+          };
+        })(itens[i]);
+      }
       sync();
-    }
+      if (typeof initMapa === "function") {
+        initMapa("map", "map-msg", coms, function (nome) {
+          var achou = null;
+          coms.forEach(function (x) { if (norm(x.nome) === norm(nome)) achou = x; });
+          if (achou) setLoc(achou.id);
+        });
+      }
+    }).catch(function (e) {
+      $("lista").innerHTML = '<div class="fc-empty">Não foi possível carregar os contatos. ' + esc((e && e.message) || e) + "</div>";
+    });
   }
 
   /* exports usados pelo shell */

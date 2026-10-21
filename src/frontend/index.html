@@ -121,7 +121,6 @@ Arquivo: index.html
     <?!= include("SearchJS"); ?>
     <?!= include("DashboardJS"); ?>
     <?!= include("ForumNavigationJS"); ?>
-    <?!= include("MapClickFixJS"); ?>
     <?!= include("MapaV2JS"); ?>
 
     <script>
@@ -133,8 +132,8 @@ Arquivo: index.html
 
         function usaNavegacaoForum() {
           return Boolean(
-            document.getElementById("fc-content") &&
-            document.getElementById("fc-map") &&
+            document.getElementById("lista") &&
+            document.getElementById("map") &&
             typeof window.iniciarNavegacaoForum === "function"
           );
         }
@@ -179,7 +178,7 @@ Arquivo: index.html
         "use strict";
 
         function ocultarZeroUnidadesForum() {
-          var painel = document.getElementById("fc-content");
+          var painel = document.getElementById("lista");
           if (!painel) return;
 
           painel.querySelectorAll('.fc-card[data-forum] .fc-meta .fc-pill').forEach(function (badge) {
@@ -189,7 +188,7 @@ Arquivo: index.html
         }
 
         function observarBadgesForum() {
-          var painel = document.getElementById("fc-content");
+          var painel = document.getElementById("lista");
           if (!painel || painel.__demoZeroUnidadesObserver) return;
           painel.__demoZeroUnidadesObserver = true;
           ocultarZeroUnidadesForum();
