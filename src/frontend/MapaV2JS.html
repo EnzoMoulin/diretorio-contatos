@@ -1,0 +1,71 @@
+<script>
+/* Mapa da consulta (port v2): Leaflet + GeoJSON IBGE, destaque por densidade. */
+(function () {
+  "use strict";
+  var GEOJSON_URL = "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-32-mun.json";
+  var mapa = null, camada = null, dados = [], aoClicar = null;
+
+  window.norm = window.norm || function (s) {
+    return String(s == null ? "" : s).toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  };
+
+  function corPorDensidade(total, max) {
+    if (!total) return "#e2e8f0";
+    var r = max ? total / max : 0;
+    if (r > 0.66) return "#1d63b8";
+    if (r > 0.33) return "#60a5fa";
+    return "#bfdbfe";
+  }
+
+  function estiloComarca(nome) {
+    var n = norm(nome);
+    var ach = dados.filter(function (c) { return norm(c.nome) === n; })[0];
+    var max = dados.reduce(function (a, c) { return Math.max(a, c.total || 0); }, 0);
+    var total = ach ? ach.total : 0;
+    return { fillColor: corPorDensidade(total, max), weight: total ? 2 : 1,
+      color: total ? "#1d63b8" : "#94a3b8", fillOpacity: total ? 0.55 : 0.25 };
+  }
+
+  window.initMapa = function (containerId, msgId, coms, onPick) {
+    dados = coms || [];
+    aoClicar = onPick;
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    if (el._leaflet_id) { if (mapa) { mapa.remove(); mapa = null; } }
+    try {
+      mapa = L.map(containerId, { zoomControl: true, scrollWheelZoom: true }).setView([-19.5, -40.3], 9);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(mapa);
+      fetch(GEOJSON_URL).then(function (r) { return r.json(); }).then(function (geo) {
+        if (!mapa) return;
+        camada = L.geoJSON(geo, {
+          style: function (f) { return estiloComarca(f.properties.name || ""); },
+          onEachFeature: function (f, layer) {
+            var nome = f.properties.name || "";
+            var ach = dados.filter(function (c) { return norm(c.nome) === norm(nome); })[0];
+            layer.bindTooltip("<b>" + nome + "</b>" + (ach ? "<br>" + ach.total + " contato(s)" : ""));
+            layer.on("click", function () { if (aoClicar) aoClicar(nome); });
+          }
+        }).addTo(mapa);
+        try { mapa.fitBounds(camada.getBounds().pad(-0.05), { padding: [-14, -14] }); } catch (e) {}
+        if (typeof mapa.zoomSnap !== "undefined") { try { mapa.setZoom(mapa.getZoom() + 0.5); } catch (e2) {} }
+      }).catch(function () {});
+      setTimeout(function () { try { mapa.invalidateSize(); } catch (e) {} }, 300);
+    } catch (e) {}
+  };
+
+  window.destacarComarcaMapa = function (nome) {
+    if (!mapa || !camada) return;
+    camada.eachLayer(function (layer) {
+      var nm = (layer.feature && layer.feature.properties && layer.feature.properties.name) || "";
+      if (norm(nome) && norm(nm) === norm(nome)) {
+        layer.setStyle({ fillColor: "#00adb5", fillOpacity: 0.6, weight: 3, color: "#00adb5" });
+        try { layer.bringToFront(); } catch (e) {}
+      } else {
+        layer.setStyle(estiloComarca(nm));
+      }
+    });
+  };
+})();
+</script>
