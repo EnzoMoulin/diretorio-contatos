@@ -178,7 +178,7 @@
       });
     }
 
-    return '<nav class="fc-breadcrumb" aria-label="Caminho da localidade">' + itens.map(function (item, indice) {
+    return '<nav class="fc-breadcrumb" aria-label="Caminho da comarca">' + itens.map(function (item, indice) {
       var ultimo = indice === itens.length - 1;
       var conteudo = ultimo
         ? '<span class="fc-breadcrumb-current" aria-current="page">' + esc(item.nome) + "</span>"
@@ -900,12 +900,12 @@
         } else {
           btn.disabled = false;
           btn.textContent = "Salvar";
-          mostrarToastSeguro((resp && resp.erro) || "Não foi possível adicionar a localidade.", "error");
+          mostrarToastSeguro((resp && resp.erro) || "Não foi possível adicionar a comarca.", "error");
         }
       }, function (erro) {
         btn.disabled = false;
         btn.textContent = "Salvar";
-        mostrarToastSeguro((erro && erro.message) || "Falha ao adicionar a localidade.", "error");
+        mostrarToastSeguro((erro && erro.message) || "Falha ao adicionar a comarca.", "error");
       });
     };
   }

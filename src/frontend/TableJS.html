@@ -203,7 +203,7 @@ function sincronizarSolicitacoesPendentes(){
 
 function cancelarAcessoLocalidade(botao, localidade, chave) {
   if (!botao) return;
-  confirmarAcaoSistema({ titulo: "Cancelar solicitação", mensagem: "Cancelar a solicitação de acesso à localidade \"" + localidade + "\"?", textoConfirmar: "Cancelar solicitação", perigo: true, icone: "×" }).then(function(confirmado) {
+  confirmarAcaoSistema({ titulo: "Cancelar solicitação", mensagem: "Cancelar a solicitação de acesso à comarca \"" + localidade + "\"?", textoConfirmar: "Cancelar solicitação", perigo: true, icone: "×" }).then(function(confirmado) {
     if (!confirmado) return;
     botao.disabled = true;
     botao.textContent = "Cancelando...";
@@ -215,7 +215,7 @@ function cancelarAcessoLocalidade(botao, localidade, chave) {
         botao.style.borderColor = "";
         botao.style.color = "";
         botao.disabled = false;
-        botao.title = "Você só pode editar telefones das suas localidades. Solicite acesso a esta localidade.";
+        botao.title = "Você só pode editar telefones das suas comarcas. Solicite acesso a esta comarca.";
         notificarTabela(msg || "Solicitação cancelada.", "success");
       } else {
         botao.textContent = "\u2713 Solicitado";
@@ -1048,7 +1048,7 @@ function renderizarTabela(
             );
 
           botaoSolicitar.title =
-            "Você só pode editar telefones das suas localidades. Solicite acesso a esta localidade.";
+            "Você só pode editar telefones das suas comarcas. Solicite acesso a esta comarca.";
 
           botaoSolicitar.disabled =
             jaSolicitada;
@@ -1166,7 +1166,7 @@ function abrirExcluir(id) {
       null;
 
     notificarTabela(
-      "Você só pode excluir telefones das suas localidades.",
+      "Você só pode excluir telefones das suas comarcas.",
       "error"
     );
 

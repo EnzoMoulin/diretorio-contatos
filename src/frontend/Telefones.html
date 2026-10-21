@@ -39,7 +39,7 @@ Arquivo: Telefones.html
       >🔍</span>
 
       <input id="campo-pesquisa" type="search" autocomplete="off"
-        placeholder="Pesquisar setor, localidade, telefone..."
+        placeholder="Pesquisar setor, comarca, telefone..."
         oninput="pesquisarAutomaticamente()"
         aria-label="Pesquisar telefones"
       >
@@ -75,7 +75,7 @@ Arquivo: Telefones.html
         >Localidade</label>
 
         <select id="filtro-localidade" onchange="try{ if(typeof atualizarFiltroSetorPorMicrorregiaoLocalidade==='function') atualizarFiltroSetorPorMicrorregiaoLocalidade(); }catch(e){} aplicarFiltros()">
-          <option value="">Todas as localidades</option>
+          <option value="">Todas as comarcas</option>
         </select>
       </div>
 

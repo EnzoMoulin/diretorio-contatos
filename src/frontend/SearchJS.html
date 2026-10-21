@@ -506,7 +506,7 @@ function atualizarFiltroLocalidadePorMicrorregiao() {
   preencherSelect(
     "filtro-localidade",
     localidadesFiltro,
-    "Todas as localidades"
+    "Todas as comarcas"
   );
 
   if (selectLocalidade) {
@@ -774,7 +774,7 @@ function carregarFiltros() {
   preencherSelect(
     "filtro-localidade",
     localidadesFiltro,
-    "Todas as localidades"
+    "Todas as comarcas"
   );
 
   preencherSelect(
@@ -1012,7 +1012,7 @@ function imprimirTodosContatosCards(){
       try{ if(typeof todosTelefones!=="undefined" && Array.isArray(todosTelefones) && todosTelefones.length) srcFallback=todosTelefones; else if(typeof listaTelefones!=="undefined" && Array.isArray(listaTelefones)) srcFallback=listaTelefones; }catch(e){ srcFallback=[]; }
       var tmp={};
       srcFallback.forEach(function(it){
-        var c=String(it.localidade||it.LOCALIDADE||"Sem localidade").trim()||"Sem localidade";
+        var c=String(it.localidade||it.LOCALIDADE||"Sem comarca").trim()||"Sem comarca";
         var s=String(it.setor||it.SETOR||"Sem setor").trim()||"Sem setor";
         if(!tmp[c]) tmp[c]=[];
         if(tmp[c].indexOf(s)===-1) tmp[c].push(s);
@@ -1104,12 +1104,12 @@ function imprimirTelefonesVisiveis(){
         return podeImprimirLocalidadeTelefones(c);
       });
       if(!dadosPermitidos.length){
-        if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta localidade","warning");
-        else if(typeof notificarTabela==="function") notificarTabela("Sem permissão para imprimir esta localidade","warning");
+        if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta comarca","warning");
+        else if(typeof notificarTabela==="function") notificarTabela("Sem permissão para imprimir esta comarca","warning");
         return;
       }
       if(dadosPermitidos.length < dados.length){
-        if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta localidade","warning");
+        if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta comarca","warning");
         dados = dadosPermitidos;
       }
     }
