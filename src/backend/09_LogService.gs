@@ -15,6 +15,12 @@ class LogService {
       return this.sheet;
     }
 
+    if (typeof AuthService !== "undefined" &&
+        typeof AuthService.ehContextoPrivado === "function" &&
+        !AuthService.ehContextoPrivado()) {
+      return null; // URL pública: aba LOG existe só na planilha privada
+    }
+
     const ss = DB.getSpreadsheet();
 
     let sheet = ss.getSheetByName(CONFIG.SHEETS.LOG);
@@ -62,6 +68,7 @@ class LogService {
 
     try {
       const sheet = this.obterAbaLog();
+      if (!sheet) return;
       sheet.appendRow([
         new IdService().novoLog(sheet),
         new Date(),
