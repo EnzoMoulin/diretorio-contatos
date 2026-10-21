@@ -600,4 +600,107 @@ body.nav-open .nav-backdrop{opacity:1;pointer-events:auto}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
+
+/* ===== port v2: consulta cards/breadcrumb/painel ===== */
+.sidebar-header {padding:25px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-header h2 {margin:0;font-size:28px}
+.sidebar-header span {font-size:14px;opacity:.7}
+/* ================= original: cards de navegação ================= */
+.fc-card {border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-top:10px;background:#fff;transition:.15s}
+.fc-card[data-nav] {cursor:pointer}
+.fc-card[data-nav]:hover {box-shadow:0 8px 22px rgba(15,23,42,.08);transform:translateY(-1px)}
+.fc-card-head {display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.fc-card h4 {margin:0 0 6px;font-size:15px;color:#0f172a}
+.fc-meta {display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.fc-pill {font-size:11px;background:#f1f5f9;color:#334155;border-radius:999px;padding:4px 8px}
+.fc-back {border:0;background:transparent;color:#1d4ed8;font-weight:700;padding:0;margin:0 0 12px;cursor:pointer}
+.fc-breadcrumb {display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0 0 10px;color:#64748b;font-size:13px;line-height:1.5}
+.fc-breadcrumb button {appearance:none;border:0;background:transparent;padding:0;color:#1d4ed8;font:inherit;font-weight:700;cursor:pointer}
+.fc-breadcrumb button:hover {text-decoration:underline}
+.fc-breadcrumb-current {color:#475569;font-weight:700}
+.fc-copy-btn {border:1px solid #dbe3ed;background:#fff;border-radius:8px;padding:5px 7px;cursor:pointer;font-size:12px;color:#1d4ed8;font-weight:800}
+.fc-copy-btn:hover {background:#f1f5f9}
+.fc-contato {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:#f8fafc;border:1px solid #dbe3ed;border-radius:10px;margin-top:9px}
+.fc-contato-main {min-width:0}
+.fc-contato h4 {margin:4px 0 0;font-size:14px;color:#0f172a}
+.fc-contato-tipo {font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#475569}
+.fc-contato-side {display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.fc-contato-valor {color:#1d4ed8;font-size:14px;font-weight:700;text-decoration:none;overflow-wrap:anywhere}
+.fc-contato-actions {display:flex;gap:5px}
+.fc-empty {padding:20px;border:1px dashed #cbd5e1;border-radius:12px;color:#64748b;text-align:center}
+body[data-theme="dark"] .fc-card {background:#1e293b;border-color:#334155}
+body[data-theme="dark"] .fc-card h4,body[data-theme="dark"] .fc-contato h4 {color:#f8fafc}
+body[data-theme="dark"] .fc-pill {background:#0f172a;color:#cbd5e1}
+body[data-theme="dark"] .fc-contato {background:#0f172a;border-color:#334155}
+body[data-theme="dark"] .fc-contato-tipo {color:#94a3b8}
+body[data-theme="dark"] .fc-back {color:#93c5fd}
+.sidebar-header {display:flex;flex-direction:row;align-items:center;gap:10px;padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo {height:56px;width:56px;flex:0 0 auto}
+.sidebar-brand-copy {min-width:0;margin-left:0}
+.sidebar-brand-copy strong {display:block;font-size:20px;font-weight:800;color:#fff;line-height:1.1}
+.sidebar-header .sidebar-brand-copy span {font-size:12px;color:#94a3b8}
+.sidebar-header h2 {font-size:20px}
+.sidebar-header span {display:block;margin-top:3px;font-size:12px;line-height:1.35;color:#cbd5e1;opacity:.86}
+/* ================= original: painel consulta + mapa ================= */
+.consulta-layout {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,2vw,24px);align-items:stretch}
+#view-consulta .consulta-layout {flex:1 1 auto;min-height:0;height:auto}
+.fc-panel {max-height:100%}
+.fc-panel {width:100%;min-height:0;overflow-y:auto;background:#fff;border:1px solid #cbd5e1;border-radius:16px;padding:clamp(16px,2vw,24px);box-shadow:0 6px 18px rgba(15,23,42,.11);display:flex;flex-direction:column}
+.fc-panel #lista {padding-bottom:16px}
+.fc-head {display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.fc-title {font-size:21px;font-weight:800;color:#0f172a;margin:0 0 5px}
+.fc-subtitle {color:#64748b;font-size:13px;margin:0;line-height:1.5}
+.fc-subtitle .seta {font-size:1.3em;line-height:1}
+.fc-page-head .fc-title {font-size:20px;letter-spacing:.04em;text-transform:uppercase;color:#1d4ed8}
+.fc-page-head .fc-subtitle {font-size:14px}
+#panel-head .fc-title {font-size:18px}
+#panel-head .fc-subtitle {font-size:13px;text-align:justify;margin-top:6px}
+.fc-subtitle .seta {margin:0 1px}
+.fc-subtitle .seta::after {content:"\200b"}
+.sidebar-public .sidebar-header span {font-size:12px}
+.sidebar-header span {font-size:14px}
+.sidebar-public .sidebar-footer {padding:12px 12px 26px}
+.sidebar-public .sidebar-user {margin:14px 0 0}
+.fc-total-localidades {display:inline-flex;align-self:flex-start;margin:2px 0 10px;background:#dbeafe;color:#1e40af;font-weight:800}
+.fc-section h3 {font-size:15px;margin:8px 0 4px;color:#0f172a}
+.fc-selects-row {display:flex;gap:8px;align-items:center}
+.fc-selects-row .fc-select {flex:1 1 0;min-width:0}
+.fc-selects-row .fc-btn {flex:0 0 auto;white-space:nowrap}
+.fc-map-head {margin:4px 4px 8px}
+.fc-map-head .fc-title {font-size:17px}
+.fc-map-legenda {padding:7px 9px;background:rgba(255,255,255,.94);border:1px solid #cbd5e1;border-radius:7px;box-shadow:0 2px 8px rgba(15,23,42,.12);font-size:11px;color:#334155}
+.fc-map-legenda span {display:block;margin:2px 0}
+.fc-map-legenda .tem-contato {color:#2563eb}
+.fc-map-legenda .sem-contato {color:#94a3b8}
+.fc-bottom-nav {display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:12px;border-top:1px solid #e2e8f0;background:#fff;padding-bottom:4px}
+body[data-theme="dark"] .fc-bottom-nav {background:#1e293b;border-color:#334155}
+.fc-bottom-nav .nav-group {display:flex;gap:8px}
+.fc-pill-type {background:#dbeafe;color:#1e40af}
+#print-area {display:none}
+/* ---- dark dos blocos novos ---- */
+body[data-theme="dark"] .fc-panel,body[data-theme="dark"] #consulta-mapa,body[data-theme="dark"] .config-card,body[data-theme="dark"] .manual-section,body[data-theme="dark"] .manual-toc-panel,body[data-theme="dark"] .manual-role-card {background:#1e293b;border-color:#334155;color:#e2e8f0}
+body[data-theme="dark"] .fc-title,body[data-theme="dark"] .config-card-header h3,body[data-theme="dark"] .manual-section-head h3,body[data-theme="dark"] .manual-role-card h4,body[data-theme="dark"] .manual-toc-panel h3,body[data-theme="dark"] .manual-steps li strong,body[data-theme="dark"] .manual-faq summary,body[data-theme="dark"] .config-aparencia-text strong,body[data-theme="dark"] .config-value {color:#f8fafc}
+body[data-theme="dark"] .fc-subtitle,body[data-theme="dark"] .manual-section-head p,body[data-theme="dark"] .manual-role-card p,body[data-theme="dark"] .manual-steps li p,body[data-theme="dark"] .manual-faq details p,body[data-theme="dark"] .config-aparencia-text p {color:#cbd5e1}
+body[data-theme="dark"] .fc-section h3 {color:#f8fafc}
+body[data-theme="dark"] .fc-total-localidades {background:#1e3a8a;color:#bfdbfe}
+body[data-theme="dark"] .fc-map-legenda {background:rgba(30,41,59,.94);border-color:#475569;color:#cbd5e1}
+
+/* ===== paridade v2: consulta ===== */
+.fc-profile{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #e2e8f0;font-size:12px;font-weight:700;color:#334155;white-space:nowrap;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.fc-map-legenda{padding:7px 9px;background:rgba(255,255,255,.94);border:1px solid #cbd5e1;border-radius:7px;box-shadow:0 2px 8px rgba(15,23,42,.12);font-size:11px;color:#334155}
+.fc-map-legenda span{display:block;margin:2px 0}
+.fc-map-legenda .tem-contato{color:#2563eb}
+.fc-map-legenda .sem-contato{color:#94a3b8}
+.tooltip-premium{font-weight:800;font-size:13px;color:#0f172a}
+.tooltip-premium small{display:block;font-weight:600;font-size:11px;color:#475569}
+.fc-footer{color:#94a3b8;font-size:13px;text-align:center;padding:10px}
+@media print{
+  @page{size:A4 portrait;margin:15mm 12mm}
+  .sidebar,.topbar,#consulta-mapa,input,select,button,footer,.modal,#map-msg,.fc-bottom-nav,.fc-back,#sel-row,#lista,#crumb,.fc-footer{display:none!important}
+  body{background:#fff!important}
+  #print-area{display:block!important}
+  .fc-panel{border:0;box-shadow:none;height:auto;overflow:visible}
+  .fc-contato,.fc-card{break-inside:avoid}
+  .main-content{margin:0;padding:0}
+}
 </style>

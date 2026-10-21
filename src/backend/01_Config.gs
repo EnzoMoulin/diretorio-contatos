@@ -7,7 +7,7 @@
 
 const CONFIG = {
   SISTEMA: {
-    NOME: "Diretório de Contatos — Demo",
+    NOME: "Diretório Institucional de Contatos - PJES",
     VERSAO: "5.0"
   },
 

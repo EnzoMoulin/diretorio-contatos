@@ -331,12 +331,12 @@
     var select = document.createElement("select");
     select.id = "fc-search";
     select.className = "fc-select fc-municipio-select";
-    select.setAttribute("aria-label", "Selecionar Localidade");
+    select.setAttribute("aria-label", "Selecionar comarca");
     select.setAttribute("data-demo-municipio-v6", "true");
 
     var inicial = document.createElement("option");
     inicial.value = "";
-    inicial.textContent = "Selecione uma Localidade";
+    inicial.textContent = "Selecione uma comarca";
     select.appendChild(inicial);
 
     municipiosPainelV6.forEach(function (opcao) {

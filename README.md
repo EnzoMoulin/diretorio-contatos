@@ -27,7 +27,7 @@ MUNICIPIOS → FORUM → UNIDADES_ORGANIZACIONAIS (árvore) → CONTATOS
 | Instalação / migração / publicação | `src/backend/12_*`, `15_*`, `18_*` |
 | Auth, cache, log, validação | `src/backend/08_*`, `09_*`, `10_*`, `06_*`, `07_*` |
 | UI (HTML/CSS/JS, `google.script.run`) | `src/frontend/` |
-| Dados fictícios p/ demo | `src/backend/22_DadosExemplo.gs` |
+| Dados fictícios p/ demo | `src/backend/24_DadosExemplo.gs` |
 
 Padrões: leitura em lote (`getValues`/`setValues`, sem I/O em loop), locks em
 read-modify-write, cache de referência com TTL e invalidação, autorização
@@ -40,6 +40,10 @@ sempre no servidor, payloads mínimos e JSON-serializáveis.
    - `instalarSistemaForum(SEGREDO)` — cria as abas e a estrutura
    - `carregarDadosExemplo()` — insere a base fictícia
 4. Publique como app da Web e teste a consulta + o login demo.
+
+## Demo executável (Python, 1 comando)
+Versão portátil do mesmo domínio, zero dependências, pronta para avaliar em
+segundos: [EnzoMoulin/diretorio-contatos-v2](https://github.com/EnzoMoulin/diretorio-contatos-v2).
 
 ## Screenshots / vídeo
 `docs/` reservado — prints e vídeo curto (só tela + legendas, sem voz/webcam).

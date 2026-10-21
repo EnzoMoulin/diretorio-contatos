@@ -8,22 +8,22 @@ Arquivo: Sidebar.html
 <div class="sidebar <?= ehContextoAdmin ? 'sidebar--admin' : '' ?>">
   <div class="sidebar-main">
     <div class="sidebar-header">
-      <div class="sidebar-brand-mark" aria-hidden="true">PJ</div>
+      <svg class="sidebar-logo" viewBox="0 0 42 42" aria-label="PJES" style="height:56px;width:56px;flex:0 0 auto"><defs><linearGradient id="li-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient></defs><rect width="42" height="42" rx="10" fill="url(#li-g)"/><text x="21" y="28" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="800" fill="#fff">PJ</text></svg>
       <div class="sidebar-brand-copy">
-        <h2>DEMO</h2>
-        <span>Diretório institucional de contatos</span>
+        <strong style="display:block;font-size:20px;font-weight:800;color:#fff;line-height:1.1">PJES</strong>
+        <span style="font-size:12px;color:#94a3b8">Tribunal de Justiça do Estado do Espírito Santo</span>
       </div>
     </div>
 
     <nav class="sidebar-menu" aria-label="Navegação principal">
-      <button type="button" id="menu-dashboard" class="menu-item" onclick="mostrarView('dashboard-view')">
+      <button type="button" id="menu-dashboard" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('dashboard-view')">
         <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="4" rx="1.5"></rect><rect x="14" y="11" width="7" height="10" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
         <span>Dashboard</span>
       </button>
 
-      <button type="button" id="menu-telefones" class="menu-item active" onclick="navegarParaTelefones()">
-        <span class="icon" aria-hidden="true">☎</span>
-        <span>Contatos</span>
+      <button type="button" id="menu-telefones" class="menu-item active" data-view="consulta" onclick="navegarParaTelefones()">
+        <span class="icon" aria-hidden="true">📞</span>
+        <span>Consulta</span>
       </button>
 
       <button type="button" id="menu-login" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="entrarAreaAdministrativa()">
@@ -53,17 +53,17 @@ Arquivo: Sidebar.html
         <span>Usuários</span>
       </button>
 
-      <button type="button" id="menu-alteracoes" class="menu-item" onclick="mostrarView('registro-alteracoes-view')">
+      <button type="button" id="menu-alteracoes" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('registro-alteracoes-view')">
         <span class="icon" aria-hidden="true">≡</span>
         <span>Registro de Alterações</span>
       </button>
 
-      <button type="button" id="menu-configuracoes" class="menu-item" onclick="mostrarView('configuracoes-view')">
+      <button type="button" id="menu-configuracoes" class="menu-item" data-view="config" onclick="mostrarView('configuracoes-view')">
         <span class="icon" aria-hidden="true">⚙</span>
         <span>Configurações</span>
       </button>
 
-      <button type="button" id="menu-manual" class="menu-item" onclick="mostrarView('manual-view')">
+      <button type="button" id="menu-manual" class="menu-item" data-view="manual" onclick="mostrarView('manual-view')">
         <span class="icon" aria-hidden="true">?</span>
         <span>Manual do Usuário</span>
       </button>

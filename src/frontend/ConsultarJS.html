@@ -39,9 +39,9 @@ function podeImprimirLocalidadeConsulta(localidade){
 function bloquearImpressaoSemPermissaoConsulta(localidade){
   if(!podeImprimirLocalidadeConsulta(localidade)){
     try{
-      if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta localidade","warning");
-      else if(typeof notificarTabela==="function") notificarTabela("Sem permissão para imprimir esta localidade","warning");
-      else console.warn("Sem permissão para imprimir esta localidade");
+      if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta comarca","warning");
+      else if(typeof notificarTabela==="function") notificarTabela("Sem permissão para imprimir esta comarca","warning");
+      else console.warn("Sem permissão para imprimir esta comarca");
     }catch(e2){}
     return true;
   }
@@ -62,7 +62,7 @@ function atualizarVisibilidadeBotoesImpressaoConsulta(){
         if(!pode && btn.closest && btn.closest(".detalhe-contatos-cabecalho")){
           btn.style.display="none";
           btn.disabled=true;
-          btn.title="Sem permissão para imprimir esta localidade";
+          btn.title="Sem permissão para imprimir esta comarca";
           btn.setAttribute("aria-disabled","true");
         }
       }
@@ -80,8 +80,8 @@ function atualizarVisibilidadeBotoesImpressaoConsulta(){
           var p=podeImprimirLocalidadeConsulta(nome);
           printBtn.style.display=p?"":"none";
           printBtn.disabled=!p;
-          if(!p){ printBtn.title="Sem permissão para imprimir esta localidade"; printBtn.setAttribute("aria-disabled","true"); }
-          else { printBtn.title="Imprimir / Salvar PDF dos contatos desta Localidade"; printBtn.removeAttribute("aria-disabled"); }
+          if(!p){ printBtn.title="Sem permissão para imprimir esta comarca"; printBtn.setAttribute("aria-disabled","true"); }
+          else { printBtn.title="Imprimir / Salvar PDF dos contatos desta comarca"; printBtn.removeAttribute("aria-disabled"); }
         }
       }
     });
@@ -588,7 +588,7 @@ function renderizarListaLocalidadesMunicipio(compNomes, temLocalidadeReal, layer
           else if(typeof localidadesPermitidasDoUsuario==="function"){ var _al=localidadesPermitidasDoUsuario(); if(_al!==null){ var _ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(localidade):String(localidade).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); podeImp=_al.indexOf(_ck)!==-1; } }
         }
       }catch(eP){}
-      var btnImpHtml = podeImp ? '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); imprimirTodosSetoresDaLocalidade(\''+escaparJs(localidade)+'\')" title="Imprimir / Salvar PDF dos contatos desta Localidade">\uD83D\uDDA8\uFE0F Imprimir / Salvar PDF</button>' : '';
+      var btnImpHtml = podeImp ? '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); imprimirTodosSetoresDaLocalidade(\''+escaparJs(localidade)+'\')" title="Imprimir / Salvar PDF dos contatos desta comarca">\uD83D\uDDA8\uFE0F Imprimir / Salvar PDF</button>' : '';
       var btnSolicitarHtml = "";
       try{
         var _ehGC2 = typeof usuarioAtual!=="undefined" && usuarioAtual && usuarioAtual.logado===true && String(usuarioAtual.perfil||"").toUpperCase()==="GESTOR_CONTEUDO";
@@ -718,7 +718,7 @@ function renderizarListaLocalidadesMunicipio(compNomes, temLocalidadeReal, layer
                 containerLista.innerHTML="";
                 containerLista.appendChild(listGroup);
               }
-              var podeImpC = (function(_cc){ try{ if(typeof podeImprimirLocalidadeConsulta==="function") return podeImprimirLocalidadeConsulta(_cc); if(typeof podeEditarLocalidade==="function") return podeEditarLocalidade(_cc); if(typeof localidadesPermitidasDoUsuario==="function"){ var _al=localidadesPermitidasDoUsuario(); if(_al===null) return true; if(Array.isArray(_al)){ var _ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(_cc):typeof normalizarChave==="function"?normalizarChave(_cc):String(_cc).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); return _al.indexOf(_ck)!==-1; } } }catch(e){} return true; })(nomeC); var btnImpC = podeImpC ? '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); imprimirTodosSetoresDaLocalidade(\''+escaparJs(nomeC)+'\')" title="Imprimir / Salvar PDF dos contatos desta Localidade">\\uD83D\\uDDA8\\uFE0F Imprimir / Salvar PDF</button>' : ''; var htmlLocalidade='<div class="localidade-item" data-localidade="'+escaparConsulta(normalizarTexto(nomeC))+'" onclick="toggleLocalidade(\''+escaparJs(idC)+'\')"><span class="localidade-nome">'+escaparConsulta(nomeC)+'</span><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;"><span class="setor-count">'+((typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nomeC])? setoresPorLocalidade[nomeC].length:0)+' setores</span>'+btnImpC+'</span></div><div class="setores-list" id="setores-'+idC+'">';
+              var podeImpC = (function(_cc){ try{ if(typeof podeImprimirLocalidadeConsulta==="function") return podeImprimirLocalidadeConsulta(_cc); if(typeof podeEditarLocalidade==="function") return podeEditarLocalidade(_cc); if(typeof localidadesPermitidasDoUsuario==="function"){ var _al=localidadesPermitidasDoUsuario(); if(_al===null) return true; if(Array.isArray(_al)){ var _ck=typeof normalizarChaveTabela==="function"?normalizarChaveTabela(_cc):typeof normalizarChave==="function"?normalizarChave(_cc):String(_cc).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]/g,"").toUpperCase(); return _al.indexOf(_ck)!==-1; } } }catch(e){} return true; })(nomeC); var btnImpC = podeImpC ? '<button type="button" class="btn btn-secondary" style="padding:3px 8px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); imprimirTodosSetoresDaLocalidade(\''+escaparJs(nomeC)+'\')" title="Imprimir / Salvar PDF dos contatos desta comarca">\\uD83D\\uDDA8\\uFE0F Imprimir / Salvar PDF</button>' : ''; var htmlLocalidade='<div class="localidade-item" data-localidade="'+escaparConsulta(normalizarTexto(nomeC))+'" onclick="toggleLocalidade(\''+escaparJs(idC)+'\')"><span class="localidade-nome">'+escaparConsulta(nomeC)+'</span><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;"><span class="setor-count">'+((typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nomeC])? setoresPorLocalidade[nomeC].length:0)+' setores</span>'+btnImpC+'</span></div><div class="setores-list" id="setores-'+idC+'">';
               var setoresC = (typeof setoresPorLocalidade!=="undefined" && setoresPorLocalidade[nomeC]) ? setoresPorLocalidade[nomeC] : [];
               for(var si=0; si<setoresC.length; si++){
                 var setorC=setoresC[si];
@@ -1695,7 +1695,7 @@ function popularFiltrosConsulta(){
     }catch(e){}
     var valCAntes=String(selC.value||"");
     selC.textContent="";
-    var optCTodos=document.createElement("option"); optCTodos.value=""; optCTodos.textContent="Todas as localidades";
+    var optCTodos=document.createElement("option"); optCTodos.value=""; optCTodos.textContent="Todas as comarcas";
     selC.appendChild(optCTodos);
     ordem.forEach(function(c){
       var o=document.createElement("option");
@@ -1970,7 +1970,7 @@ function imprimirConsultaPDF() {
     if(!_cPrint){ try{ var h2=document.querySelector(".detalhe-contatos-cabecalho h3"); if(h2) _cPrint=h2.textContent||""; }catch(e){} }
     if(_cPrint && typeof bloquearImpressaoSemPermissaoConsulta==="function" && bloquearImpressaoSemPermissaoConsulta(_cPrint)) return;
     if(_cPrint && typeof podeImprimirLocalidadeConsulta==="function" && !podeImprimirLocalidadeConsulta(_cPrint)){
-      if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta localidade","warning");
+      if(typeof mostrarToast==="function") mostrarToast("Sem permissão para imprimir esta comarca","warning");
       return;
     }
   }catch(e){}
@@ -1985,7 +1985,7 @@ function imprimirConsultaPDF() {
       ?.textContent
       .replace(/\s+/g, " ")
       .trim() ||
-    "Diretório de Contatos — Demo";
+    "Diretório Institucional de Contatos - PJES";
 
   document.title =
     tituloInterface;
