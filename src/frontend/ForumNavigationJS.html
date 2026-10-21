@@ -453,7 +453,7 @@
   }
 
   function botaoImpressaoLocalidade(tipo, tipoNo) {
-    var rotulo = tipo === "FORUM" ? "Fórum" : (tipoNo === "Setor" ? "Setor" : "Unidade");
+    var rotulo = tipo === "FORUM" ? "Localidade" : (tipoNo === "Setor" ? "Setor" : "Unidade");
     var artigo = rotulo === "Unidade" ? "da" : "do";
     var id = tipo === "FORUM" ? "fc-print-forum" : "fc-print-unit";
     return '<div class="fc-print-footer"><button type="button" class="fc-btn" data-scroll-top title="Voltar ao início deste painel">↑ Voltar ao topo</button>' +
@@ -546,7 +546,7 @@
   }
 
   function opcoesLocalidades(municipios, selecionado) {
-    return '<option value="">Selecione a comarca</option>' + (municipios || []).map(function (m) {
+    return '<option value="">Selecione a Comarca/Órgão</option>' + (municipios || []).map(function (m) {
       return '<option value="' + esc(m.id) + '"' + (m.id === selecionado ? " selected" : "") + ">" + esc(m.nome) + "</option>";
     }).join("");
   }
@@ -560,7 +560,7 @@
 
     var municipios = (estado.dados && estado.dados.municipios) || [];
     var conteudo = '<div class="fc-head"><div><h2 class="fc-title">Contatos do PJES</h2>' +
-      '<p class="fc-subtitle fc-subtitle--intro">Consulte a estrutura completa por Comarca, Fórum, Unidade e Setor. Selecione uma comarca no mapa ao lado ou no menu suspenso abaixo.</p></div></div>' +
+      '<p class="fc-subtitle fc-subtitle--intro">Consulte a estrutura completa por Comarca/Órgão, Fórum, Unidade e Setor. Selecione uma Comarca/Órgão no mapa ao lado, no menu suspenso ou na lista abaixo.</p></div></div>' +
       (municipios.length ? '<span class="fc-pill fc-total-localidades">' + esc(rotuloQuantidade(municipios.length, "Comarca", "Comarcas")) + "</span>" : "") +
       '<select id="fc-municipio" class="fc-select">' + opcoesLocalidades(municipios, "") + "</select>" +
       '<div class="fc-section"><h3>Comarcas</h3>' +
@@ -613,7 +613,7 @@
       '<div class="fc-head"><div><h2 class="fc-title">' + esc(m.nome) + "</h2>" +
       '<p class="fc-subtitle">' + esc(resumo) + "</p></div></div>" +
       '<select id="fc-municipio" class="fc-select">' + opcoesLocalidades(estado.dados.municipios || [], m.id) + "</select>" +
-      '<div class="fc-section"><h3>Fóruns</h3>' +
+      '<div class="fc-section"><h3>Fóruns e órgãos</h3>' +
       (m.foruns || []).map(function (f) {
         var acesso = forumTemAlgumAcesso(f);
         var podeForum = podeGerenciarForum(f);
@@ -676,7 +676,7 @@
       breadcrumbHtml(m, f, null) + "</div></div>" +
       '<div class="fc-meta"><span class="fc-pill fc-pill-type">Fórum</span>' +
       badgeQuantidade(f.qtdUnidades, "Unidade", "Unidades") + "</div>" +
-      '<div class="fc-address-row"><div class="fc-inherit"><strong>Endereço do fórum:</strong> ' + linkEndereco(f.endereco) +
+      '<div class="fc-address-row"><div class="fc-inherit"><strong>Endereço da localidade:</strong> ' + linkEndereco(f.endereco) +
       (f.cep ? " • CEP " + esc(f.cep) : "") + "</div></div>" +
       acoesLocalidade("FORUM", f, pode) +
       (pode ? "" : botaoSolicitar("FORUM", f.id)) +
@@ -730,7 +730,7 @@
       badgeQuantidade(qtdSetores(no.filhos || []), "Setor", "Setores") + "</div>" +
       '<div class="fc-address-row"><div class="fc-inherit"><strong>Endereço:</strong> ' + linkEndereco(no.enderecoExibicao) +
       (no.cepExibicao ? " • CEP " + esc(no.cepExibicao) : "") +
-      (no.endereco ? "" : " <span class=\"fc-muted\">(" + (pai ? "herdado da unidade" : "herdado do fórum") + ")</span>") + "</div></div>" +
+      (no.endereco ? "" : " <span class=\"fc-muted\">(" + (pai ? "herdado da Unidade" : "herdado da Localidade") + ")</span>") + "</div></div>" +
       acoesLocalidade("UNIDADE", no, pode, tipoTela) +
       (pode ? "" : botaoSolicitar("UNIDADE", no.id)) +
       '<div class="fc-section"><div class="fc-section-title"><h3>Contatos ' + (tipoTela === "Setor" ? "deste setor" : "desta Unidade") + "</h3></div>" +
