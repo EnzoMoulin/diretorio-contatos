@@ -665,18 +665,21 @@ function montarCatalogoEscoposAcesso() {
       if (!nosPorEscopo[chaveUnidade]) nosPorEscopo[chaveUnidade] = [];
       nosPorEscopo[chaveUnidade].push(id);
     });
-    if (!no.selecionavelAcesso) return;
+    if (!no.selecionavelAcesso && !no.paiId) return;
+    const tipoItem = !no.paiId ? CONFIG.ACESSOS.UNIDADE : CONFIG.ACESSOS.SETOR;
     const item = {
-      tipo: CONFIG.ACESSOS.UNIDADE,
+      tipo: tipoItem,
       id: id,
       nome: no.nome || id,
       municipio: municipio.nome,
       forumId: forum.id,
       forum: forum.nome,
+      paiId: no.paiId || "",
       caminhoTexto: caminho.map(function(ancestral) { return ancestral.nome; }).join(" › ")
     };
     porChave[item.tipo + ":" + id] = item;
     itens.push(item);
+    if (tipoItem === CONFIG.ACESSOS.SETOR) nosPorEscopo[item.tipo + ":" + id] = [id];
   });
   return { porChave: porChave, itens: itens, nosPorEscopo: nosPorEscopo };
 }
@@ -686,7 +689,7 @@ function validarEscoposAcesso(escopos) {
   const catalogo = montarCatalogoEscoposAcesso();
   normalizados.forEach(function(escopo) {
     if (!catalogo.porChave[escopo.tipo + ":" + escopo.id]) {
-      throw new Error("Um dos Municípios, Fóruns ou Unidades selecionados é inválido ou está inativo.");
+      throw new Error("Um dos Municípios, Fóruns, Unidades ou Setores selecionados é inválido ou está inativo.");
     }
   });
   return normalizados;
@@ -928,7 +931,7 @@ function enviarFormularioAcesso(dados) {
       throw new Error("Selecione uma alteração de nível, localidades adicionais ou ambos.");
     }
     if (!usuario.cadastrado && nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO && escopos.length === 0) {
-      throw new Error("Selecione ao menos um Município, Fórum ou Unidade para o Gestor de Conteúdo.");
+      throw new Error("Selecione ao menos um Município, Fórum, Unidade ou Setor para o Gestor de Conteúdo.");
     }
     if (nivel === CONFIG.NIVEIS.GESTOR_SISTEMA && escopos.length) {
       throw new Error("O Gestor do Sistema possui escopo global e não recebe vínculos adicionais.");
@@ -972,7 +975,7 @@ function enviarFormularioAcesso(dados) {
       EMAIL: usuario.email,
       NOME: nome,
       NIVEL: nivel || "",
-      UNIDADE_ORGANIZACIONAL_ID: escoposValidados.filter(function(escopo) { return escopo.tipo === CONFIG.ACESSOS.UNIDADE; }).map(function(escopo) { return escopo.id; }).join(","),
+      UNIDADE_ORGANIZACIONAL_ID: escoposValidados.filter(function(escopo) { return escopo.tipo === CONFIG.ACESSOS.UNIDADE || escopo.tipo === CONFIG.ACESSOS.SETOR; }).map(function(escopo) { return escopo.id; }).join(","),
       ESCOPOS: serializarEscoposAcesso(escoposValidados),
       JUSTIFICATIVA: justificativa,
       STATUS: "PENDENTE",
@@ -2455,7 +2458,7 @@ function atualizarUsuario(email, dados) {
     if (nivel !== 1 && nivel !== 2) throw new Error("Nível inválido. Use 1 ou 2.");
     if (!nome) throw new Error("Nome obrigatório.");
     if (nivel === 1 && escopos.length === 0) {
-      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum ou Unidade.");
+      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum, Unidade ou Setor.");
     }
     if (nivelAtual === 2 && ativoAtual && (nivel !== 2 || !ativo) &&
         contarGestoresSistemaAtivos(emailAlvo) === 0) {
@@ -2512,7 +2515,7 @@ function criarUsuario(dados) {
     if (!nome || nome.length > CONFIG.LIMITES.TAMANHO_MAXIMO_NOME) throw new Error("Nome inválido.");
     if (nivel !== 1 && nivel !== 2) throw new Error("Nível inválido. Use 1 ou 2.");
     if (nivel === 1 && escopos.length === 0) {
-      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum ou Unidade.");
+      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum, Unidade ou Setor.");
     }
 
     const sheet = DB.usuarios();
