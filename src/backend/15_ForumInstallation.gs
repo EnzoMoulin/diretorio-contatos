@@ -15,8 +15,8 @@ function instalarSistemaForum(segredo) {
   try {
     const ss = DB.getSpreadsheet();
 
-    garantirAbaForumV4(ss, CONFIG.SHEETS.MUNICIPIOS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","ATIVO"]);
-    garantirAbaForumV4(ss, CONFIG.SHEETS.FORUM, ["ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO","OBSERVACAO"]);
+    garantirAbaForumV4(ss, CONFIG.SHEETS.MUNICIPIOS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","TIPO","ENDERECO","CEP","EMAIL","ATIVO"]);
+    garantirAbaForumV4(ss, CONFIG.SHEETS.FORUM, ["ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO"]);
     garantirAbaForumV4(ss, CONFIG.SHEETS.UNIDADES_ORGANIZACIONAIS, ["ID","FORUM_ID","PAI_ID","TIPO","NOME","ENDERECO","CEP","OBSERVACAO","SELECIONAVEL_ACESSO","ATIVO","ORDEM"]);
     // Abas legadas UNIDADES/SETORES não são mais criadas (modelo UO-only; migração já concluída).
     garantirAbaForumV4(ss, CONFIG.SHEETS.CONTATOS, ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","TIPO","DESCRICAO","VALOR","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","ORDEM","OBSERVACAO"]);

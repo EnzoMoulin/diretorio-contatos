@@ -367,14 +367,14 @@ function garantirConfiguracao(
  * V4 — Cria aba MUNICIPIOS.
  */
 function criarAbaMunicipios(spreadsheet) {
-  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.MUNICIPIOS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","ATIVO"]);
+  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.MUNICIPIOS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","TIPO","ENDERECO","CEP","EMAIL","ATIVO"]);
 }
 
 /**
  * V4 — Cria aba FORUM (MUNICIPIO -> FORUM).
  */
 function criarAbaForum(spreadsheet) {
-  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.FORUM, ["ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO","OBSERVACAO"]);
+  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.FORUM, ["ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO"]);
 }
 
 /** V5 — Cria a árvore auto-relacionada de unidades organizacionais. */
