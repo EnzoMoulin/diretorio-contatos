@@ -20,7 +20,7 @@ function migrarHierarquiaOrganizacionalV5() {
   const contatos = garantirAbaForumV4(
     ss,
     CONFIG.SHEETS.CONTATOS,
-    ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","UNIDADE_ID","SETOR_ID","TIPO","DESCRICAO","VALOR","ORDEM","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","OBSERVACAO"]
+    ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","TIPO","DESCRICAO","VALOR","ORDEM","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","OBSERVACAO"]
   );
 
   const nosExistentes = new Set();

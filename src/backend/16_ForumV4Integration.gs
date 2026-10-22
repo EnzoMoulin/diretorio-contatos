@@ -60,7 +60,7 @@ function _v4EscopoPermitido(usuario, forumId, noId) {
   if (!usuario || !usuario.logado || !usuario.ativo) return false;
   if (usuario.perfil === CONFIG.PERFIS.GESTOR_SISTEMA) return true;
   if (usuario.perfil !== CONFIG.PERFIS.GESTOR_CONTEUDO) return false;
-  const unidades = new Set(Array.isArray(usuario.unidadeIds) ? usuario.unidadeIds.map(textoSeguro) : []);
+  const unidades = new Set(Array.isArray(usuario.noIds) ? usuario.noIds.map(textoSeguro) : []);
   const nos = _fcIndiceOrganizacional();
   if (noId && nos[noId]) {
     const caminho = _fcResolverAncestros(nos, noId);
@@ -73,7 +73,7 @@ function _v4EscopoPermitido(usuario, forumId, noId) {
 function _v4ResolverContexto(dados) {
   const entrada = ehObjeto(dados) ? dados : {};
   let forumId = textoSeguro(valorObjeto(entrada, "forumId", "FORUM_ID"));
-  let noId = _v4PrimeiroValorObjeto(entrada, ["unidadeOrganizacionalId", "noId", "UNIDADE_ORGANIZACIONAL_ID", "setorId", "SETOR_ID", "unidadeId", "UNIDADE_ID"]);
+  let noId = _v4PrimeiroValorObjeto(entrada, ["unidadeOrganizacionalId", "noId", "UNIDADE_ORGANIZACIONAL_ID"]);
   const nos = _fcIndiceOrganizacional();
   if (noId) {
     if (!nos[noId]) throw new Error("Unidade organizacional não encontrada.");
@@ -94,8 +94,8 @@ function _v4ResolverContexto(dados) {
     forumId: forumId,
     noId: noId,
     unidadeOrganizacionalId: noId,
-    unidadeId: ancora ? ancora.id : "",
-    setorId: noId && (!ancora || ancora.id !== noId) ? noId : ""
+    noPaiId: ancora ? ancora.id : "",
+    contatoDiretoNo: !!noId && (!ancora || ancora.id === noId)
   };
 }
 
@@ -135,10 +135,8 @@ function _v4Flat(opcoes) {
           tipoNo: no ? no.tipo : "FORUM",
           caminho: caminhoNomes,
           caminhoTexto: caminhoNomes.join(" › "),
-          setorId: no && no.id !== ancoraId ? no.id : "",
-          setor: no && no.id !== ancoraId ? no.nome : "",
-          unidadeId: ancoraId,
-          unidade: ancoraNome,
+          noPaiId: no && no.id !== ancoraId ? no.id : "",
+          noPai: no && no.id !== ancoraId ? no.nome : "",
           endereco: no ? no.enderecoExibicao : (f.endereco || ""),
           emailEfetivo: f.email || "",
           emailHerdado: tipo !== "E-mail",
@@ -193,13 +191,13 @@ function v4CarregarDashboard() {
   const tipos = {}, setores = {}, localidades = {}, foruns = {}, unidades = {}, municipios = {};
   dados.forEach(x => {
     const tipo = x.tipo || "Não informado";
-    const setor = x.setor || "Não informado";
+    const setor = x.noPai || "Não informado";
     const localidade = x.municipio || "Não informado";
     tipos[tipo] = (tipos[tipo] || 0) + 1;
     setores[setor] = (setores[setor] || 0) + 1;
     localidades[localidade] = (localidades[localidade] || 0) + 1;
     if (x.forumId) foruns[x.forumId] = true;
-    if (x.unidadeId) unidades[x.unidadeId] = true;
+    if (x.noPaiId) unidades[x.noPaiId] = true;
     if (x.municipioId) municipios[x.municipioId] = true;
   });
   return respostaSucesso({ total: dados.length, tipos, setores, localidades, totalForuns: Object.keys(foruns).length, totalUnidades: Object.keys(unidades).length, totalMunicipios: Object.keys(municipios).length });
@@ -277,8 +275,8 @@ function v4CriarContato(dados) {
     if (k === "ID") return id;
     if (k === "FORUMID") return contexto.forumId;
     if (k === "UNIDADEORGANIZACIONALID") return contexto.noId;
-    if (k === "UNIDADEID") return contexto.unidadeId;
-    if (k === "SETORID") return contexto.setorId;
+    if (k === "UNIDADEID") return contexto.noPaiId;
+    if (k === "SETORID") return (contexto.noId && contexto.noPaiId) ? contexto.noId : "";
     if (k === "TIPO") return tipo;
     if (k === "DESCRICAO") return descricao;
     if (k === "VALOR") return valor;
@@ -320,8 +318,8 @@ function v4AtualizarContato(id, dados) {
     if (k === "ID") return id;
     if (k === "FORUMID") return contexto.forumId;
     if (k === "UNIDADEORGANIZACIONALID") return contexto.noId;
-    if (k === "UNIDADEID") return contexto.unidadeId;
-    if (k === "SETORID") return contexto.setorId;
+    if (k === "UNIDADEID") return contexto.noPaiId;
+    if (k === "SETORID") return (contexto.noId && contexto.noPaiId) ? contexto.noId : "";
     if (k === "TIPO") return tipo;
     if (k === "DESCRICAO") return descricao;
     if (k === "VALOR") return valor;
@@ -570,12 +568,8 @@ function validarDadosReaisForumV4() {
       ids(forum, "ID")
     );
 
-    const unidadesValidas = new Set(
-      ids(unidade, "ID")
-    );
-
-    const setoresValidos = new Set(
-      ids(setor, "ID")
+    const nosValidos = new Set(
+      ids(DB.unidadesOrganizacionaisOuNulo(), "ID")
     );
 
     DB.read(contato).forEach(function(linha, indice) {
@@ -587,31 +581,22 @@ function validarDadosReaisForumV4() {
         )
       );
 
-      const unidadeId = textoSeguro(
+      const noId = textoSeguro(
         _v4Col(
           mapaContato,
           linha,
-          ["UNIDADE_ID"]
-        )
-      );
-
-      const setorId = textoSeguro(
-        _v4Col(
-          mapaContato,
-          linha,
-          ["SETOR_ID"]
+          ["UNIDADE_ORGANIZACIONAL_ID"]
         )
       );
 
       if (
         !forumId &&
-        !unidadeId &&
-        !setorId
+        !noId
       ) {
         problemas.push(
           "CONTATO linha " +
           (indice + 2) +
-          " não possui vínculo de Fórum/Unidade/Setor."
+          " não possui vínculo de Fórum/Nó."
         );
       }
 
@@ -628,26 +613,14 @@ function validarDadosReaisForumV4() {
       }
 
       if (
-        unidadeId &&
-        !unidadesValidas.has(unidadeId)
+        noId &&
+        !nosValidos.has(noId)
       ) {
         problemas.push(
           "CONTATO linha " +
           (indice + 2) +
-          " aponta para UNIDADE inexistente: " +
-          unidadeId
-        );
-      }
-
-      if (
-        setorId &&
-        !setoresValidos.has(setorId)
-      ) {
-        problemas.push(
-          "CONTATO linha " +
-          (indice + 2) +
-          " aponta para SETOR inexistente: " +
-          setorId
+          " aponta para NÓ inexistente: " +
+          noId
         );
       }
     });

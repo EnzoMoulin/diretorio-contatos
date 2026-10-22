@@ -24,6 +24,23 @@ function importarMascaradosTudo() {
       resumo.push(nome + "/" + aba + ": " + (dados.length - 1) + " linhas");
     });
   });
+  // Admin: SOLICITACOES_ACESSO passa a usar UNIDADE_ORGANIZACIONAL_ID (só na privada)
+  try {
+    var ssPriv = SpreadsheetApp.openById(_PLANILHAS.privada);
+    var shSol = ssPriv.getSheetByName("SOLICITACOES_ACESSO");
+    if (shSol && shSol.getLastColumn() >= 1) {
+      var head = shSol.getRange(1, 1, 1, shSol.getLastColumn()).getValues()[0];
+      for (var i = 0; i < head.length; i++) {
+        if (String(head[i]).trim() === "UNIDADE_ID") {
+          shSol.getRange(1, i + 1).setValue("UNIDADE_ORGANIZACIONAL_ID");
+          resumo.push("privada/SOLICITACOES_ACESSO: coluna renomeada");
+          break;
+        }
+      }
+    } else {
+      resumo.push("privada/SOLICITACOES_ACESSO: aba ausente (ok)");
+    }
+  } catch (e) { resumo.push("privada/SOLICITACOES_ACESSO: " + e.message); }
   Logger.log(resumo.join("\n"));
   return resumo;
 }

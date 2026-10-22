@@ -21,8 +21,8 @@ function usuarioVisitante(estado) {
     identificado: false,
     estadoAcesso: estado || "CONSULTA",
     podeSolicitarAcesso: false,
-    unidadeIds: [],
-    unidades: [],
+    noIds: [],
+    nos: [],
     comarcas: []
   };
 }
@@ -294,7 +294,7 @@ function atualizarInterfaceUsuario() {
     var comarcasList = document.getElementById("config-conta-comarcas");
     var escopoHint = document.getElementById("config-conta-escopo-hint");
     if (comarcasWrap && comarcasList) {
-      var unidadesUsuario = Array.isArray(usuario.unidades) ? usuario.unidades : [];
+      var unidadesUsuario = Array.isArray(usuario.nos) ? usuario.nos : [];
       comarcasList.innerHTML = "";
       if (logado && perfil === "GESTOR_SISTEMA") {
         var chipAll = document.createElement("span");
@@ -494,8 +494,8 @@ function atualizarInterfaceUsuario() {
     var escopoInfo = document.getElementById("telefones-escopo-info");
 
     if (subtitulo && escopoInfo) {
-      if (logado && perfil === "GESTOR_CONTEUDO" && Array.isArray(usuario.unidades) && usuario.unidades.length > 0) {
-        subtitulo.textContent = "Gerenciamento de contatos — Unidades vinculadas: " + usuario.unidades.map(function(unidade){ return unidade.caminhoTexto || unidade.nome || unidade.id; }).join(", ");
+      if (logado && perfil === "GESTOR_CONTEUDO" && Array.isArray(usuario.nos) && usuario.nos.length > 0) {
+        subtitulo.textContent = "Gerenciamento de contatos — Unidades vinculadas: " + usuario.nos.map(function(unidade){ return unidade.caminhoTexto || unidade.nome || unidade.id; }).join(", ");
         escopoInfo.textContent = "Você só pode adicionar, editar ou excluir contatos vinculados a essas Unidades.";
         escopoInfo.style.display = "block";
       } else if (logado && perfil === "GESTOR_CONTEUDO") {
@@ -923,7 +923,7 @@ function abrirPerfilUsuario() {
     total.textContent = "Acesso total";
     lista.appendChild(total);
   } else {
-    const acessos = Array.isArray(usuario.unidades) ? usuario.unidades : [];
+    const acessos = Array.isArray(usuario.nos) ? usuario.nos : [];
     if (!acessos.length) {
       const vazio = document.createElement("div");
       vazio.className = "profile-access-empty";

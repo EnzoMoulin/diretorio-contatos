@@ -173,7 +173,7 @@ function criarAbaSolicitacoesAcesso(
         "NOME",
         "LOCALIDADE",
         "NIVEL_SOLICITADO",
-        "UNIDADE_ID",
+        "UNIDADE_ORGANIZACIONAL_ID",
         "ESCOPO_ACESSOS",
         "JUSTIFICATIVA",
         "STATUS",
@@ -193,12 +193,12 @@ function criarAbaSolicitacoesAcesso(
   return sheet;
 }
 
-/** Preserva pedidos legados por Unidade e acrescenta o instantâneo estruturado dos escopos. */
+/** Preserva pedidos legados por Nó e acrescenta o instantâneo estruturado dos escopos. */
 function garantirColunaEscopoAcessos(sheet) {
   const headers = DB.headers(sheet);
   if (headers.some(header => normalizarChave(header) === "ESCOPOACESSOS")) return sheet;
-  const indiceUnidade = headers.findIndex(header => normalizarChave(header) === "UNIDADEID");
-  const posicao = indiceUnidade >= 0 ? indiceUnidade + 2 : headers.length + 1;
+  const indiceNo = headers.findIndex(header => normalizarChave(header) === "UNIDADEORGANIZACIONALID" || normalizarChave(header) === "UNIDADEID");
+  const posicao = indiceNo >= 0 ? indiceNo + 2 : headers.length + 1;
   sheet.insertColumns(posicao, 1);
   sheet.getRange(1, posicao).setValue("ESCOPO_ACESSOS");
   return sheet;
@@ -382,19 +382,7 @@ function criarAbaUnidadesOrganizacionais(spreadsheet) {
   return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.UNIDADES_ORGANIZACIONAIS, ["ID","FORUM_ID","PAI_ID","TIPO","NOME","ENDERECO","CEP","OBSERVACAO","SELECIONAVEL_ACESSO","ATIVO","ORDEM"]);
 }
 
-/**
- * V4 — Cria aba UNIDADES (FORUM -> UNIDADES).
- */
-function criarAbaUnidades(spreadsheet) {
-  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.UNIDADES, ["ID","FORUM_ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO","OBSERVACAO"]);
-}
-
-/**
- * V4 — Cria aba SETORES.
- */
-function criarAbaSetores(spreadsheet) {
-  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.SETORES, ["ID","UNIDADE_ID","NOME","ENDERECO","CEP","OBSERVACAO","ORDEM","ATIVO"]);
-}
+/** V4 removida: UNIDADES legada não é mais criada (modelo UO-only). */
 
 /**
  * V4 — Cria aba CONTATOS (FORUM/UNIDADE/SETOR -> CONTATOS).

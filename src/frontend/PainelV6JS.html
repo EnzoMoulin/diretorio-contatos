@@ -178,11 +178,12 @@
       porMunicipio[municipio] = (porMunicipio[municipio] || 0) + 1;
 
       var forumId = String(campo(item, ["forumId", "FORUM_ID", "forum", "FORUM"]) || "").trim();
-      var unidadeId = String(campo(item, ["unidadeId", "UNIDADE_ID"]) || "").trim();
-      var setorId = String(campo(item, ["setorId", "SETOR_ID"]) || "").trim();
+      var noPaiId = String(campo(item, ["noPaiId", "NO_PAI_ID"]) || "").trim();
+      var noId = String(campo(item, ["noId", "NO_ID"]) || "").trim();
+      var tipoNo = String(campo(item, ["tipoNo", "TIPO_NO"]) || "").trim();
       if (forumId) foruns.add(forumId);
-      if (unidadeId) unidades.add(unidadeId);
-      if (setorId) setores.add(setorId);
+      if (noPaiId) unidades.add(noPaiId);
+      if (noId && tipoNo.toUpperCase() === "SETOR") setores.add(noId);
     });
 
     atualizarTexto("total-telefones", dados.length);

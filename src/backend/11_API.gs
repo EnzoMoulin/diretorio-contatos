@@ -552,7 +552,7 @@ function normalizarEscoposAcesso(valor) {
     const objeto = ehObjeto(item) ? item : { id: item };
     const tipoInformado = textoSeguro(valorObjeto(objeto, "tipo", "TIPO", "tipoEscopo", "TIPO_ESCOPO"));
     const tipo = tipoEscopoAcesso(tipoInformado) || (!tipoInformado ? CONFIG.ACESSOS.UNIDADE : "");
-    const id = textoSeguro(valorObjeto(objeto, "id", "ID", "escopoId", "ESCOPO_ID", "unidadeId", "UNIDADE_ID"));
+    const id = textoSeguro(valorObjeto(objeto, "id", "ID", "escopoId", "ESCOPO_ID", "noId", "NO_ID", "unidadeOrganizacionalId", "UNIDADE_ORGANIZACIONAL_ID"));
     return { tipo: tipo, id: id };
   }).filter(function(item) {
     const chave = item.tipo + ":" + item.id;
@@ -611,13 +611,13 @@ function lerTodosAcessosAtivos() {
 function resolverEscopoAcessos(acessos, catalogo) {
   const ids = new Set();
   (acessos || []).forEach(function(acesso) {
-    (catalogo.unidadesPorEscopo[acesso.tipo + ":" + acesso.id] || []).forEach(function(id) { ids.add(id); });
+    (catalogo.nosPorEscopo[acesso.tipo + ":" + acesso.id] || []).forEach(function(id) { ids.add(id); });
   });
-  const unidades = (acessos || []).map(function(acesso) {
+  const nos = (acessos || []).map(function(acesso) {
     return catalogo.porChave[acesso.tipo + ":" + acesso.id] ||
       { id: acesso.id, tipo: acesso.tipo, nome: acesso.id, caminhoTexto: acesso.id, municipio: "", forum: "" };
   });
-  return { ids: Array.from(ids), unidades: unidades, acessos: acessos || [] };
+  return { ids: Array.from(ids), nos: nos, acessos: acessos || [] };
 }
 
 function montarCatalogoEscoposAcesso() {
@@ -642,13 +642,13 @@ function montarCatalogoEscoposAcesso() {
   const nos = _fcIndiceOrganizacional();
   const porChave = {};
   const itens = [];
-  const unidadesPorEscopo = {};
+  const nosPorEscopo = {};
   Object.keys(foruns).forEach(function(id) {
     const forum = foruns[id];
     const item = { tipo: CONFIG.ACESSOS.FORUM, id: id, nome: forum.nome, municipio: municipios[forum.municipioId].nome, forumId: id, forum: forum.nome, caminhoTexto: forum.nome + " (" + municipios[forum.municipioId].nome + ")" };
     porChave[item.tipo + ":" + id] = item;
     itens.push(item);
-    unidadesPorEscopo[item.tipo + ":" + id] = [];
+    nosPorEscopo[item.tipo + ":" + id] = [];
   });
 
   Object.keys(nos).forEach(function(id) {
@@ -659,11 +659,11 @@ function montarCatalogoEscoposAcesso() {
     if (caminho.some(function(item) { return !item.ativo; })) return;
     const municipio = municipios[forum.municipioId];
     const chaveForum = CONFIG.ACESSOS.FORUM + ":" + forum.id;
-    unidadesPorEscopo[chaveForum].push(id);
+    nosPorEscopo[chaveForum].push(id);
     caminho.forEach(function(ancestral) {
       const chaveUnidade = CONFIG.ACESSOS.UNIDADE + ":" + ancestral.id;
-      if (!unidadesPorEscopo[chaveUnidade]) unidadesPorEscopo[chaveUnidade] = [];
-      unidadesPorEscopo[chaveUnidade].push(id);
+      if (!nosPorEscopo[chaveUnidade]) nosPorEscopo[chaveUnidade] = [];
+      nosPorEscopo[chaveUnidade].push(id);
     });
     if (!no.selecionavelAcesso) return;
     const item = {
@@ -678,7 +678,7 @@ function montarCatalogoEscoposAcesso() {
     porChave[item.tipo + ":" + id] = item;
     itens.push(item);
   });
-  return { porChave: porChave, itens: itens, unidadesPorEscopo: unidadesPorEscopo };
+  return { porChave: porChave, itens: itens, nosPorEscopo: nosPorEscopo };
 }
 
 function validarEscoposAcesso(escopos) {
@@ -723,7 +723,7 @@ function indicesSolicitacao(linhaCabecalho) {
     NOME: ["NOME"],
     LOCALIDADE: ["LOCALIDADE"],
     NIVEL: ["NIVEL_SOLICITADO", "NIVEL", "PERFIL_SOLICITADO", "PERFIL"],
-    UNIDADE_ID: ["UNIDADE_ID", "UNIDADES", "UNIDADES_IDS"],
+    UNIDADE_ORGANIZACIONAL_ID: ["UNIDADE_ORGANIZACIONAL_ID"],
     ESCOPOS: ["ESCOPO_ACESSOS", "ACESSOS_SOLICITADOS"],
     JUSTIFICATIVA: ["JUSTIFICATIVA"],
     STATUS: ["STATUS"],
@@ -758,8 +758,8 @@ function escoposDaSolicitacao(linha, indices) {
   const estruturados = indices.ESCOPOS !== undefined
     ? normalizarEscoposAcesso(linha[indices.ESCOPOS])
     : [];
-  if (estruturados.length || indices.UNIDADE_ID === undefined) return estruturados;
-  return normalizarEscoposAcesso(linha[indices.UNIDADE_ID]);
+  if (estruturados.length || indices.UNIDADE_ORGANIZACIONAL_ID === undefined) return estruturados;
+  return normalizarEscoposAcesso(linha[indices.UNIDADE_ORGANIZACIONAL_ID]);
 }
 
 function nivelSolicitadoNumero(valor) {
@@ -771,7 +771,7 @@ function nivelSolicitadoNumero(valor) {
   return CONFIG.NIVEIS.POR_PERFIL[perfil] || 0;
 }
 
-function idsUnidadesSolicitadas(valor) {
+function idsNosSolicitados(valor) {
   const lista = Array.isArray(valor) ? valor : String(valor || "").split(/[,;|]+/);
   return Array.from(new Set(lista.map(textoSeguro).filter(Boolean)));
 }
@@ -911,7 +911,7 @@ function enviarFormularioAcesso(dados) {
     ));
     const escoposInformados = valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS");
     const escopos = normalizarEscoposAcesso(escoposInformados || valorObjeto(
-      entrada, "unidadeIds", "UNIDADE_IDS", "unidades", "UNIDADES", "UNIDADE_ID"
+      entrada, "noIds", "NO_IDS", "nos", "NOS", "UNIDADE_ORGANIZACIONAL_ID"
     ));
     const justificativa = textoSeguro(valorObjeto(entrada, "justificativa", "JUSTIFICATIVA"));
 
@@ -939,10 +939,10 @@ function enviarFormularioAcesso(dados) {
 
     const escoposValidados = escopos.length ? validarEscoposAcesso(escopos) : [];
     if (ehAmpliacaoGestorConteudo) {
-      const permitidas = new Set(usuario.unidadeIds || []);
+      const permitidas = new Set(usuario.noIds || []);
       const catalogo = montarCatalogoEscoposAcesso();
       const todosCobertos = escoposValidados.every(function(escopo) {
-        const unidades = catalogo.unidadesPorEscopo[escopo.tipo + ":" + escopo.id] || [];
+        const unidades = catalogo.nosPorEscopo[escopo.tipo + ":" + escopo.id] || [];
         return unidades.length > 0 && unidades.every(function(id) { return permitidas.has(id); });
       });
       if (todosCobertos) throw new Error("Todos os acessos selecionados já estão vinculados ao seu perfil.");
@@ -957,7 +957,7 @@ function enviarFormularioAcesso(dados) {
         throw new Error("Aba SOLICITACOES_ACESSO sem a coluna " + campo + ".");
       }
     });
-    if (indices.ESCOPOS === undefined && indices.UNIDADE_ID === undefined) {
+    if (indices.ESCOPOS === undefined && indices.UNIDADE_ORGANIZACIONAL_ID === undefined) {
       throw new Error("Aba SOLICITACOES_ACESSO sem a coluna ESCOPO_ACESSOS.");
     }
     const pendente = dadosSheet.slice(1).some(function(row) {
@@ -972,7 +972,7 @@ function enviarFormularioAcesso(dados) {
       EMAIL: usuario.email,
       NOME: nome,
       NIVEL: nivel || "",
-      UNIDADE_ID: escoposValidados.filter(function(escopo) { return escopo.tipo === CONFIG.ACESSOS.UNIDADE; }).map(function(escopo) { return escopo.id; }).join(","),
+      UNIDADE_ORGANIZACIONAL_ID: escoposValidados.filter(function(escopo) { return escopo.tipo === CONFIG.ACESSOS.UNIDADE; }).map(function(escopo) { return escopo.id; }).join(","),
       ESCOPOS: serializarEscoposAcesso(escoposValidados),
       JUSTIFICATIVA: justificativa,
       STATUS: "PENDENTE",
@@ -990,12 +990,12 @@ function enviarFormularioAcesso(dados) {
   }
 }
 
-function solicitarAcesso(nome, nivel, justificativa, unidadeIds) {
+function solicitarAcesso(nome, nivel, justificativa, noIds) {
   return enviarFormularioAcesso({
     nome: nome,
     nivel: nivel,
     justificativa: justificativa,
-    unidadeIds: unidadeIds
+    noIds: noIds
   });
 }
 
@@ -1628,9 +1628,11 @@ function listarHistoricoGeral(authDados) {
             "SETOR"
           );
 
-        const unidadeId =
+        const noPaiId =
           campo(
             snapshot,
+            "noPaiId",
+            "NO_PAI_ID",
             "unidadeId",
             "UNIDADE_ID"
           );
@@ -1674,8 +1676,8 @@ function listarHistoricoGeral(authDados) {
           setor:
             String(setor || "").trim(),
 
-          unidadeId:
-            textoSeguro(unidadeId),
+          noPaiId:
+            textoSeguro(noPaiId),
 
           data:
             dataFormatada,
@@ -1702,9 +1704,9 @@ function listarHistoricoGeral(authDados) {
       return respostaSucesso(resultado);
     }
 
-    const permitidas = new Set(usuarioHistPerm.unidadeIds || []);
+    const permitidas = new Set(usuarioHistPerm.noIds || []);
     return respostaSucesso(resultado.filter(function(item) {
-      return permitidas.has(textoSeguro(item.unidadeId || item.UNIDADE_ID));
+      return permitidas.has(textoSeguro(item.noPaiId || item.unidadeId || item.UNIDADE_ID));
     }));
 
   } catch (erro) {
@@ -2328,8 +2330,8 @@ function listarUsuarios() {
         nivel: nivel,
         perfil: CONFIG.NIVEIS.POR_NIVEL[String(nivel)] || "",
         ativo: paraBoolean(linha[mapa.ATIVO - 1]),
-        unidadeIds: escopo.ids,
-        unidades: escopo.unidades,
+        noIds: escopo.ids,
+        nos: escopo.nos,
         escopos: escopo.acessos
       };
     });
@@ -2380,8 +2382,8 @@ function removerMeuAcesso(tipo, id) {
   }
 }
 
-function validarIdsUnidadesAdministrativas(unidadeIds) {
-  const ids = idsUnidadesSolicitadas(unidadeIds);
+function validarIdsNosAdministrativos(noIds) {
+  const ids = idsNosSolicitados(noIds);
   const sheet = DB.unidadesOrganizacionais();
   const mapa = DB.map(sheet);
   const validas = new Set(DB.read(sheet)
@@ -2391,7 +2393,7 @@ function validarIdsUnidadesAdministrativas(unidadeIds) {
     })
     .map(function(linha) { return textoSeguro(linha[mapa.ID - 1]); }));
   if (ids.some(function(id) { return !validas.has(id); })) {
-    throw new Error("Uma ou mais Unidades são inválidas ou inativas.");
+    throw new Error("Um ou mais nós são inválidos ou inativos.");
   }
   return ids;
 }
@@ -2441,10 +2443,10 @@ function atualizarUsuario(email, dados) {
     const nome = possuiCampo(entrada, "nome", "NOME")
       ? textoSeguro(valorObjeto(entrada, "nome", "NOME"))
       : textoSeguro(dadosSheet[indice][mapa.NOME - 1]);
-    const escoposInformados = valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "unidadeIds", "UNIDADE_IDS", "unidades");
-    const possuiEscopos = possuiCampo(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "unidadeIds", "UNIDADE_IDS", "unidades");
+    const escoposInformados = valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "noIds", "NO_IDS", "nos");
+    const possuiEscopos = possuiCampo(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "noIds", "NO_IDS", "nos");
     const escoposAtuais = nivelAtual === CONFIG.NIVEIS.GESTOR_CONTEUDO
-      ? auth.obterEscopoUnidades(textoSeguro(dadosSheet[indice][mapa.ID - 1])).acessos
+      ? auth.obterEscopoNos(textoSeguro(dadosSheet[indice][mapa.ID - 1])).acessos
       : [];
     const escopos = nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO
       ? validarEscoposAcesso(possuiEscopos ? escoposInformados : escoposAtuais)
@@ -2500,7 +2502,7 @@ function criarUsuario(dados) {
       ? paraBoolean(valorObjeto(entrada, "ativo", "ATIVO"))
       : true;
     const escopos = nivel === 1
-      ? validarEscoposAcesso(valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "unidadeIds", "UNIDADE_IDS", "unidades"))
+      ? validarEscoposAcesso(valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "noIds", "NO_IDS", "nos"))
       : [];
 
     if (!emailValidoAPI(email)) throw new Error("E-mail inválido.");

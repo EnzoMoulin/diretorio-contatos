@@ -15,7 +15,7 @@ function _demoEhGestorConteudoEscopoV6(usuario) {
 
 function _demoIdsUnidadesEscopoV6(usuario) {
   return new Set(
-    (Array.isArray(usuario && usuario.unidadeIds) ? usuario.unidadeIds : [])
+    (Array.isArray(usuario && usuario.noIds) ? usuario.noIds : [])
       .map(function(id) { return textoSeguro(id); })
       .filter(Boolean)
   );
@@ -198,8 +198,8 @@ function demoCarregarDashboardEscopadoV6() {
       municipios[municipio] = (municipios[municipio] || 0) + 1;
 
       if (item.forumId) foruns[item.forumId] = true;
-      if (item.unidadeId) unidades[item.unidadeId] = true;
-      if (item.setorId) setores[item.setorId] = true;
+      if (item.noPaiId) unidades[item.noPaiId] = true;
+      if (item.noId && item.tipoNo === "SETOR") setores[item.noId] = true;
     });
 
     return respostaSucesso({

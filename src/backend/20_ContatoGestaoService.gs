@@ -85,7 +85,7 @@ function _cgPodeGerenciar(usuario, forumId, noId) {
 
   const idNo = textoSeguro(noId);
   if (idNo) {
-    return Array.isArray(usuario.unidadeIds) && usuario.unidadeIds.map(textoSeguro).includes(idNo);
+    return Array.isArray(usuario.noIds) && usuario.noIds.map(textoSeguro).includes(idNo);
   }
 
   return _cgAcessoForumExplicito(usuario, forumId);
