@@ -681,6 +681,37 @@ function montarCatalogoEscoposAcesso() {
     itens.push(item);
     if (tipoItem === CONFIG.ACESSOS.SETOR) nosPorEscopo[item.tipo + ":" + id] = [id];
   });
+  // Contagem de contatos sob cada escopo (para calibrar o pedido)
+  try {
+    const shCon = DB.contatosOuNulo();
+    if (shCon) {
+      const mapaC = DB.map(shCon);
+      const idxUo = mapaC.UNIDADEORGANIZACIONALID;
+      const idxFo = mapaC.FORUMID;
+      const idxAt = mapaC.ATIVO;
+      const diretos = {};
+      const totaisForum = {};
+      DB.read(shCon).forEach(function(linha) {
+        if (idxAt !== undefined && !paraBoolean(linha[idxAt - 1])) return;
+        const noId = idxUo !== undefined ? textoSeguro(linha[idxUo - 1]) : "";
+        const forumId = idxFo !== undefined ? textoSeguro(linha[idxFo - 1]) : "";
+        if (noId && nos[noId]) {
+          diretos[noId] = (diretos[noId] || 0) + 1;
+          _fcResolverAncestros(nos, noId).forEach(function(anc) {
+            if (anc.id !== noId) diretos[anc.id] = (diretos[anc.id] || 0) + 1;
+          });
+          const forumDoNo = nos[noId].forumId;
+          if (forumDoNo) totaisForum[forumDoNo] = (totaisForum[forumDoNo] || 0) + 1;
+        } else if (forumId && foruns[forumId]) {
+          totaisForum[forumId] = (totaisForum[forumId] || 0) + 1;
+        }
+      });
+      itens.forEach(function(item) {
+        if (item.tipo === CONFIG.ACESSOS.FORUM) item.n_contatos = totaisForum[item.id] || 0;
+        else item.n_contatos = diretos[item.id] || 0;
+      });
+    }
+  } catch (e) {}
   return { porChave: porChave, itens: itens, nosPorEscopo: nosPorEscopo };
 }
 
@@ -1081,7 +1112,7 @@ function adicionarAcessosUnidades(usuarioId, escopos) {
   if (linhasAtualizadas.length) sheet.getRange(2, 1, linhasAtualizadas.length, sheet.getLastColumn()).setValues(linhasAtualizadas);
 }
 
-function processarSolicitacaoAPI(id, novoStatus) {
+function processarSolicitacaoAPI(id, novoStatus, escoposAjustados) {
   const lock = LockService.getScriptLock();
   let bloqueado = false;
   try {
@@ -1106,6 +1137,9 @@ function processarSolicitacaoAPI(id, novoStatus) {
     }
 
     if (status === "APROVADO") {
+      if (Array.isArray(escoposAjustados)) {
+        solicitacao.escopos = validarEscoposAcesso(escoposAjustados);
+      }
       if (solicitacao.escopos.length) {
         solicitacao.escopos = validarEscoposAcesso(solicitacao.escopos);
       }
@@ -1153,6 +1187,14 @@ function processarSolicitacaoAPI(id, novoStatus) {
       sheetSolic.getRange(1, 1, 1, sheetSolic.getLastColumn()).getDisplayValues()[0]
     );
     sheetSolic.getRange(solicitacao.linha, indices.STATUS + 1).setValue(status);
+    if (status === "APROVADO" && Array.isArray(escoposAjustados)) {
+      if (indices.ESCOPOS !== undefined) {
+        sheetSolic.getRange(solicitacao.linha, indices.ESCOPOS + 1).setValue(serializarEscoposAcesso(solicitacao.escopos));
+      }
+      if (indices.UNIDADE_ORGANIZACIONAL_ID !== undefined) {
+        sheetSolic.getRange(solicitacao.linha, indices.UNIDADE_ORGANIZACIONAL_ID + 1).setValue(solicitacao.escopos.filter(function(e) { return e.tipo === CONFIG.ACESSOS.UNIDADE || e.tipo === CONFIG.ACESSOS.SETOR; }).map(function(e) { return e.id; }).join(","));
+      }
+    }
     if (indices.APROVADOR !== undefined) {
       sheetSolic.getRange(solicitacao.linha, indices.APROVADOR + 1)
         .setValue(auth.usuarioAtual().email);
@@ -1172,8 +1214,8 @@ function processarSolicitacaoAPI(id, novoStatus) {
   }
 }
 
-function aprovarSolicitacao(id) {
-  return processarSolicitacaoAPI(id, "APROVADO");
+function aprovarSolicitacao(id, escoposAjustados) {
+  return processarSolicitacaoAPI(id, "APROVADO", escoposAjustados);
 }
 
 function rejeitarSolicitacao(id) {
@@ -2325,7 +2367,7 @@ function listarUsuarios() {
       const id = textoSeguro(linha[mapa.ID - 1]);
       const escopo = nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO
         ? resolverEscopoAcessos(acessosPorUsuario[id] || [], catalogo)
-        : { ids: [], unidades: [], acessos: [] };
+        : { ids: [], nos: [], acessos: [] };
       return {
         id: id,
         email: normalizarEmail(linha[mapa.EMAIL - 1]),
@@ -2341,6 +2383,50 @@ function listarUsuarios() {
     return respostaSucesso(resultado);
   } catch (erro) {
     registrarErroAPI("LISTAR_USUARIOS", erro);
+    return respostaErro(erro);
+  }
+}
+
+/** Visão reversa: quem tem acesso ao nó (direto ou por herança de cima). */
+function consultarUsuariosPorNo(noId) {
+  try {
+    new AuthService().exigirPerfil(CONFIG.PERFIS.GESTOR_SISTEMA);
+    const alvo = textoSeguro(noId);
+    if (!alvo) throw new Error("Nó não informado.");
+    const nos = _fcIndiceOrganizacional();
+    const no = nos[alvo];
+    if (!no) throw new Error("Nó organizacional não encontrado.");
+    const caminhoIds = {};
+    _fcResolverAncestros(nos, alvo).forEach(function(anc) { caminhoIds[anc.id] = true; });
+    const catalogo = montarCatalogoEscoposAcesso();
+    const acessosPorUsuario = {};
+    lerTodosAcessosAtivos().forEach(function(acesso) {
+      if (!acessosPorUsuario[acesso.usuarioId]) acessosPorUsuario[acesso.usuarioId] = [];
+      acessosPorUsuario[acesso.usuarioId].push({ tipo: acesso.tipo, id: acesso.id });
+    });
+    const sheet = DB.usuarios();
+    const mapa = DB.map(sheet);
+    const resultado = [];
+    DB.read(sheet).forEach(function(linha) {
+      const nivel = Number(linha[mapa.NIVEL - 1]);
+      if (nivel !== CONFIG.NIVEIS.GESTOR_CONTEUDO) return;
+      if (!paraBoolean(linha[mapa.ATIVO - 1])) return;
+      const id = textoSeguro(linha[mapa.ID - 1]);
+      const vias = (acessosPorUsuario[id] || []).filter(function(a) { return caminhoIds[a.id]; });
+      if (!vias.length) return;
+      resultado.push({
+        id: id,
+        nome: textoSeguro(linha[mapa.NOME - 1]),
+        email: normalizarEmail(linha[mapa.EMAIL - 1]),
+        vias: vias.map(function(a) {
+          const item = catalogo.porChave[a.tipo + ":" + a.id];
+          return { tipo: a.tipo, id: a.id, nome: item ? (item.caminhoTexto || item.nome) : a.id };
+        })
+      });
+    });
+    return respostaSucesso({ no: { id: alvo, nome: no.nome }, usuarios: resultado });
+  } catch (erro) {
+    registrarErroAPI("CONSULTAR_USUARIOS_POR_NO", erro);
     return respostaErro(erro);
   }
 }

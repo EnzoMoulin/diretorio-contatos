@@ -3,17 +3,46 @@ var escoposUsuarios = [];
 var usuarioEmEdicao = null;
 
 function textoEscopoUsuario(escopo) {
-  return escopo.caminhoTexto || escopo.nome || escopo.id;
+  var base = escopo.caminhoTexto || escopo.nome || escopo.id;
+  return (typeof escopo.n_contatos === "number") ? base + " (" + escopo.n_contatos + ")" : base;
 }
 
 function carregarUsuarios() {
   API.listarEscoposParaAcesso(function(respEscopos) {
     escoposUsuarios = respEscopos && respEscopos.sucesso === true ? (respEscopos.dados || []) : [];
+    preencherSeletorReverso();
     API.listarUsuarios(function(resp) {
       if (!resp || resp.sucesso !== true) { mostrarToast((resp && resp.erro) || "Erro ao carregar usuários.", "error"); return; }
       renderizarUsuarios(resp.dados || []);
     }, function(erro) { mostrarToast((erro && erro.message) || "Falha de comunicação.", "error"); });
   }, function(erro) { mostrarToast((erro && erro.message) || "Falha ao carregar escopos de acesso.", "error"); });
+}
+function preencherSeletorReverso() {
+  var select = document.getElementById("reverso-no"); if (!select) return; select.textContent = "";
+  var vazio = document.createElement("option"); vazio.value = ""; vazio.textContent = "Selecione Fórum, Unidade ou Setor…"; select.appendChild(vazio);
+  escoposUsuarios.filter(function(i) { return i.tipo === "FORUM" || i.tipo === "UNIDADE" || i.tipo === "SETOR"; }).forEach(function(item) {
+    var op = document.createElement("option"); op.value = item.id; op.textContent = textoEscopoUsuario(item); select.appendChild(op);
+  });
+}
+function consultarAcessoNo() {
+  var select = document.getElementById("reverso-no"); var saida = document.getElementById("reverso-resultado");
+  if (!select || !saida) return;
+  if (!select.value) { saida.textContent = "Selecione um nó."; return; }
+  saida.textContent = "Consultando…";
+  API.consultarUsuariosPorNo(select.value, function(resp) {
+    if (!resp || resp.sucesso !== true) { saida.textContent = (resp && resp.erro) || "Falha na consulta."; return; }
+    var dados = resp.dados || {}; var usuarios = dados.usuarios || [];
+    if (!usuarios.length) { saida.textContent = "Nenhum gestor alcança " + ((dados.no && dados.no.nome) || select.value) + "."; return; }
+    saida.textContent = "";
+    var titulo = document.createElement("div"); titulo.innerHTML = "<strong>" + usuarios.length + "</strong> gestor(es) com acesso a <strong>" + ((dados.no && dados.no.nome) || "") + "</strong>:"; saida.appendChild(titulo);
+    var ul = document.createElement("ul"); ul.style.margin = "6px 0 0 18px";
+    usuarios.forEach(function(u) {
+      var li = document.createElement("li");
+      li.textContent = (u.nome || u.email) + " <" + u.email + "> — via " + (u.vias || []).map(function(v) { return v.nome || v.id; }).join(", ");
+      ul.appendChild(li);
+    });
+    saida.appendChild(ul);
+  }, function(erro) { saida.textContent = (erro && erro.message) || "Falha de comunicação."; });
 }
 
 function renderizarUsuarios(lista) {

@@ -7,8 +7,17 @@
     </div>
   </div>
   <div class="panel" style="margin-bottom:16px;padding:12px 16px;font-size:13px;color:#475569">
-    <strong>Gestor de Conteúdo:</strong> acesso por Fórum ou Unidade.
+    <strong>Gestor de Conteúdo:</strong> acesso por Fórum, Unidade ou Setor.
     <strong>Gestor do Sistema:</strong> acesso completo ao sistema.
+  </div>
+  <div class="panel" style="margin-bottom:16px;padding:12px 16px">
+    <strong>Quem tem acesso a…</strong>
+    <span style="color:#64748b;font-size:13px">Selecione um nó para ver os gestores que o alcançam (direto ou por herança).</span>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <select id="reverso-no" style="flex:1;min-width:220px"></select>
+      <button type="button" class="btn btn-secondary" onclick="consultarAcessoNo()">Consultar</button>
+    </div>
+    <div id="reverso-resultado" style="margin-top:8px;font-size:13px"></div>
   </div>
   <div class="table-panel" style="overflow-x:auto">
     <table class="data-table" id="tabela-usuarios">

@@ -393,8 +393,24 @@ function construirHierarquiaForumContatos(opcoes) {
     geradoEm: new Date(),
     totalOrgaos: retorno.filter(function(item) { return item.tipo === "ORGAO"; }).length,
     totalComarcas: retorno.filter(function(item) { return item.tipo !== "ORGAO"; }).length,
-    municipios: retorno
+    municipios: retorno,
+    uteis: _fcTelefonesUteis()
   };
+}
+
+/** Telefones úteis (aba TELEFONES_UTEIS) para o bloco da consulta. */
+function _fcTelefonesUteis() {
+  try {
+    const sh = DB.telefonesUteisOuNulo();
+    if (!sh) return [];
+    const mapa = DB.map(sh);
+    return DB.read(sh).filter(function(linha) {
+      return mapa.ATIVO === undefined || paraBoolean(linha[mapa.ATIVO - 1]);
+    }).map(function(linha) {
+      const g = function(ch) { const i = mapa[ch]; return i !== undefined ? textoSeguro(linha[i - 1]) : ""; };
+      return { id: g("ID"), nome: g("NOME"), tipo: g("TIPO"), valor: g("VALOR") };
+    }).filter(function(item) { return item.nome || item.valor; });
+  } catch (e) { return []; }
 }
 
 function listarHierarquiaContatos(termo) {

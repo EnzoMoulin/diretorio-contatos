@@ -74,6 +74,9 @@ const API = {
   listarUnidadesParaAcesso(sucesso, erro) {
     criarRunnerAPI(sucesso, erro).listarUnidadesParaAcesso();
   },
+  consultarUsuariosPorNo(noId, sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).consultarUsuariosPorNo(noId);
+  },
   listarEscoposParaAcesso(sucesso, erro) {
     criarRunnerAPI(sucesso, erro).listarEscoposParaAcesso();
   },
@@ -86,8 +89,12 @@ const API = {
   contarSolicitacoesPendentes(sucesso, erro) {
     criarRunnerAPI(sucesso, erro).contarSolicitacoesPendentes();
   },
-  aprovarSolicitacao(id, sucesso, erro) {
-    criarRunnerAPI(sucesso, erro).aprovarSolicitacao(id);
+  aprovarSolicitacao(id, escoposOuSucesso, sucessoOuErro, erro) {
+    if (typeof escoposOuSucesso === "function") {
+      criarRunnerAPI(escoposOuSucesso, sucessoOuErro).aprovarSolicitacao(id);
+    } else {
+      criarRunnerAPI(sucessoOuErro, erro).aprovarSolicitacao(id, escoposOuSucesso);
+    }
   },
   rejeitarSolicitacao(id, sucesso, erro) {
     criarRunnerAPI(sucesso, erro).rejeitarSolicitacao(id);

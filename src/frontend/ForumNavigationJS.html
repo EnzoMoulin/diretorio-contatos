@@ -562,6 +562,26 @@
     }).join("");
   }
 
+  function uteisCards(uteis) {
+    if (!uteis || !uteis.length) return "";
+    return '<div class="fc-contatos">' + uteis.map(function (u) {
+      var tipo = fmtTipoContato(u.tipo);
+      var valor = fmtValor(u.tipo, u.valor);
+      var href = hrefContato(u.tipo, u.valor);
+      var externo = /^(https?:|mailto:)/.test(href);
+      var valorHtml = href
+        ? '<a class="fc-contato-valor" href="' + esc(href) + '" ' +
+          (externo ? 'target="_blank" rel="noopener noreferrer"' : "") + ">" + esc(valor) + "</a>"
+        : '<span class="fc-contato-valor">' + esc(valor) + "</span>";
+      return '<article class="fc-contato">' +
+        '<div class="fc-contato-main"><span class="fc-contato-tipo">' + esc(tipo) + "</span><h4>" + esc(u.nome || valor) + "</h4></div>" +
+        '<div class="fc-contato-side">' + valorHtml +
+        '<div class="fc-contato-actions"><button type="button" class="fc-icon-btn fc-copy-btn" data-copy-value="' + esc(valor) +
+        '" data-copy-label="' + esc(tipo) + '" title="Copiar ' + esc(tipo) + '">⧉</button></div>' +
+        "</div></article>";
+    }).join("") + "</div>";
+  }
+
   function renderInicio() {
     var c = host();
     if (!c) return;
@@ -570,6 +590,7 @@
     estado.noId = "";
 
     var municipios = (estado.dados && estado.dados.municipios) || [];
+    var uteis = (estado.dados && estado.dados.uteis) || [];
     var totalOrgaos = municipios.filter(ehOrgao).length;
     var totalComarcas = municipios.length - totalOrgaos;
     var cardsMunicipios = municipios.map(function (m) {
@@ -592,7 +613,8 @@
         (totalComarcas ? '<span class="fc-pill fc-total-comarcas">' + esc(rotuloQuantidade(totalComarcas, "Comarca", "Comarcas")) + '</span>' : '') + '</div>' : '') +
       '<select id="fc-comarca" class="fc-select">' + opcoesComarcas(municipios, "") + "</select>" +
       '<button type="button" class="fc-btn fc-print-all" id="fc-print-all" title="Imprimir / Salvar PDF de todos os contatos">🖨 Imprimir / Salvar PDF</button>' +
-      '<div class="fc-section"><h3>Comarcas e Órgãos</h3><div class="fc-municipios-grid">' + cardsMunicipios + '</div></div>';
+      '<div class="fc-section"><h3>Comarcas e Órgãos</h3><div class="fc-municipios-grid">' + cardsMunicipios + "</div></div>" +
+      (uteis.length ? '<div class="fc-section"><h3>Telefones úteis</h3>' + uteisCards(uteis) + "</div>" : "");
 
     c.innerHTML = conteudo;
 
@@ -604,6 +626,7 @@
     document.querySelectorAll("[data-mun]").forEach(function (el) {
       el.onclick = function () { abrirMunicipio(el.getAttribute("data-mun")); };
     });
+    bindAcoesContexto();
   }
 
   function abrirMunicipio(id) {
