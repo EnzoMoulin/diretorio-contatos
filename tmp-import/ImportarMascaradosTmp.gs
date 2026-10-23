@@ -22,6 +22,7 @@ function importarMascaradosTudo() {
       if (!sh) { resumo.push(nome + "/" + aba + ": aba nao encontrada"); return; }
       sh.clearContents();
       sh.getRange(1, 1, dados.length, dados[0].length).setValues(dados);
+      if (sh.getMaxColumns() > dados[0].length) sh.deleteColumns(dados[0].length + 1, sh.getMaxColumns() - dados[0].length);
       resumo.push(nome + "/" + aba + ": " + (dados.length - 1) + " linhas");
     });
   });
