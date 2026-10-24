@@ -1,6 +1,6 @@
 /**
  * ==========================================================
- * INTEGRAÇÃO V5 — LEGACY -> MUNICIPIOS/FORUM/UNIDADES_ORGANIZACIONAIS/CONTATOS
+ * INTEGRAÇÃO V5 — LEGACY -> COMARCAS/FORUM/UNIDADES_ORGANIZACIONAIS/CONTATOS
  * ==========================================================
  *
  * Este arquivo faz a ponte dos caminhos legados do aplicativo para a
@@ -104,11 +104,11 @@ function _v4Flat(opcoes) {
   const out = [];
   const vistos = new Set();
 
-  (hier.municipios || []).forEach(function(m) {
+  (hier.comarcas || []).forEach(function(m) {
     (m.foruns || []).forEach(function(f) {
       const base = {
-        municipioId: m.id,
-        municipio: m.nome,
+        comarcaId: m.id,
+        comarca: m.nome,
         microrregiao: m.microrregiao || "",
         forumId: f.id,
         forum: f.nome,
@@ -176,31 +176,31 @@ function v4PesquisarContatos(texto) {
   const dados = _v4Flat({});
   const t = limparTexto(termo);
   if (!t) return respostaSucesso(dados);
-  return respostaSucesso(dados.filter(x => limparTexto([x.municipio, x.forum, x.caminhoTexto, x.unidade, x.setor, x.tipo, x.descricao, x.valor, x.email, x.endereco, x.observacao].join(" ")).includes(t)));
+  return respostaSucesso(dados.filter(x => limparTexto([x.comarca, x.forum, x.caminhoTexto, x.unidade, x.setor, x.tipo, x.descricao, x.valor, x.email, x.endereco, x.observacao].join(" ")).includes(t)));
 }
 
-function v4ListarMunicipios() {
+function v4ListarComarcas() {
   new AuthService().exigirPermissao(CONFIG.PERMISSOES.VISUALIZAR);
   const hier = construirHierarquiaForumContatos({});
-  return respostaSucesso((hier.municipios || []).map(m => m.nome));
+  return respostaSucesso((hier.comarcas || []).map(m => m.nome));
 }
 
 function v4CarregarDashboard() {
   new AuthService().exigirPermissao(CONFIG.PERMISSOES.VISUALIZAR);
   const dados = v4ListarContatos().dados || [];
-  const tipos = {}, setores = {}, localidades = {}, foruns = {}, unidades = {}, municipios = {};
+  const tipos = {}, setores = {}, localidades = {}, foruns = {}, unidades = {}, comarcas = {};
   dados.forEach(x => {
     const tipo = x.tipo || "Não informado";
     const setor = x.noPai || "Não informado";
-    const localidade = x.municipio || "Não informado";
+    const localidade = x.comarca || "Não informado";
     tipos[tipo] = (tipos[tipo] || 0) + 1;
     setores[setor] = (setores[setor] || 0) + 1;
     localidades[localidade] = (localidades[localidade] || 0) + 1;
     if (x.forumId) foruns[x.forumId] = true;
     if (x.noPaiId) unidades[x.noPaiId] = true;
-    if (x.municipioId) municipios[x.municipioId] = true;
+    if (x.comarcaId) comarcas[x.comarcaId] = true;
   });
-  return respostaSucesso({ total: dados.length, tipos, setores, localidades, totalForuns: Object.keys(foruns).length, totalUnidades: Object.keys(unidades).length, totalMunicipios: Object.keys(municipios).length });
+  return respostaSucesso({ total: dados.length, tipos, setores, localidades, totalForuns: Object.keys(foruns).length, totalUnidades: Object.keys(unidades).length, totalComarcas: Object.keys(comarcas).length });
 }
 
 function _v4DadosContatoPorId(id) {
@@ -373,7 +373,7 @@ function validarDadosReaisForumV4() {
   const ss = DB.getSpreadsheet();
 
   const obrigatorias = [
-    CONFIG.SHEETS.MUNICIPIOS,
+    CONFIG.SHEETS.COMARCAS,
     CONFIG.SHEETS.FORUM,
     CONFIG.SHEETS.UNIDADES,
     CONFIG.SHEETS.SETORES,
@@ -422,14 +422,14 @@ function validarDadosReaisForumV4() {
     return repetidos;
   };
 
-  const municipio = DB.municipiosOuNulo();
+  const comarca = DB.comarcasOuNulo();
   const forum = DB.forumOuNulo();
   const unidade = DB.unidadesOuNulo();
   const setor = DB.setoresOuNulo();
   const contato = DB.contatosOuNulo();
 
   [
-    ["MUNICIPIO", municipio],
+    ["COMARCA", comarca],
     ["FORUM", forum],
     ["UNIDADE", unidade],
     ["SETOR", setor],
@@ -450,28 +450,28 @@ function validarDadosReaisForumV4() {
 
   if (forum) {
     const mapaForum = DB.map(forum);
-    const municipiosValidos = new Set(
-      ids(municipio, "ID")
+    const comarcasValidas = new Set(
+      ids(comarca, "ID")
     );
 
     DB.read(forum).forEach(function(linha, indice) {
-      const municipioId = textoSeguro(
+      const comarcaId = textoSeguro(
         _v4Col(
           mapaForum,
           linha,
-          ["MUNICIPIO_ID"]
+          ["COMARCA_ID"]
         )
       );
 
       if (
-        municipioId &&
-        !municipiosValidos.has(municipioId)
+        comarcaId &&
+        !comarcasValidas.has(comarcaId)
       ) {
         problemas.push(
           "FORUM linha " +
           (indice + 2) +
-          " aponta para MUNICIPIO inexistente: " +
-          municipioId
+          " aponta para COMARCA inexistente: " +
+          comarcaId
         );
       }
     });
@@ -484,8 +484,8 @@ function validarDadosReaisForumV4() {
       ids(forum, "ID")
     );
 
-    const municipiosValidos = new Set(
-      ids(municipio, "ID")
+    const comarcasValidas = new Set(
+      ids(comarca, "ID")
     );
 
     DB.read(unidade).forEach(function(linha, indice) {
@@ -497,11 +497,11 @@ function validarDadosReaisForumV4() {
         )
       );
 
-      const municipioId = textoSeguro(
+      const comarcaId = textoSeguro(
         _v4Col(
           mapaUnidade,
           linha,
-          ["MUNICIPIO_ID"]
+          ["COMARCA_ID"]
         )
       );
 
@@ -518,14 +518,14 @@ function validarDadosReaisForumV4() {
       }
 
       if (
-        municipioId &&
-        !municipiosValidos.has(municipioId)
+        comarcaId &&
+        !comarcasValidas.has(comarcaId)
       ) {
         problemas.push(
           "UNIDADE linha " +
           (indice + 2) +
-          " aponta para MUNICIPIO inexistente: " +
-          municipioId
+          " aponta para COMARCA inexistente: " +
+          comarcaId
         );
       }
     });
@@ -631,8 +631,8 @@ function validarDadosReaisForumV4() {
     problemas: problemas,
     abasAusentes: ausentes,
     contagens: {
-      municipios: municipio
-        ? DB.count(municipio)
+      comarcas: comarca
+        ? DB.count(comarca)
         : 0,
 
       foruns: forum

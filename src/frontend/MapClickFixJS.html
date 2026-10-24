@@ -29,18 +29,18 @@
     return String(p.id || p.CD_MUN || p.codmun || p.code || "").replace(/\D/g, "");
   }
 
-  function localizarCardMunicipio(nome) {
+  function localizarCardComarca(nome) {
     var alvo = normalizarNome(nome);
     if (!alvo) return null;
     return Array.prototype.slice.call(
-      document.querySelectorAll('#fc-content .fc-card[data-mun]')
+      document.querySelectorAll('#fc-content .fc-card[data-comarca]')
     ).find(function (card) {
       var titulo = card.querySelector("h4");
       return normalizarNome(titulo ? titulo.textContent : "") === alvo;
     }) || null;
   }
 
-  function localizarOpcaoMunicipio(nome) {
+  function localizarOpcaoComarca(nome) {
     var select = document.getElementById("fc-comarca") || document.getElementById("fc-search");
     if (!select || String(select.tagName || "").toUpperCase() !== "SELECT") return null;
     var alvo = normalizarNome(nome);
@@ -51,13 +51,13 @@
   }
 
   function executarAbertura(nome) {
-    var card = localizarCardMunicipio(nome);
+    var card = localizarCardComarca(nome);
     if (card) {
       card.click();
       return true;
     }
 
-    var opcao = localizarOpcaoMunicipio(nome);
+    var opcao = localizarOpcaoComarca(nome);
     if (opcao) {
       opcao.select.value = opcao.option.value;
       opcao.select.dispatchEvent(new Event("change", { bubbles: true }));
@@ -67,7 +67,7 @@
     return false;
   }
 
-  function abrirMunicipioPorNome(nome) {
+  function abrirComarcaPorNome(nome) {
     if (executarAbertura(nome)) return true;
 
     if (typeof window.fcInicio !== "function") return false;
@@ -90,7 +90,7 @@
     return borda === "#2563eb" || preenchimento === "#60a5fa";
   }
 
-  function atualizarTooltipMunicipio(layer, nome) {
+  function atualizarTooltipComarca(layer, nome) {
     if (!layer || typeof layer.getTooltip !== "function") return;
     var tooltip = layer.getTooltip();
     if (!tooltip || typeof tooltip.setContent !== "function") return;
@@ -127,15 +127,15 @@
           // A camada, porém, é reestilizada quando os dados chegam. Recalculamos o
           // conteúdo no hover usando o estilo atual para não manter o status inicial.
           layer.on("mouseover", function () {
-            atualizarTooltipMunicipio(layer, nome);
+            atualizarTooltipComarca(layer, nome);
           });
           layer.on("tooltipopen", function () {
-            atualizarTooltipMunicipio(layer, nome);
+            atualizarTooltipComarca(layer, nome);
           });
 
           // O handler original depende do estado existente no instante em que o
           // GeoJSON é criado. O clique é sempre registrado e resolve a Comarca
-          // pelo nome, que permanece estável entre o GeoJSON e a tabela MUNICIPIOS.
+          // pelo nome, que permanece estável entre o GeoJSON e a tabela COMARCAS.
           layer.off("click");
           layer.on("click", function (evento) {
             try {
@@ -144,7 +144,7 @@
               }
             } catch (e) {}
 
-            var abriu = abrirMunicipioPorNome(nome);
+            var abriu = abrirComarcaPorNome(nome);
             if (!abriu) {
               console.warn("Comarca do mapa não encontrada na navegação:", {
                 nome: nome,

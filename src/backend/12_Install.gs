@@ -364,17 +364,17 @@ function garantirConfiguracao(
 }
 
 /**
- * V4 — Cria aba MUNICIPIOS.
+ * V4 — Cria aba COMARCAS.
  */
-function criarAbaMunicipios(spreadsheet) {
-  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.MUNICIPIOS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","TIPO","ENDERECO","CEP","EMAIL","ATIVO"]);
+function criarAbaComarcas(spreadsheet) {
+  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.COMARCAS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","TIPO","ENDERECO","CEP","EMAIL","ATIVO"]);
 }
 
 /**
- * V4 — Cria aba FORUM (MUNICIPIO -> FORUM).
+ * V4 — Cria aba FORUM (COMARCA -> FORUM).
  */
 function criarAbaForum(spreadsheet) {
-  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.FORUM, ["ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO"]);
+  return garantirAbaComCabecalho(spreadsheet, CONFIG.SHEETS.FORUM, ["ID","COMARCA_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO"]);
 }
 
 /** V5 — Cria a árvore auto-relacionada de unidades organizacionais. */

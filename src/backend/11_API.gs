@@ -615,28 +615,28 @@ function resolverEscopoAcessos(acessos, catalogo) {
   });
   const nos = (acessos || []).map(function(acesso) {
     return catalogo.porChave[acesso.tipo + ":" + acesso.id] ||
-      { id: acesso.id, tipo: acesso.tipo, nome: acesso.id, caminhoTexto: acesso.id, municipio: "", forum: "" };
+      { id: acesso.id, tipo: acesso.tipo, nome: acesso.id, caminhoTexto: acesso.id, comarca: "", forum: "" };
   });
   return { ids: Array.from(ids), nos: nos, acessos: acessos || [] };
 }
 
 function montarCatalogoEscoposAcesso() {
-  const shMunicipios = DB.municipios();
+  const shComarcas = DB.comarcas();
   const shForuns = DB.forum();
-  const mapaM = DB.map(shMunicipios);
+  const mapaM = DB.map(shComarcas);
   const mapaF = DB.map(shForuns);
-  const municipios = {};
-  DB.read(shMunicipios).forEach(function(linha) {
+  const comarcas = {};
+  DB.read(shComarcas).forEach(function(linha) {
     const id = textoSeguro(linha[mapaM.ID - 1]);
     if (!id || (mapaM.ATIVO && !paraBoolean(linha[mapaM.ATIVO - 1]))) return;
-    municipios[id] = { id: id, nome: textoSeguro(linha[mapaM.NOME - 1]) || id };
+    comarcas[id] = { id: id, nome: textoSeguro(linha[mapaM.NOME - 1]) || id };
   });
   const foruns = {};
   DB.read(shForuns).forEach(function(linha) {
     const id = textoSeguro(linha[mapaF.ID - 1]);
-    const municipioId = textoSeguro(linha[mapaF.MUNICIPIOID - 1]);
-    if (!id || !municipios[municipioId] || (mapaF.ATIVO && !paraBoolean(linha[mapaF.ATIVO - 1]))) return;
-    foruns[id] = { id: id, nome: textoSeguro(linha[mapaF.NOME - 1]) || id, municipioId: municipioId };
+    const comarcaId = textoSeguro(linha[mapaF.COMARCAID - 1]);
+    if (!id || !comarcas[comarcaId] || (mapaF.ATIVO && !paraBoolean(linha[mapaF.ATIVO - 1]))) return;
+    foruns[id] = { id: id, nome: textoSeguro(linha[mapaF.NOME - 1]) || id, comarcaId: comarcaId };
   });
 
   const nos = _fcIndiceOrganizacional();
@@ -645,7 +645,7 @@ function montarCatalogoEscoposAcesso() {
   const nosPorEscopo = {};
   Object.keys(foruns).forEach(function(id) {
     const forum = foruns[id];
-    const item = { tipo: CONFIG.ACESSOS.FORUM, id: id, nome: forum.nome, municipio: municipios[forum.municipioId].nome, forumId: id, forum: forum.nome, caminhoTexto: forum.nome + " (" + municipios[forum.municipioId].nome + ")" };
+    const item = { tipo: CONFIG.ACESSOS.FORUM, id: id, nome: forum.nome, comarca: comarcas[forum.comarcaId].nome, forumId: id, forum: forum.nome, caminhoTexto: forum.nome + " (" + comarcas[forum.comarcaId].nome + ")" };
     porChave[item.tipo + ":" + id] = item;
     itens.push(item);
     nosPorEscopo[item.tipo + ":" + id] = [];
@@ -657,7 +657,7 @@ function montarCatalogoEscoposAcesso() {
     if (!forum || !no.ativo) return;
     const caminho = _fcResolverAncestros(nos, id);
     if (caminho.some(function(item) { return !item.ativo; })) return;
-    const municipio = municipios[forum.municipioId];
+    const comarca = comarcas[forum.comarcaId];
     const chaveForum = CONFIG.ACESSOS.FORUM + ":" + forum.id;
     nosPorEscopo[chaveForum].push(id);
     caminho.forEach(function(ancestral) {
@@ -671,7 +671,7 @@ function montarCatalogoEscoposAcesso() {
       tipo: tipoItem,
       id: id,
       nome: no.nome || id,
-      municipio: municipio.nome,
+      comarca: comarca.nome,
       forumId: forum.id,
       forum: forum.nome,
       paiId: no.paiId || "",
@@ -823,18 +823,18 @@ function listarUnidadesParaAcesso() {
     const nos = _fcIndiceOrganizacional();
     const shForum = DB.forum();
     const mapaF = DB.map(shForum);
-    const shMunicipios = DB.municipios();
-    const mapaM = DB.map(shMunicipios);
+    const shComarcas = DB.comarcas();
+    const mapaM = DB.map(shComarcas);
     const foruns = {};
     DB.read(shForum).forEach(function(linha) {
       foruns[textoSeguro(linha[mapaF.ID - 1])] = {
         nome: textoSeguro(linha[mapaF.NOME - 1]),
-        municipioId: mapaF.MUNICIPIOID ? textoSeguro(linha[mapaF.MUNICIPIOID - 1]) : ""
+        comarcaId: mapaF.COMARCAID ? textoSeguro(linha[mapaF.COMARCAID - 1]) : ""
       };
     });
-    const municipios = {};
-    DB.read(shMunicipios).forEach(function(linha) {
-      municipios[textoSeguro(linha[mapaM.ID - 1])] = textoSeguro(linha[mapaM.NOME - 1]);
+    const comarcas = {};
+    DB.read(shComarcas).forEach(function(linha) {
+      comarcas[textoSeguro(linha[mapaM.ID - 1])] = textoSeguro(linha[mapaM.NOME - 1]);
     });
 
     const unidades = DB.read(shUnidades)
@@ -856,13 +856,13 @@ function listarUnidadesParaAcesso() {
           caminhoTexto: caminho.map(function(no) { return no.nome; }).join(" › "),
           forumId: forumId,
           forum: forum.nome || "",
-          municipio: municipios[forum.municipioId] || ""
+          comarca: comarcas[forum.comarcaId] || ""
         };
       })
       .filter(function(item) { return item && item.id && item.nome; })
       .sort(function(a, b) {
-        return [a.municipio, a.forum, a.nome].join("|").localeCompare(
-          [b.municipio, b.forum, b.nome].join("|"), "pt-BR"
+        return [a.comarca, a.forum, a.nome].join("|").localeCompare(
+          [b.comarca, b.forum, b.nome].join("|"), "pt-BR"
         );
       });
     return respostaSucesso(unidades);

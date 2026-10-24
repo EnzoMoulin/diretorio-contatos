@@ -7,7 +7,7 @@
 
 class TelefoneRepository {
   constructor() {
-    // v3.34 — detecta modelo normalizado (MUNICIPIOS/UNIDADES/SETORES/CONTATOS) vs flat TELEFONES
+    // v3.34 — detecta modelo normalizado (COMARCAS/UNIDADES/SETORES/CONTATOS) vs flat TELEFONES
     this.modoNormalizado = false;
     try { this.modoNormalizado = DB.temModeloNormalizado(); } catch(e){ this.modoNormalizado = false; }
     if (this.modoNormalizado) {
@@ -39,7 +39,7 @@ class TelefoneRepository {
   listar() {
     const cache = CACHE.obter(CACHE.chaveTelefones());
     if (Array.isArray(cache)) return cache;
-    // v3.34 — modo normalizado: join MUNICIPIOS+UNIDADES+SETORES+CONTATOS → flat virtual
+    // v3.34 — modo normalizado: join COMARCAS+UNIDADES+SETORES+CONTATOS → flat virtual
     if (this.modoNormalizado) {
       const resultado = this.listarNormalizado();
       CACHE.salvar(CACHE.chaveTelefones(), resultado, CONFIG.CACHE.TEMPO_PADRAO);
@@ -52,8 +52,8 @@ class TelefoneRepository {
   }
 
   listarNormalizado() {
-    // V4: MUNICIPIOS -> FORUM -> UNIDADES -> SETORES -> CONTATOS
-    const shMun = DB.municipiosOuNulo();
+    // V4: COMARCAS -> FORUM -> UNIDADES -> SETORES -> CONTATOS
+    const shMun = DB.comarcasOuNulo();
     const shForum = DB.forumOuNulo();
     const shUni = DB.unidadesOuNulo();
     const shSet = DB.setoresOuNulo();
@@ -85,7 +85,7 @@ class TelefoneRepository {
         nome: mapUo.NOME !== undefined ? textoSeguro(r[mapUo.NOME - 1]) : "",
         paiId: (mapUo.PAIID !== undefined ? textoSeguro(r[mapUo.PAIID - 1]) : "") || (mapUo.PAI_ID !== undefined ? textoSeguro(r[mapUo.PAI_ID - 1]) : ""),
         forumId: mapUo.FORUMID !== undefined ? textoSeguro(r[mapUo.FORUMID - 1]) : "",
-        municipioId: (mapUo.MUNICIPIOID !== undefined ? textoSeguro(r[mapUo.MUNICIPIOID - 1]) : "") || (mapUo.MUNICIPIO_ID !== undefined ? textoSeguro(r[mapUo.MUNICIPIO_ID - 1]) : ""),
+        comarcaId: (mapUo.COMARCAID !== undefined ? textoSeguro(r[mapUo.COMARCAID - 1]) : "") || (mapUo.COMARCA_ID !== undefined ? textoSeguro(r[mapUo.COMARCA_ID - 1]) : ""),
         endereco: mapUo.ENDERECO !== undefined ? textoSeguro(r[mapUo.ENDERECO - 1]) : "",
         cep: mapUo.CEP !== undefined ? textoSeguro(r[mapUo.CEP - 1]) : ""
       };
@@ -111,27 +111,27 @@ class TelefoneRepository {
       };
     }
     const mapUniById = {};
-    const idxUniId = mapUni.ID; const idxUniForum = mapUni.FORUMID; const idxUniMun = mapUni.MUNICIPIOID; const idxUniNome = mapUni.NOME; const idxUniEnd = mapUni.ENDERECO; const idxUniCep = mapUni.CEP; const idxUniEmail = mapUni.EMAIL;
+    const idxUniId = mapUni.ID; const idxUniForum = mapUni.FORUMID; const idxUniMun = mapUni.COMARCAID; const idxUniNome = mapUni.NOME; const idxUniEnd = mapUni.ENDERECO; const idxUniCep = mapUni.CEP; const idxUniEmail = mapUni.EMAIL;
     for (const r of dadosUni) {
       const id = idxUniId !== undefined ? textoSeguro(r[idxUniId - 1]) : "";
       if (!id) continue;
       mapUniById[id] = {
         nome: idxUniNome !== undefined ? textoSeguro(r[idxUniNome - 1]) : "",
         forumId: idxUniForum !== undefined ? textoSeguro(r[idxUniForum - 1]) : "",
-        municipioId: idxUniMun !== undefined ? textoSeguro(r[idxUniMun - 1]) : "",
+        comarcaId: idxUniMun !== undefined ? textoSeguro(r[idxUniMun - 1]) : "",
         endereco: idxUniEnd !== undefined ? textoSeguro(r[idxUniEnd - 1]) : "",
         cep: idxUniCep !== undefined ? textoSeguro(r[idxUniCep - 1]) : "",
         email: idxUniEmail !== undefined ? textoSeguro(r[idxUniEmail - 1]) : ""
       };
     }
     const mapForumById = {};
-    const idxForumId = mapForum.ID; const idxForumMun = mapForum.MUNICIPIOID; const idxForumNome = mapForum.NOME; const idxForumEnd = mapForum.ENDERECO; const idxForumCep = mapForum.CEP; const idxForumEmail = mapForum.EMAIL;
+    const idxForumId = mapForum.ID; const idxForumMun = mapForum.COMARCAID; const idxForumNome = mapForum.NOME; const idxForumEnd = mapForum.ENDERECO; const idxForumCep = mapForum.CEP; const idxForumEmail = mapForum.EMAIL;
     for (const r of dadosForum) {
       const id = idxForumId !== undefined ? textoSeguro(r[idxForumId - 1]) : "";
       if (!id) continue;
       mapForumById[id] = {
         nome: idxForumNome !== undefined ? textoSeguro(r[idxForumNome - 1]) : "",
-        municipioId: idxForumMun !== undefined ? textoSeguro(r[idxForumMun - 1]) : "",
+        comarcaId: idxForumMun !== undefined ? textoSeguro(r[idxForumMun - 1]) : "",
         endereco: idxForumEnd !== undefined ? textoSeguro(r[idxForumEnd - 1]) : "",
         cep: idxForumCep !== undefined ? textoSeguro(r[idxForumCep - 1]) : "",
         email: idxForumEmail !== undefined ? textoSeguro(r[idxForumEmail - 1]) : ""
@@ -158,22 +158,22 @@ class TelefoneRepository {
       const setor = (noRef && noRef.paiId) ? { nome: noRef.nome, unidadeId: noRef.paiId, endereco: noRef.endereco, cep: noRef.cep } : null;
       const paiRef = (noRef && noRef.paiId) ? (mapNoById[noRef.paiId] || null) : null;
       const unidadeIdEfetivo = noRef ? (noRef.paiId || noIdRaw) : "";
-      const uni = noRef ? { nome: paiRef ? paiRef.nome : noRef.nome, forumId: paiRef ? (paiRef.forumId || noRef.forumId) : noRef.forumId, municipioId: noRef.municipioId, endereco: paiRef ? (paiRef.endereco || noRef.endereco) : noRef.endereco, cep: paiRef ? (paiRef.cep || noRef.cep) : noRef.cep, email: "" } : null;
+      const uni = noRef ? { nome: paiRef ? paiRef.nome : noRef.nome, forumId: paiRef ? (paiRef.forumId || noRef.forumId) : noRef.forumId, comarcaId: noRef.comarcaId, endereco: paiRef ? (paiRef.endereco || noRef.endereco) : noRef.endereco, cep: paiRef ? (paiRef.cep || noRef.cep) : noRef.cep, email: "" } : null;
       const setorIdRaw = setor ? noIdRaw : "";
       const tipoRaw = idxConTipo !== undefined ? textoSeguro(r[idxConTipo - 1]) : "";
       const descr = idxConDescr !== undefined ? textoSeguro(r[idxConDescr - 1]) : "";
       const valorRaw = idxConValor !== undefined ? textoSeguro(r[idxConValor - 1]) : "";
       const ativoRaw = idxConAtivo !== undefined ? r[idxConAtivo - 1] : "TRUE";
       const obs = idxConObs !== undefined ? textoSeguro(r[idxConObs - 1]) : "";
-      // Resolve MUNICIPIOS -> FORUM -> UNIDADES_ORGANIZACIONAIS (árvore) -> CONTATOS
+      // Resolve COMARCAS -> FORUM -> UNIDADES_ORGANIZACIONAIS (árvore) -> CONTATOS
       // (setor/uni/unidadeIdEfetivo já derivados da árvore acima via PAI_ID)
       let forumIdEfetivo = uni ? uni.forumId : forumIdRaw;
       if (!forumIdEfetivo && forumIdRaw) forumIdEfetivo = forumIdRaw;
-      let forum = forumIdEfetivo ? (mapForumById[forumIdEfetivo] || { nome: forumIdEfetivo, municipioId: "", endereco: "", cep: "", email: "" }) : null;
-      let municipioIdEfetivo = forum ? forum.municipioId : "";
-      if (!municipioIdEfetivo && uni && uni.municipioId) municipioIdEfetivo = uni.municipioId;
-      let mun = municipioIdEfetivo ? (mapMunById[municipioIdEfetivo] || { nome: municipioIdEfetivo, microrregiao: "" }) : { nome: "", microrregiao: "" };
-      const munNome = mun.nome || municipioIdEfetivo || "";
+      let forum = forumIdEfetivo ? (mapForumById[forumIdEfetivo] || { nome: forumIdEfetivo, comarcaId: "", endereco: "", cep: "", email: "" }) : null;
+      let comarcaIdEfetivo = forum ? forum.comarcaId : "";
+      if (!comarcaIdEfetivo && uni && uni.comarcaId) comarcaIdEfetivo = uni.comarcaId;
+      let mun = comarcaIdEfetivo ? (mapMunById[comarcaIdEfetivo] || { nome: comarcaIdEfetivo, microrregiao: "" }) : { nome: "", microrregiao: "" };
+      const munNome = mun.nome || comarcaIdEfetivo || "";
       const microrregiao = mun.microrregiao || "";
       const endereco = (setor && setor.endereco) ? setor.endereco : (uni && uni.endereco ? uni.endereco : (forum ? forum.endereco : ""));
       const forumNome = forum ? forum.nome : "";
@@ -200,8 +200,8 @@ class TelefoneRepository {
         ID: id, id: id,
         microrregiao: microrregiao,
         localidade: localidade,
-        municipio: munNome,
-        municipioId: municipioIdEfetivo,
+        comarca: munNome,
+        comarcaId: comarcaIdEfetivo,
         forum: forumNome,
         forumId: forumIdEfetivo || "",
         unidade: uniNome,
@@ -572,7 +572,7 @@ function uoResolverNo(idNo) {
     for (const r of dados) {
       if (textoSeguro(r[mapa.ID - 1]) !== alvo) continue;
       const g = function(ch) { const i = mapa[ch]; return i !== undefined ? textoSeguro(r[i - 1]) : ""; };
-      return { id: alvo, paiId: g("PAIID") || g("PAI_ID"), forumId: g("FORUMID"), municipioId: g("MUNICIPIOID") || g("MUNICIPIO_ID"), nome: g("NOME") };
+      return { id: alvo, paiId: g("PAIID") || g("PAI_ID"), forumId: g("FORUMID"), comarcaId: g("COMARCAID") || g("COMARCA_ID"), nome: g("NOME") };
     }
   } catch (e) {}
   return null;

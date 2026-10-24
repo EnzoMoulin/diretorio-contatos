@@ -129,7 +129,7 @@ function migrarHierarquiaOrganizacionalV5() {
 function validarIntegridadeHierarquiaOrganizacionalV5() {
   const ss = DB.getSpreadsheet();
   const obrigatorias = [
-    CONFIG.SHEETS.MUNICIPIOS,
+    CONFIG.SHEETS.COMARCAS,
     CONFIG.SHEETS.FORUM,
     CONFIG.SHEETS.UNIDADES_ORGANIZACIONAIS,
     CONFIG.SHEETS.CONTATOS
@@ -205,7 +205,7 @@ function validarIntegridadeHierarquiaOrganizacionalV5() {
     problemas: Array.from(new Set(problemas)),
     abasAusentes: ausentes,
     contagens: {
-      municipios: DB.count(DB.municipios()),
+      comarcas: DB.count(DB.comarcas()),
       foruns: DB.count(shForum),
       nosOrganizacionais: Object.keys(nos).length,
       contatos: idsContatos.size

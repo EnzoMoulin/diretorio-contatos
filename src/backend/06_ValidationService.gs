@@ -104,7 +104,7 @@ class ValidationService {
   }
 
   validarCamposObrigatorios(dados) {
-    // V4 — MUNICIPIOS -> FORUM -> UNIDADES -> SETORES -> CONTATOS
+    // V4 — COMARCAS -> FORUM -> UNIDADES -> SETORES -> CONTATOS
     const temForum = textoSeguro(valorObjeto(dados, "forumId", "FORUM_ID", "forum_id", "forum", "FORUM"));
     const temNo = textoSeguro(valorObjeto(dados, "unidadeOrganizacionalId", "UNIDADE_ORGANIZACIONAL_ID", "unidade_organizacional_id", "noId", "no", "unidadeId", "UNIDADE_ID", "setorId", "SETOR_ID"));
     const isNormalizedCheck = (typeof DB !== "undefined" && DB.temModeloNormalizado && DB.temModeloNormalizado());

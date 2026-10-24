@@ -31,7 +31,7 @@ function _cgPrecisaSincronizarV5() {
 
 function _cgValidarAbasBasicas() {
   const ausentes = [];
-  if (!DB.municipiosOuNulo()) ausentes.push(CONFIG.SHEETS.MUNICIPIOS);
+  if (!DB.comarcasOuNulo()) ausentes.push(CONFIG.SHEETS.COMARCAS);
   if (!DB.forumOuNulo()) ausentes.push(CONFIG.SHEETS.FORUM);
   if (!DB.contatosOuNulo()) ausentes.push(CONFIG.SHEETS.CONTATOS);
   if (ausentes.length) {
@@ -145,7 +145,7 @@ function demoPesquisarHierarquiaContatos(termo) {
     new AuthService().exigirPermissao(CONFIG.PERMISSOES.PESQUISAR);
     const valor = termo === null || termo === undefined ? "" : String(termo);
     if (valor.trim() && limparTexto(valor).length < CONFIG.LIMITES.TAMANHO_PESQUISA) {
-      return respostaSucesso({ sucesso: true, municipios: [] });
+      return respostaSucesso({ sucesso: true, comarcas: [] });
     }
     return respostaSucesso(pesquisarHierarquiaContatos(valor));
   });
@@ -328,15 +328,15 @@ function demoDiagnosticarDadosContatos() {
     new AuthService().exigirPerfil(CONFIG.PERFIS.GESTOR_SISTEMA);
     const modelo = _cgGarantirModeloOperacional();
     const hierarquia = construirHierarquiaForumContatos({});
-    const municipios = hierarquia.municipios || [];
-    const contatosHierarquia = municipios.reduce(function(total, municipio) {
-      return total + Number(municipio.qtdContatos || 0);
+    const comarcas = hierarquia.comarcas || [];
+    const contatosHierarquia = comarcas.reduce(function(total, comarca) {
+      return total + Number(comarca.qtdContatos || 0);
     }, 0);
     return respostaSucesso({
       modelo: modelo,
-      municipios: municipios.length,
-      foruns: municipios.reduce(function(total, municipio) { return total + Number(municipio.qtdForuns || 0); }, 0),
-      unidades: municipios.reduce(function(total, municipio) { return total + Number(municipio.qtdUnidades || 0); }, 0),
+      comarcas: comarcas.length,
+      foruns: comarcas.reduce(function(total, comarca) { return total + Number(comarca.qtdForuns || 0); }, 0),
+      unidades: comarcas.reduce(function(total, comarca) { return total + Number(comarca.qtdUnidades || 0); }, 0),
       contatosNaAba: DB.count(DB.contatos()),
       contatosNaHierarquia: contatosHierarquia
     });

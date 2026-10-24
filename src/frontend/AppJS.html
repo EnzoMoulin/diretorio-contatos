@@ -307,7 +307,7 @@ function atualizarInterfaceUsuario() {
         unidadesUsuario.forEach(function(unidade){
           var chip = document.createElement("span");
           chip.className = "config-comarca-chip";
-          chip.textContent = [unidade.municipio, unidade.forum, unidade.caminhoTexto || unidade.nome || unidade.id].filter(Boolean).join(" › ");
+          chip.textContent = [unidade.comarca, unidade.forum, unidade.caminhoTexto || unidade.nome || unidade.id].filter(Boolean).join(" › ");
           comarcasList.appendChild(chip);
         });
         comarcasWrap.classList.remove("hidden");
@@ -672,7 +672,16 @@ function fazerLogin() {
  * - Gestor (Sistema/Conteúdo) -> aba de Gerenciamento (tabela editável)
  * - Visitante -> aba de Consulta (mapa + lista somente leitura)
  */
+function marcarMenuAtivo(id) {
+  try {
+    document.querySelectorAll(".menu-item").forEach(function (b) { b.classList.remove("active"); });
+    var el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  } catch (e) {}
+}
+
 function navegarParaTelefones() {
+  marcarMenuAtivo("menu-telefones");
   // v3.33 GS usa mapa (consulta-telefones-view) com todas comarcas, igual GC mas sem restricao
   try{
     var _pNav = (typeof usuarioAtual!=="undefined" && usuarioAtual) ? String(usuarioAtual.perfil||"").toUpperCase() : "";
@@ -699,6 +708,16 @@ function navegarParaTelefones() {
     return;
   }
   mostrarView("consulta-telefones-view");
+}
+function navegarParaTJES() {
+  marcarMenuAtivo("menu-tjes");
+  mostrarView("consulta-telefones-view");
+  try { if (typeof window.fcTJES === "function") setTimeout(window.fcTJES, 80); } catch (e) {}
+}
+function navegarParaUteis() {
+  marcarMenuAtivo("menu-uteis");
+  mostrarView("consulta-telefones-view");
+  try { if (typeof window.fcUteis === "function") setTimeout(window.fcUteis, 80); } catch (e) {}
 }
 function navegarParaTabelaTelefones(){
   // v3.33 helper: GS ainda pode ver tabela se quiser (acesso direto, sem hijack)
@@ -855,7 +874,7 @@ function resetarTelefonesView(){
     // Consulta view reset
     var cc=document.getElementById("campo-pesquisa-consulta");
     if(cc) cc.value="";
-    if(typeof municipioSelecionado!=="undefined") municipioSelecionado="";
+    if(typeof comarcaSelecionada!=="undefined") comarcaSelecionada="";
     if(typeof microrregiaoSelecionada!=="undefined") microrregiaoSelecionada="";
     // GC: ao reentrar, mostrar só permitidas via renderizarComarcas (que já filtra para GC)
     // Para todos, limpar lista e estado colapsado

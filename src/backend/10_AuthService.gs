@@ -166,7 +166,7 @@ class AuthService {
       noIds: escopo.ids,
       nos: escopo.nos,
       acessos: escopo.acessos,
-      localidades: Array.from(new Set(escopo.nos.map(item => item.municipio).filter(Boolean)))
+      localidades: Array.from(new Set(escopo.nos.map(item => item.comarca).filter(Boolean)))
     };
   }
 

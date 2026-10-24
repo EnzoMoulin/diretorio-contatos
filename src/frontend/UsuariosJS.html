@@ -67,13 +67,13 @@ function chaveEscopoUsuario(escopo) { return escopo.tipo + ":" + escopo.id; }
 function prepararSeletorLocalidadesUsuario(selecionados) {
   escoposUsuarioSelecionados = new Set((selecionados || []).map(chaveEscopoUsuario));
   forumUsuarioAberto = "";
-  var select = document.getElementById("usuario-municipio"); if (!select) return; select.textContent = "";
-  var municipios = [];
-  escoposUsuarios.forEach(function(escopo) { if (escopo.municipio && municipios.indexOf(escopo.municipio) < 0) municipios.push(escopo.municipio); });
+  var select = document.getElementById("usuario-comarca"); if (!select) return; select.textContent = "";
+  var comarcas = [];
+  escoposUsuarios.forEach(function(escopo) { if (escopo.comarca && comarcas.indexOf(escopo.comarca) < 0) comarcas.push(escopo.comarca); });
   var inicial = document.createElement("option"); inicial.value = ""; inicial.textContent = "Selecione uma comarca"; select.appendChild(inicial);
-  municipios.forEach(function(nome) { var opcao = document.createElement("option"); opcao.value = nome; opcao.textContent = nome; select.appendChild(opcao); });
+  comarcas.forEach(function(nome) { var opcao = document.createElement("option"); opcao.value = nome; opcao.textContent = nome; select.appendChild(opcao); });
   var primeiroSelecionado = escoposUsuarios.find(function(escopo) { return escoposUsuarioSelecionados.has(chaveEscopoUsuario(escopo)); });
-  select.value = primeiroSelecionado ? primeiroSelecionado.municipio : (municipios[0] || "");
+  select.value = primeiroSelecionado ? primeiroSelecionado.comarca : (comarcas[0] || "");
   renderizarSeletorLocalidadesUsuario();
 }
 function marcarEscopoUsuario(escopo, marcado) {
@@ -86,8 +86,8 @@ function marcarEscopoUsuario(escopo, marcado) {
   renderizarSeletorLocalidadesUsuario();
 }
 function renderizarSeletorLocalidadesUsuario() {
-  var municipio = document.getElementById("usuario-municipio"); var holder = document.getElementById("usuario-localidades"); if (!municipio || !holder) return; holder.textContent = "";
-  var foruns = escoposUsuarios.filter(function(item) { return item.tipo === "FORUM" && item.municipio === municipio.value; });
+  var comarca = document.getElementById("usuario-comarca"); var holder = document.getElementById("usuario-localidades"); if (!comarca || !holder) return; holder.textContent = "";
+  var foruns = escoposUsuarios.filter(function(item) { return item.tipo === "FORUM" && item.comarca === comarca.value; });
   if (!foruns.length) { holder.textContent = "Selecione uma comarca para visualizar os Fóruns."; return; }
   var titulo = document.createElement("strong"); titulo.textContent = "Fóruns"; holder.appendChild(titulo);
   foruns.forEach(function(forum) {

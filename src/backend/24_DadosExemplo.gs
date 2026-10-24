@@ -16,7 +16,7 @@
  */
 
 const DADOS_EXEMPLO = {
-  MUNICIPIOS: [
+  COMARCAS: [
     ["MUN001", "Vitória", "0000001", "ES", true],
     ["MUN002", "Vila Velha", "0000002", "ES", true],
     ["MUN003", "Serra", "0000003", "ES", true],

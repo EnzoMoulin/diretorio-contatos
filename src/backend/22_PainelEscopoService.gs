@@ -74,12 +74,12 @@ function _demoFiltrarNoHierarquiaV6(no, idsPermitidos) {
 }
 
 function _demoFiltrarHierarquiaEscopoV6(hierarquia, usuario) {
-  const base = hierarquia || { sucesso: true, municipios: [] };
+  const base = hierarquia || { sucesso: true, comarcas: [] };
   if (!_demoEhGestorConteudoEscopoV6(usuario)) return base;
 
   const ids = _demoIdsUnidadesEscopoV6(usuario);
-  const municipios = (Array.isArray(base.municipios) ? base.municipios : []).map(function(municipio) {
-    const foruns = (Array.isArray(municipio.foruns) ? municipio.foruns : []).map(function(forum) {
+  const comarcas = (Array.isArray(base.comarcas) ? base.comarcas : []).map(function(comarca) {
+    const foruns = (Array.isArray(comarca.foruns) ? comarca.foruns : []).map(function(forum) {
       if (_demoTemAcessoForumExplicitoV6(usuario, forum.id)) {
         return forum;
       }
@@ -97,10 +97,10 @@ function _demoFiltrarHierarquiaEscopoV6(hierarquia, usuario) {
     }).filter(Boolean);
 
     if (!foruns.length) return null;
-    return Object.assign({}, municipio, { foruns: foruns });
+    return Object.assign({}, comarca, { foruns: foruns });
   }).filter(Boolean);
 
-  return Object.assign({}, base, { municipios: municipios });
+  return Object.assign({}, base, { comarcas: comarcas });
 }
 
 function _demoDadosContatosEscopadosV6() {
@@ -132,7 +132,7 @@ function demoPesquisarContatosEscopadosV6(texto) {
 
     return respostaSucesso(dados.filter(function(item) {
       return limparTexto([
-        item.municipio, item.forum, item.caminhoTexto, item.unidade, item.setor,
+        item.comarca, item.forum, item.caminhoTexto, item.unidade, item.setor,
         item.tipo, item.descricao, item.valor, item.email, item.endereco, item.observacao
       ].join(" ")).includes(termo);
     }));
@@ -154,7 +154,7 @@ function demoObterHierarquiaContatosEscopadaV6(termo) {
   }
 }
 
-function demoListarMunicipiosEscopadosV6() {
+function demoListarComarcasEscopadosV6() {
   try {
     new AuthService().exigirPermissao(CONFIG.PERMISSOES.VISUALIZAR);
     const usuario = new AuthService().usuarioAtual();
@@ -163,10 +163,10 @@ function demoListarMunicipiosEscopadosV6() {
       usuario
     );
     return respostaSucesso(
-      (hierarquia.municipios || []).map(function(municipio) { return municipio.nome; })
+      (hierarquia.comarcas || []).map(function(comarca) { return comarca.nome; })
     );
   } catch (erro) {
-    try { registrarErroAPI("LISTAR_MUNICIPIOS_ESCOPO_V6", erro); } catch (e) {}
+    try { registrarErroAPI("LISTAR_COMARCAS_ESCOPO_V6", erro); } catch (e) {}
     return respostaErro(erro);
   }
 }
@@ -186,7 +186,7 @@ function demoCarregarDashboardEscopadoV6() {
     const dados = _demoDadosContatosEscopadosV6();
     const tipos = { "Telefone": 0, "Ramal": 0, "WhatsApp": 0, "E-mail": 0 };
     const setores = {};
-    const municipios = {};
+    const comarcas = {};
     const foruns = {};
     const unidades = {};
 
@@ -194,8 +194,8 @@ function demoCarregarDashboardEscopadoV6() {
       const tipo = _demoTipoContatoDashboardV6(item.tipo);
       if (tipo) tipos[tipo] += 1;
 
-      const municipio = textoSeguro(item.municipio) || "Não informado";
-      municipios[municipio] = (municipios[municipio] || 0) + 1;
+      const comarca = textoSeguro(item.comarca) || "Não informado";
+      comarcas[comarca] = (comarcas[comarca] || 0) + 1;
 
       if (item.forumId) foruns[item.forumId] = true;
       if (item.noPaiId) unidades[item.noPaiId] = true;
@@ -205,10 +205,10 @@ function demoCarregarDashboardEscopadoV6() {
     return respostaSucesso({
       total: dados.length,
       tipos: tipos,
-      municipios: municipios,
-      localidades: municipios,
+      comarcas: comarcas,
+      localidades: comarcas,
       totalTipos: 4,
-      totalMunicipios: Object.keys(municipios).length,
+      totalComarcas: Object.keys(comarcas).length,
       totalForuns: Object.keys(foruns).length,
       totalUnidades: Object.keys(unidades).length,
       totalSetores: Object.keys(setores).length

@@ -1,0 +1,839 @@
+ID,FORUM_ID,PAI_ID,TIPO,NOME,ENDERECO,CEP,OBSERVACAO,SELECIONAVEL_ACESSO,ATIVO,ORDEM,COMARCA_ID
+UNI0001,FOR0001,,UNIDADE,Protocolo • Distribuição,"Rua Desembargador Homero Mafra, nº 89/11º andar Enseada do Suá - Edifício Greenwich. Vitória/ES",29050-275,,TRUE,TRUE,1,
+UNI0002,FOR0001,,UNIDADE,1ª Secretaria Inteligente Regional – Órfãos e Sucessões da Capital,,,"Englobam: 1ª, 2ª e 3ª Vara de Órfãos e Sucessões",TRUE,TRUE,2,
+UNI0003,FOR0001,,UNIDADE,1ª Secretaria Inteligente – Família,,,"Englobam: 2ª, 3ª e 4ª Vara de Família",TRUE,TRUE,3,
+UNI0004,FOR0001,,UNIDADE,Secretaria Inteligente – Cíveis,,,"Englobam: 2ª, 3ª e 4ª Secretarias Unificadas",TRUE,TRUE,4,
+UNI0005,FOR0001,,UNIDADE,Vara de Recuperação Judicial e Falência,,,,TRUE,TRUE,5,
+UNI0006,FOR0001,,UNIDADE,5ª Secretaria Unificada,"Rua Desembargador Homero Mafra, nº 89/11º andar Enseada do Suá - Edifício Greenwich. Vitória/ES",29050-275,"Englobam: 1ª, 2ª, 3ª, 4ª e 5ª Vara da Fazenda Pública Estadual, Municipal, Registro Públicos, Meio Ambiente e Saúde e Acidentes de Trabalho",TRUE,TRUE,6,
+UNI0007,FOR0001,,UNIDADE,6ª Secretaria Unificada,"Rua Desembargador Homero Mafra, nº 89/11º andar Enseada do Suá - Edifício Greenwich. Vitória/ES",29050-275,"Englobam: 1ª e 2ª Vara da Fazenda Pública Privativa de Execuções Fiscais Municipais, a 1ª e 2ª Vara da Fazenda Pública Privativa de Execuções Fiscais Estaduais",TRUE,TRUE,7,
+UNI0008,FOR0001,,UNIDADE,Vara de Acidente de Trabalho,,,,TRUE,TRUE,8,
+UNI0009,FOR0001,,UNIDADE,2ª Secretaria Inteligente Regional (Centro avançado da Infância e da Juventude),"Rua Emílio Ferreira da Silva, nº 135, Santa Martha. Vitória/ES",29046-570,"Executará os serviços cartorários das Varas de Infância e Juventude, nas classes e assuntos de natureza não infracional",TRUE,TRUE,9,
+UNI0010,FOR0001,,UNIDADE,2ª Vara da Infância e da Juventude,"Rua Emílio Ferreira da Silva, nº 135, Santa Martha. Vitória/ES",29046-570,"Executará os serviços cartorários das Varas de Infância e Juventude, nas classes e assuntos infracionais",TRUE,TRUE,10,
+UNI0011,FOR0001,,UNIDADE,10ª Secretaria Inteligente,"Rua Juiz Alexandre Martins de Castro Filho, nº 130 Santa Luiza – Edifício Manhattan Work Center. Vitória/ES",29045-250,"Englobam: 1º, 3º, 4º, 5º, 6º, 8º e 9º Juizados Especiais Cíveis",TRUE,TRUE,11,
+UNI0012,FOR0001,,UNIDADE,Secretarias Inteligentes das Turmas Recursais,"Avenida João Batista Parra, nº 673, 14º andar, Enseada do Suá – Edifício Enseada Tower. Vitória",29052-123,"Englobam: 1ª Turma Recursal, 2ª Turma Recursal, 3ª Turma Recursal, 4ª Turma Recursal e 5ª Turma Recursal",TRUE,TRUE,12,
+UNI0013,FOR0001,,UNIDADE,CEJUSC Central Vitória,"Rua Bernardino Monteiro (rua das palmeiras), nº 685 - Santa Luíza Vitória/ES",29056-210,,TRUE,TRUE,13,
+UNI0014,FOR0001,,UNIDADE,Justiça Comunitária,"Rua Bernardino Monteiro (rua das palmeiras), nº 685 - Santa Luíza Vitória/ES",29056-210,,TRUE,TRUE,14,
+UNI0015,FOR0001,,UNIDADE,Centro Integrado de Atendimento Socioeducativo,"Avenida Dário Lourenço de Souza, nº 110, Mario Cypreste. Vitória/ES",29027-215,,TRUE,TRUE,15,
+UNI0016,FOR0001,UNI0002,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0017,FOR0001,UNI0003,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0018,FOR0001,UNI0004,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0019,FOR0001,UNI0005,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0020,FOR0001,UNI0006,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0021,FOR0001,UNI0007,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0022,FOR0001,UNI0008,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,1,
+UNI0023,FOR0001,UNI0009,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0024,FOR0001,UNI0010,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0025,FOR0001,UNI0011,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0026,FOR0001,UNI0012,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0027,FOR0001,UNI0013,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0028,FOR0001,UNI0014,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0029,FOR0001,UNI0015,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0030,FOR0001,UNI0005,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0031,FOR0001,UNI0006,SETOR,"Gabinete da 1ª Vara da Fazenda Pública Estadual, Municipal, Registro Públicos, Meio Ambiente e Saúde e Acidentes de Trabalho",,,,FALSE,TRUE,2,
+UNI0032,FOR0001,UNI0010,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0033,FOR0001,UNI0011,SETOR,"Gabinete, Assessoria e Sala de Audiência da 10ª Secretaria Inteligente","Rua Bernardino Monteiro (rua das palmeiras), nº 685/12º andar Santa Luíza – Edifício Contemporâneo. Vitória/ES",29056-210,"Englobam: 1º Juizado Especial Cível, 6º Juizado Especial Cível, 8º Juizado Especial Cível e 9º Juizado Especial Cível",FALSE,TRUE,2,
+UNI0034,FOR0001,UNI0012,SETOR,Atendimento,,,,FALSE,TRUE,2,
+UNI0035,FOR0001,UNI0013,SETOR,Processuais • Pré-Processuais • Superendividamento,,,,FALSE,TRUE,2,
+UNI0036,FOR0001,UNI0006,SETOR,"Gabinete da 2ª Vara da Fazenda Pública Estadual, Municipal, Registro Públicos, Meio Ambiente e Saúde e Acidentes de Trabalho",,,,FALSE,TRUE,3,
+UNI0037,FOR0001,UNI0011,SETOR,"Gabinete, Assessoria e Sala de Audiência da 10ª Secretaria Inteligente","Rua Tenente Mário Francisco de Brito, nº 420/19° andar Enseada do Suá – Edifício Vértice. Vitória/ES",29050-555,Engloba: 3º Juizado Especial Civil,FALSE,TRUE,3,
+UNI0038,FOR0001,UNI0006,SETOR,"Assessoria 3ª Vara da Fazenda Pública Estadual, Municipal, Registro Públicos, Meio Ambiente e Saúde e Acidentes de Trabalho",,,,FALSE,TRUE,4,
+UNI0039,FOR0001,UNI0011,SETOR,"Gabinete, Assessoria e Sala de Audiência da 10ª Secretaria Inteligente",Rua Juiz Alexandre Martins de Castro Filho - nº 130 - Santa Luíza Edifício Manhattan Work Center. Vitória/ES,29045-250,Englobam: 4º Juizados Especiais Cíveis e 5º Juizados Especiais Cíveis,FALSE,TRUE,4,
+UNI0040,FOR0001,UNI0011,JUIZADO,3º Juizado Especial Cível (Justiça Volante),,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,4,
+UNI0041,FOR0001,UNI0006,SETOR,"Gabinete 3ª Vara da Fazenda Pública Estadual, Municipal, Registro Públicos, Meio Ambiente e Saúde e Acidentes de Trabalho",,,,FALSE,TRUE,5,
+UNI0042,FOR0001,UNI0006,SETOR,"Gabinete 4ª Vara da Fazenda Pública Estadual, Municipal, Registro Públicos, Meio Ambiente e Saúde e Acidentes de Trabalho",,,,FALSE,TRUE,6,
+UNI0043,FOR0001,UNI0006,SETOR,"Gabinete 5ª Vara da Fazenda Pública Estadual, Municipal, Registro Públicos, Meio Ambiente e Saúde e Acidentes de Trabalho",,,,FALSE,TRUE,7,
+UNI0044,FOR0002,,UNIDADE,Distribuição,,,,TRUE,TRUE,1,
+UNI0045,FOR0002,,UNIDADE,Diretoria do Fórum,,,,TRUE,TRUE,2,
+UNI0046,FOR0002,,UNIDADE,7ª Secretaria Unificada,,,"Englobam: 1ª, 2ª, 3ª, 4ª, 5ª, 6ª, 7ª, 8ª, 9ª e 10ª Vara Criminal, Vara Privativa do Júri e Vara Especializada em Crimes Contra a Criança e o Adolescente",TRUE,TRUE,3,
+UNI0047,FOR0002,,UNIDADE,8ª Secretaria Unificada,,,Englobam: Varas de Execuções Penais,TRUE,TRUE,4,
+UNI0048,FOR0002,,UNIDADE,9ª Secretaria Unificada,"Rua Tenente Mário Francisco de Brito, nº 420/19° andar Enseada do Suá – Edifício Vértice. Vitória/ES",29050-555,"Englobam: 1º, 2º e 3º Juizado Criminal e Juizado Especial da Fazenda Pública",TRUE,TRUE,5,
+UNI0049,FOR0002,,UNIDADE,Auditoria da Justiça Militar,,,,TRUE,TRUE,6,
+UNI0050,FOR0002,,UNIDADE,1ª Vara Especializada em Violência Doméstica e Familiar contra a Mulher,,,,TRUE,TRUE,7,
+UNI0051,FOR0002,,UNIDADE,VEPEMA – Serviço Social e Psicológico,"Rua Taciano Abaurre, nº 240 - Enseada do Suá Vitória/ES",29050-470,,TRUE,TRUE,8,
+UNI0052,FOR0002,,UNIDADE,"Colégio Recursal (1ª, 2ª e 3ª Turma)",Rua Juiz Alexandre Martins de Castro Filho - nº 130 - Santa Luzia Vitória/ES,29045-250,CAJE - Centro Avançado dos Juizados Especiais.,TRUE,TRUE,9,
+UNI0053,FOR0002,,UNIDADE,Central de Mandados,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",TRUE,TRUE,10,
+UNI0054,FOR0002,,UNIDADE,Contadorias,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",TRUE,TRUE,11,
+UNI0055,FOR0002,UNI0044,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0056,FOR0002,UNI0045,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0057,FOR0002,UNI0046,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0058,FOR0002,UNI0047,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0059,FOR0002,UNI0048,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0060,FOR0002,UNI0049,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0061,FOR0002,UNI0050,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0062,FOR0002,UNI0051,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0063,FOR0002,UNI0052,SETOR,Secretaria do Colégio Recursal • Turma de Uniformização • Plenário,,,,FALSE,TRUE,1,
+UNI0064,FOR0002,UNI0046,VARA,1ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,1,
+UNI0065,FOR0002,UNI0048,JUIZADO,1º Juizado Especial Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,1,
+UNI0066,FOR0002,UNI0054,SETOR,1ª Contadoria,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,1,
+UNI0067,FOR0002,UNI0049,SETOR,Atendimento,,,,FALSE,TRUE,2,
+UNI0068,FOR0002,UNI0050,SETOR,Atendimento,,,,FALSE,TRUE,2,
+UNI0069,FOR0002,UNI0052,SETOR,1ª Turma,,,,FALSE,TRUE,2,
+UNI0070,FOR0002,UNI0046,VARA,2ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,2,
+UNI0071,FOR0002,UNI0048,JUIZADO,2º Juizado Especial Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,2,
+UNI0072,FOR0002,UNI0054,SETOR,2ª Contadoria,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,2,
+UNI0073,FOR0002,UNI0052,SETOR,2ª Turma,,,,FALSE,TRUE,3,
+UNI0074,FOR0002,UNI0046,VARA,3ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,3,
+UNI0075,FOR0002,UNI0048,JUIZADO,3º Juizado Especial Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,3,
+UNI0076,FOR0002,UNI0052,SETOR,3ª Turma,,,,FALSE,TRUE,4,
+UNI0077,FOR0002,UNI0046,VARA,4ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,4,
+UNI0078,FOR0002,UNI0046,VARA,5ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,5,
+UNI0079,FOR0002,UNI0046,VARA,6ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,6,
+UNI0080,FOR0002,UNI0046,VARA,7ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,7,
+UNI0081,FOR0002,UNI0046,VARA,8ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,8,
+UNI0082,FOR0002,UNI0046,VARA,9ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,9,
+UNI0083,FOR0002,UNI0046,VARA,10ª Vara Criminal,,,"Contato provisório - Ofício 432/2024, SEI 7001802-03.2024.8.08.0024. Validar vigência.",FALSE,TRUE,10,
+UNI0084,FOR0003,,UNIDADE,Central de Distribuição dos Juizados Especiais Cíveis,,,,TRUE,TRUE,1,
+UNI0085,FOR0003,,UNIDADE,Contadoria,,,,TRUE,TRUE,2,
+UNI0086,FOR0003,,UNIDADE,Central de Mandados,,,,TRUE,TRUE,3,
+UNI0087,FOR0003,,UNIDADE,Central de Distribuição Criminal,,,,TRUE,TRUE,4,
+UNI0088,FOR0003,,UNIDADE,Central de Distribuição Cível,,,,TRUE,TRUE,5,
+UNI0089,FOR0003,,UNIDADE,Central de Apoio Multidisciplinar,,,,TRUE,TRUE,6,
+UNI0090,FOR0003,,UNIDADE,8º CEJUSC – Centro Judiciário de Solução de Conflitos e Cidadania,,,,TRUE,TRUE,7,
+UNI0091,FOR0003,,UNIDADE,6ª Secretaria Inteligente,,,Englobam: 5ª e 9ª Vara de Violência Doméstica e Familiar Contra a Mulher,TRUE,TRUE,8,
+UNI0092,FOR0003,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª, 3ª, 4ª, 5ª e 6ª Vara Cível, Vara da Fazenda Pública Estadual, 1ª e 2ª Vara da Fazenda Pública Municipal",TRUE,TRUE,9,
+UNI0093,FOR0003,,UNIDADE,2ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª, 3ª e 4ª Vara de Família",TRUE,TRUE,10,
+UNI0094,FOR0003,,UNIDADE,3ª Secretaria Inteligente,,,"Englobam: 1º, 2º, 4º, 5º Juizado Especial Cível e 1º, 2º e 3º Juizado Especial Criminal",TRUE,TRUE,11,
+UNI0095,FOR0003,,UNIDADE,4ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª, 3ª, 4ª, 6ª e 7ª Vara Criminal",TRUE,TRUE,12,
+UNI0096,FOR0003,,UNIDADE,5ª Secretaria Inteligente,,,"Englobam: 2ª Vara Criminal, Vara de Execuções Penais e 8ª Vara Criminal",TRUE,TRUE,13,
+UNI0097,FOR0003,,UNIDADE,1ª Vara de Órfãos e Sucessões e 2ª Vara de Órfãos e Sucessões,,,,TRUE,TRUE,14,
+UNI0098,FOR0003,,UNIDADE,1ª Vara da Infância e da Juventude,,,,TRUE,TRUE,15,
+UNI0099,FOR0003,UNI0084,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0100,FOR0003,UNI0085,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0101,FOR0003,UNI0086,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0102,FOR0003,UNI0087,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0103,FOR0003,UNI0088,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0104,FOR0003,UNI0089,SETOR,Fórum de Boa Vista,,,,FALSE,TRUE,1,
+UNI0105,FOR0003,UNI0091,SETOR,9ª Vara de Violência Doméstica e Familiar Contra a Mulher (Assessoria • Gabinete),,,,FALSE,TRUE,1,
+UNI0106,FOR0003,UNI0092,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0107,FOR0003,UNI0093,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0108,FOR0003,UNI0094,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0109,FOR0003,UNI0095,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0110,FOR0003,UNI0096,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0111,FOR0003,UNI0097,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0112,FOR0003,UNI0098,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0113,FOR0003,UNI0084,SETOR,Correios • Digitalização,,,,FALSE,TRUE,2,
+UNI0114,FOR0003,UNI0091,SETOR,Atendimento,,,,FALSE,TRUE,2,
+UNI0115,FOR0003,UNI0092,SETOR,1ª Vara Cível (Assessoria • Gabinete),,,,FALSE,TRUE,2,
+UNI0116,FOR0003,UNI0093,SETOR,1ª Vara de Família (Assessoria • Gabinete),,,,FALSE,TRUE,2,
+UNI0117,FOR0003,UNI0094,SETOR,1º Juizado Especial Cível (Assessoria • Gabinete),,,,FALSE,TRUE,2,
+UNI0118,FOR0003,UNI0095,SETOR,1ª Vara Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,2,
+UNI0119,FOR0003,UNI0096,SETOR,Vara de Execuções Penais (Semi Aberto) (Assessoria • Gabinete),,,,FALSE,TRUE,2,
+UNI0120,FOR0003,UNI0098,SETOR,Comissariado,,,,FALSE,TRUE,2,
+UNI0121,FOR0003,UNI0091,SETOR,5° Vara de Violência Doméstica e Familiar Contra a Mulher (Assessoria • Gabinete),,,,FALSE,TRUE,3,
+UNI0122,FOR0003,UNI0092,SETOR,2ª Vara Cível (Assessoria • Gabinete),,,,FALSE,TRUE,3,
+UNI0123,FOR0003,UNI0093,SETOR,2ª Vara de Família (Assessoria • Gabinete),,,,FALSE,TRUE,3,
+UNI0124,FOR0003,UNI0094,SETOR,2º Juizado Especial Cível (Assessoria • Gabinete),,,,FALSE,TRUE,3,
+UNI0125,FOR0003,UNI0095,SETOR,2ª Vara Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,3,
+UNI0126,FOR0003,UNI0096,SETOR,8ª Vara Criminal (Fechado) (Assessoria • Gabinete),,,,FALSE,TRUE,3,
+UNI0127,FOR0003,UNI0098,SETOR,Serviço Social,,,,FALSE,TRUE,3,
+UNI0128,FOR0003,UNI0091,SETOR,9° Vara de Violência Doméstica e Familiar Contra a Mulher (Assessoria • Gabinete),,,,FALSE,TRUE,4,
+UNI0129,FOR0003,UNI0092,SETOR,3ª Vara Cível (Assessoria • Gabinete),,,,FALSE,TRUE,4,
+UNI0130,FOR0003,UNI0093,SETOR,3ª Vara de Família (Assessoria • Gabinete),,,,FALSE,TRUE,4,
+UNI0131,FOR0003,UNI0094,SETOR,3º Juizado Especial Cível (Assessoria • Gabinete),,,,FALSE,TRUE,4,
+UNI0132,FOR0003,UNI0095,SETOR,3ª Vara Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,4,
+UNI0133,FOR0003,UNI0098,SETOR,Assessoria • Gabinete,,,,FALSE,TRUE,4,
+UNI0134,FOR0003,UNI0092,SETOR,4ª Vara Cível (Assessoria • Gabinete),,,,FALSE,TRUE,5,
+UNI0135,FOR0003,UNI0093,SETOR,4ª Vara de Família (Assessoria • Gabinete),,,,FALSE,TRUE,5,
+UNI0136,FOR0003,UNI0094,SETOR,4º Juizado Especial Cível (Assessoria • Gabinete),,,,FALSE,TRUE,5,
+UNI0137,FOR0003,UNI0095,SETOR,4ª Vara Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,5,
+UNI0138,FOR0003,UNI0092,SETOR,5ª Vara Cível (Assessoria • Gabinete),,,,FALSE,TRUE,6,
+UNI0139,FOR0003,UNI0094,SETOR,5º Juizado Especial Cível (Assessoria • Gabinete),,,,FALSE,TRUE,6,
+UNI0140,FOR0003,UNI0095,SETOR,6ª Vara Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,6,
+UNI0141,FOR0003,UNI0092,SETOR,6ª Vara Cível (Assessoria • Gabinete),,,,FALSE,TRUE,7,
+UNI0142,FOR0003,UNI0094,SETOR,1º Juizado Especial Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,7,
+UNI0143,FOR0003,UNI0095,SETOR,7ª Vara Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,7,
+UNI0144,FOR0003,UNI0092,SETOR,1ª Vara da Fazenda Pública Municipal (Assessoria • Gabinete),,,,FALSE,TRUE,8,
+UNI0145,FOR0003,UNI0094,SETOR,2º Juizado Especial Criminal (Assessoria • Gabinete),,,,FALSE,TRUE,8,
+UNI0146,FOR0003,UNI0092,SETOR,2ª Vara da Fazenda Pública Municipal (Assessoria • Gabinete),,,,FALSE,TRUE,9,
+UNI0147,FOR0004,,UNIDADE,5ª Vara Criminal,,,,TRUE,TRUE,1,
+UNI0148,FOR0004,,UNIDADE,9ª Vara Criminal,,,,TRUE,TRUE,2,
+UNI0149,FOR0004,,UNIDADE,2ª Vara da Infância e Juventude,,,,TRUE,TRUE,3,
+UNI0150,FOR0004,UNI0147,SETOR,Assessoria • Gabinete,,,,FALSE,TRUE,1,
+UNI0151,FOR0004,UNI0148,SETOR,Assessoria,,,,FALSE,TRUE,1,
+UNI0152,FOR0004,UNI0149,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0153,FOR0004,UNI0149,SETOR,Comissariado,,,,FALSE,TRUE,2,
+UNI0154,FOR0004,UNI0149,SETOR,Serviço Social,,,,FALSE,TRUE,3,
+UNI0155,FOR0004,UNI0149,SETOR,Assessoria • Gabinete,,,,FALSE,TRUE,4,
+UNI0156,FOR0005,,UNIDADE,1ª Vara da Infância e da Juventude,,,,TRUE,TRUE,1,
+UNI0157,FOR0005,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª, 3ª, 4ª, 5ª e 6ª Vara Cível",TRUE,TRUE,2,
+UNI0158,FOR0005,,UNIDADE,2ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª, 3ª e 4ª Vara de Família",TRUE,TRUE,3,
+UNI0159,FOR0005,,UNIDADE,3ª Secretaria Inteligente,,,"Englobam: 1º, 2º, 3º, 4º Juizado Especial Cível, 1º e 2º JECRIM e Juizado Especial da Fazenda Pública",TRUE,TRUE,4,
+UNI0160,FOR0005,,UNIDADE,4ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª, 3ª, 4ª e 5ª Vara Criminal",TRUE,TRUE,5,
+UNI0161,FOR0005,,UNIDADE,5ª Secretaria Inteligente,,,"Englobam: Vara da Fazenda Pública Estadual, Vara de Registros Públicos, Vara do Meio Ambiente e Vara da Fazenda Pública Municipal",TRUE,TRUE,6,
+UNI0162,FOR0005,,UNIDADE,6ª Secretaria Inteligente,,,Engloba: 6ª Vara Criminal - Especializada em Violência Doméstica e Familiar Contra a Mulher,TRUE,TRUE,7,
+UNI0163,FOR0005,,UNIDADE,Vara de Órfãos e Sucessões,,,,TRUE,TRUE,8,
+UNI0164,FOR0005,,UNIDADE,2ª Vara da Infância e da Juventude,,,,TRUE,TRUE,9,
+UNI0165,FOR0005,,UNIDADE,CEJUSC Central,,,,TRUE,TRUE,10,
+UNI0166,FOR0005,UNI0156,SETOR,Recepção do Setor Técnico,,,,FALSE,TRUE,1,
+UNI0167,FOR0005,UNI0157,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0168,FOR0005,UNI0158,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0169,FOR0005,UNI0159,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0170,FOR0005,UNI0160,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0171,FOR0005,UNI0161,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0172,FOR0005,UNI0162,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0173,FOR0005,UNI0163,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0174,FOR0005,UNI0164,SETOR,Assessoria,,,,FALSE,TRUE,1,
+UNI0175,FOR0005,UNI0165,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0176,FOR0005,UNI0156,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0177,FOR0005,UNI0157,SETOR,1ª Vara Cível (Assessoria),,,,FALSE,TRUE,2,
+UNI0178,FOR0005,UNI0158,SETOR,1ª Vara de Família (Assessoria),,,,FALSE,TRUE,2,
+UNI0179,FOR0005,UNI0159,SETOR,1º JEC (Assessoria),,,,FALSE,TRUE,2,
+UNI0180,FOR0005,UNI0160,SETOR,1ª Vara Criminal (Assessoria),,,,FALSE,TRUE,2,
+UNI0181,FOR0005,UNI0161,SETOR,Fazenda Pública Municipal (Assessoria),,,,FALSE,TRUE,2,
+UNI0182,FOR0005,UNI0164,SETOR,Recepção,,,,FALSE,TRUE,2,
+UNI0183,FOR0005,UNI0156,SETOR,Comissária Patrícia Dantas,,,,FALSE,TRUE,3,
+UNI0184,FOR0005,UNI0157,SETOR,2ª Vara Cível (Assessoria),,,,FALSE,TRUE,3,
+UNI0185,FOR0005,UNI0158,SETOR,2ª Vara de Família (Assessoria),,,,FALSE,TRUE,3,
+UNI0186,FOR0005,UNI0159,SETOR,2º JEC (Assessoria),,,,FALSE,TRUE,3,
+UNI0187,FOR0005,UNI0160,SETOR,2ª Vara Criminal (Assessoria),,,,FALSE,TRUE,3,
+UNI0188,FOR0005,UNI0161,SETOR,Fazenda Pública Estadual (Assessoria),,,,FALSE,TRUE,3,
+UNI0189,FOR0005,UNI0164,SETOR,Cartório,,,,FALSE,TRUE,3,
+UNI0190,FOR0005,UNI0156,SETOR,Comissária Simone,,,,FALSE,TRUE,4,
+UNI0191,FOR0005,UNI0157,SETOR,3ª Vara Cível (Assessoria),,,,FALSE,TRUE,4,
+UNI0192,FOR0005,UNI0158,SETOR,3ª Vara de Família (Assessoria),,,,FALSE,TRUE,4,
+UNI0193,FOR0005,UNI0159,SETOR,3º JEC (Assessoria),,,,FALSE,TRUE,4,
+UNI0194,FOR0005,UNI0160,SETOR,3ª Vara Criminal (Assessoria),,,,FALSE,TRUE,4,
+UNI0195,FOR0005,UNI0156,SETOR,Comissário José Paulo,,,,FALSE,TRUE,5,
+UNI0196,FOR0005,UNI0157,SETOR,4ª Vara Cível (Assessoria),,,,FALSE,TRUE,5,
+UNI0197,FOR0005,UNI0158,SETOR,4ª Vara de Família (Assessoria),,,,FALSE,TRUE,5,
+UNI0198,FOR0005,UNI0159,SETOR,4º JEC (Assessoria),,,,FALSE,TRUE,5,
+UNI0199,FOR0005,UNI0160,SETOR,4ª Vara Criminal (Assessoria),,,,FALSE,TRUE,5,
+UNI0200,FOR0005,UNI0156,SETOR,Assessoria • Gabinete,,,,FALSE,TRUE,6,
+UNI0201,FOR0005,UNI0157,SETOR,5ª Vara Cível (Assessoria),,,,FALSE,TRUE,6,
+UNI0202,FOR0005,UNI0159,SETOR,1º e 2º JECRIM (Assessoria),,,,FALSE,TRUE,6,
+UNI0203,FOR0005,UNI0160,SETOR,5ª Vara Criminal (Assessoria),,,,FALSE,TRUE,6,
+UNI0204,FOR0005,UNI0156,SETOR,Central Unificada de Mandados,,,,FALSE,TRUE,7,
+UNI0205,FOR0005,UNI0157,SETOR,6ª Vara Cível (Assessoria),,,,FALSE,TRUE,7,
+UNI0206,FOR0005,UNI0159,SETOR,Órfãos e Sucessões,,,,FALSE,TRUE,7,
+UNI0207,FOR0005,UNI0156,SETOR,Central de Abertura e Distribuição de Processos,,,,FALSE,TRUE,8,
+UNI0208,FOR0006,,UNIDADE,Portaria,,,,TRUE,TRUE,1,
+UNI0209,FOR0006,,UNIDADE,Central de Mandados,,,,TRUE,TRUE,2,
+UNI0210,FOR0006,,UNIDADE,Protocolo • Distribuição,,,,TRUE,TRUE,3,
+UNI0211,FOR0006,,UNIDADE,5ª Secretaria Inteligente,,,Englobam: Vara da Fazenda Pública Estadual e do Meio Ambiente e a Vara da Fazenda Pública Municipal,TRUE,TRUE,4,
+UNI0212,FOR0006,,UNIDADE,Central de Abertura de Processos do Juizado Especial Cível,,,,TRUE,TRUE,5,
+UNI0213,FOR0006,,UNIDADE,CEAVTES – Centro Especializado de Atendimentos das Vítimas de Crimes e Atos Infracionais,,,,TRUE,TRUE,6,
+UNI0214,FOR0006,,UNIDADE,7º CEJUSC – Centro Judiciário de Solução de Conflitos e Cidadania,,,,TRUE,TRUE,7,
+UNI0215,FOR0006,,UNIDADE,"Vara da Fazenda Pública Estadual, de Registros Públicos e do Meio Ambiente",,,,TRUE,TRUE,8,
+UNI0216,FOR0006,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª, 3ª e 4ª Vara Cível e a 1ª, 2ª, 3ª e 4ª Vara de Órfãos e Sucessões",TRUE,TRUE,9,
+UNI0217,FOR0006,,UNIDADE,2ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª e 4ª Vara Criminal",TRUE,TRUE,10,
+UNI0218,FOR0006,,UNIDADE,3ª Secretaria Inteligente,,,"Englobam: 1ª, 2ª e 3ª Vara de Família",TRUE,TRUE,11,
+UNI0219,FOR0006,,UNIDADE,4ª Secretaria Inteligente,,,"Englobam: 1º, 2º, 3º e 4º Juizado Especial Cível e 1º e 2º Juizado Especial Criminal e Juizado Especial da Fazenda Pública",TRUE,TRUE,12,
+UNI0220,FOR0006,,UNIDADE,1ª Vara da Infância e da Juventude,,,,TRUE,TRUE,13,
+UNI0221,FOR0006,,UNIDADE,Núcleo de Audiência de Custódia,,,,TRUE,TRUE,14,
+UNI0222,FOR0006,,UNIDADE,3ª Vara Criminal,,,,TRUE,TRUE,15,
+UNI0223,FOR0006,,UNIDADE,5ª Vara Criminal (Especializada em Violência Doméstica e Familiar Contra a Mulher),,,,TRUE,TRUE,16,
+UNI0224,FOR0006,,UNIDADE,4ª Vara de Família,,,,TRUE,TRUE,17,
+UNI0225,FOR0006,,UNIDADE,2ª Vara da Infância e da Juventude,,,,TRUE,TRUE,18,
+UNI0226,FOR0006,UNI0208,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0227,FOR0006,UNI0209,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0228,FOR0006,UNI0210,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0229,FOR0006,UNI0211,SETOR,Assessoria,,,,FALSE,TRUE,1,
+UNI0230,FOR0006,UNI0212,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0231,FOR0006,UNI0213,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0232,FOR0006,UNI0214,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0233,FOR0006,UNI0215,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0234,FOR0006,UNI0216,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0235,FOR0006,UNI0217,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0236,FOR0006,UNI0218,SETOR,Gabinete da 1ª Vara,,,,FALSE,TRUE,1,
+UNI0237,FOR0006,UNI0219,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0238,FOR0006,UNI0220,SETOR,Comissários,,,,FALSE,TRUE,1,
+UNI0239,FOR0006,UNI0221,SETOR,Sala de Apoio,,,,FALSE,TRUE,1,
+UNI0240,FOR0006,UNI0222,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,1,
+UNI0241,FOR0006,UNI0223,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0242,FOR0006,UNI0224,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0243,FOR0006,UNI0225,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0244,FOR0006,UNI0211,SETOR,Central de Atendimento,,,,FALSE,TRUE,2,
+UNI0245,FOR0006,UNI0212,SETOR,Sala Passiva,,,,FALSE,TRUE,2,
+UNI0246,FOR0006,UNI0216,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0247,FOR0006,UNI0217,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0248,FOR0006,UNI0218,SETOR,Atendimento,,,,FALSE,TRUE,2,
+UNI0249,FOR0006,UNI0219,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0250,FOR0006,UNI0220,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0251,FOR0006,UNI0221,SETOR,Assessoria do Juiz Coordenador,,,,FALSE,TRUE,2,
+UNI0252,FOR0006,UNI0223,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0253,FOR0006,UNI0224,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0254,FOR0006,UNI0225,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0255,FOR0006,UNI0211,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,3,
+UNI0256,FOR0006,UNI0212,SETOR,CPD • Centro de Processamento de Dados,,,,FALSE,TRUE,3,
+UNI0257,FOR0006,UNI0216,SETOR,Assessoria da 1ª Vara Cível,,,,FALSE,TRUE,3,
+UNI0258,FOR0006,UNI0217,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0259,FOR0006,UNI0218,SETOR,Gabinete da 2ª Vara,,,,FALSE,TRUE,3,
+UNI0260,FOR0006,UNI0219,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0261,FOR0006,UNI0220,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,3,
+UNI0262,FOR0006,UNI0221,SETOR,Cartório,,,,FALSE,TRUE,3,
+UNI0263,FOR0006,UNI0223,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0264,FOR0006,UNI0224,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0265,FOR0006,UNI0225,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0266,FOR0006,UNI0211,SETOR,Atendimento,,,,FALSE,TRUE,4,
+UNI0267,FOR0006,UNI0212,SETOR,Sala da Segurança,,,,FALSE,TRUE,4,
+UNI0268,FOR0006,UNI0216,SETOR,Assessoria da 2ª Vara Cível,,,,FALSE,TRUE,4,
+UNI0269,FOR0006,UNI0217,SETOR,Central de Atendimento,,,,FALSE,TRUE,4,
+UNI0270,FOR0006,UNI0218,SETOR,Assessoria,,,,FALSE,TRUE,4,
+UNI0271,FOR0006,UNI0219,SETOR,Central de Atendimento,,,,FALSE,TRUE,4,
+UNI0272,FOR0006,UNI0220,SETOR,Assessoria,,,,FALSE,TRUE,4,
+UNI0273,FOR0006,UNI0221,SETOR,Assessoria do Juiz,,,,FALSE,TRUE,4,
+UNI0274,FOR0006,UNI0225,SETOR,Comissários,,,,FALSE,TRUE,4,
+UNI0275,FOR0006,UNI0212,SETOR,Correios,,,,FALSE,TRUE,5,
+UNI0276,FOR0006,UNI0216,SETOR,Assessoria da 3ª Vara Cível,,,,FALSE,TRUE,5,
+UNI0277,FOR0006,UNI0217,SETOR,Salão do Júri,,,,FALSE,TRUE,5,
+UNI0278,FOR0006,UNI0218,SETOR,Central de Atendimento,,,,FALSE,TRUE,5,
+UNI0279,FOR0006,UNI0219,SETOR,Sala de Instrução,,,,FALSE,TRUE,5,
+UNI0280,FOR0006,UNI0220,SETOR,Assistentes Sociais,,,,FALSE,TRUE,5,
+UNI0281,FOR0006,UNI0225,SETOR,Assistentes Sociais,,,,FALSE,TRUE,5,
+UNI0282,FOR0006,UNI0212,SETOR,Ar-Condicionado,,,,FALSE,TRUE,6,
+UNI0283,FOR0006,UNI0216,SETOR,Assessoria da 4ª Vara Cível,,,,FALSE,TRUE,6,
+UNI0284,FOR0006,UNI0219,SETOR,Sala de Conciliação,,,,FALSE,TRUE,6,
+UNI0285,FOR0006,UNI0220,SETOR,Psicólogos,,,,FALSE,TRUE,6,
+UNI0286,FOR0006,UNI0225,SETOR,Psicólogos,,,,FALSE,TRUE,6,
+UNI0287,FOR0006,UNI0216,SETOR,Assessoria da 2ª Vara de Órfãos e Sucessões,,,,FALSE,TRUE,7,
+UNI0288,FOR0007,,UNIDADE,2ª Secretaria Inteligente,,,Englobam: 1ª Vara Criminal e 3ª Vara Criminal,TRUE,TRUE,1,
+UNI0289,FOR0007,,UNIDADE,4ª Secretaria Inteligente,,,Engloba: Vara de Família,TRUE,TRUE,2,
+UNI0290,FOR0007,,UNIDADE,"Vara de Órfãos e Sucessões, Vara da Infância e da Juventude e Vara de Acidentes de Trabalho",,,,TRUE,TRUE,3,
+UNI0291,FOR0007,,UNIDADE,2ª Vara Criminal - Execução Penal,"Rua São João Batista, nº 1000, Alto Laje Cariacica/ES",29151-230,"Funcionando no Fórum de Cariacica - Rua São João Batista, nº 1000 - Alto Laje, CEP 29151-230 - Cariacica/ES.",TRUE,TRUE,4,
+UNI0292,FOR0007,UNI0288,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0293,FOR0007,UNI0289,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0294,FOR0007,UNI0290,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0295,FOR0007,UNI0291,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,1,
+UNI0296,FOR0007,UNI0288,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0297,FOR0007,UNI0289,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0298,FOR0007,UNI0290,SETOR,Secretaria,,,,FALSE,TRUE,2,
+UNI0299,FOR0007,UNI0288,SETOR,Gabinete da 1ª Vara Criminal,,,,FALSE,TRUE,3,
+UNI0300,FOR0007,UNI0289,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,3,
+UNI0301,FOR0007,UNI0290,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,3,
+UNI0302,FOR0007,UNI0288,SETOR,Gabinete da 3ª Vara Criminal,,,,FALSE,TRUE,4,
+UNI0303,FOR0008,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: Vara Cível, Vara Comercial, Vara da Fazenda Pública Municipal, Vara da Estadual, Vara de Registros Públicos e Vara do Meio Ambiente",TRUE,TRUE,1,
+UNI0304,FOR0008,,UNIDADE,3ª Secretaria Inteligente,,,Englobam: Juizado Especial Cível e Juizado Especial Criminal,TRUE,TRUE,2,
+UNI0305,FOR0008,UNI0303,SETOR,Atendimento Vara Cível,,,,FALSE,TRUE,1,
+UNI0306,FOR0008,UNI0304,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0307,FOR0008,UNI0303,SETOR,Gabinete Vara Cível,,,,FALSE,TRUE,2,
+UNI0308,FOR0009,,UNIDADE,Juizados Especiais Cíveis e da Fazenda Pública,,,,TRUE,TRUE,1,
+UNI0309,FOR0009,UNI0308,SETOR,Central de Abertura de Processos,,,,FALSE,TRUE,1,
+UNI0310,FOR0009,UNI0308,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0311,FOR0009,UNI0308,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,3,
+UNI0312,FOR0009,UNI0308,SETOR,Assessoria,,,,FALSE,TRUE,4,
+UNI0313,FOR0009,UNI0308,SETOR,Sala de Audiências,,,,FALSE,TRUE,5,
+UNI0314,FOR0009,UNI0308,SETOR,Conciliação,,,,FALSE,TRUE,6,
+UNI0315,FOR0009,UNI0308,SETOR,Assistente Social,,,,FALSE,TRUE,7,
+UNI0316,FOR0009,UNI0308,SETOR,Comissários,,,,FALSE,TRUE,8,
+UNI0317,FOR0009,UNI0308,SETOR,Atendimento,,,,FALSE,TRUE,9,
+UNI0318,FOR0011,,UNIDADE,Vara Única,,,,TRUE,TRUE,1,
+UNI0319,FOR0011,UNI0318,SETOR,Cartório da Vara única,,,,FALSE,TRUE,1,
+UNI0320,FOR0016,,UNIDADE,1ª Vara Cível,,,,TRUE,TRUE,1,
+UNI0321,FOR0016,,UNIDADE,2ª Vara Criminal,,,,TRUE,TRUE,2,
+UNI0322,FOR0016,UNI0320,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,1,
+UNI0323,FOR0016,UNI0321,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,1,
+UNI0324,FOR0017,,UNIDADE,Vara do 1º Ofício,"Rua Joaquim Carnelio Filho, 161, Centro • Conceição do Castelo/ES",29370-000,,TRUE,TRUE,1,
+UNI0325,FOR0017,UNI0324,SETOR,Cartório da Vara do 2º Ofício,,,,FALSE,TRUE,1,
+UNI0326,FOR0017,UNI0324,SETOR,Cartório da Vara do 3º Ofício,,,,FALSE,TRUE,2,
+UNI0327,FOR0017,UNI0324,SETOR,Cartório dos Juizados Especiais,,,,FALSE,TRUE,3,
+UNI0328,FOR0017,UNI0324,SETOR,Contadoria do Juízo,,,,FALSE,TRUE,4,
+UNI0329,FOR0017,UNI0324,SETOR,Cartório Eleitoral,,,,FALSE,TRUE,5,
+UNI0330,FOR0018,,UNIDADE,1ª Vara,,,,TRUE,TRUE,1,
+UNI0331,FOR0018,,UNIDADE,2ª Vara,,,,TRUE,TRUE,2,
+UNI0332,FOR0018,,UNIDADE,Contadoria,,,,TRUE,TRUE,3,
+UNI0333,FOR0018,UNI0330,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0334,FOR0018,UNI0331,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0335,FOR0018,UNI0332,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0336,FOR0018,UNI0330,SETOR,Assessoria,,,,FALSE,TRUE,2,
+UNI0337,FOR0018,UNI0331,SETOR,Assessoria,,,,FALSE,TRUE,2,
+UNI0338,FOR0018,UNI0330,SETOR,Sala de Audiências,,,,FALSE,TRUE,3,
+UNI0339,FOR0018,UNI0331,SETOR,Sala de Audiências,,,,FALSE,TRUE,3,
+UNI0340,FOR0021,,UNIDADE,Contadoria,,,,TRUE,TRUE,1,
+UNI0341,FOR0021,,UNIDADE,Central de Apoio Multidisciplinar,,,,TRUE,TRUE,2,
+UNI0342,FOR0021,,UNIDADE,Vara Única,,,,TRUE,TRUE,3,
+UNI0343,FOR0021,UNI0340,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0344,FOR0021,UNI0341,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0345,FOR0021,UNI0342,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0346,FOR0023,,UNIDADE,Diretoria do Foro,,,,TRUE,TRUE,1,
+UNI0347,FOR0023,,UNIDADE,Contadoria • Protocolo,,,,TRUE,TRUE,2,
+UNI0348,FOR0023,,UNIDADE,1“ Vara,,,,TRUE,TRUE,3,
+UNI0349,FOR0023,,UNIDADE,Juizado Especial Cível,,,,TRUE,TRUE,4,
+UNI0350,FOR0023,,UNIDADE,2“ Vara,,,,TRUE,TRUE,5,
+UNI0351,FOR0023,UNI0348,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0352,FOR0023,UNI0350,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0353,FOR0024,,UNIDADE,Vara Única,,,,TRUE,TRUE,1,
+UNI0354,FOR0024,UNI0353,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0355,FOR0026,,UNIDADE,14º CEJUSC – Centro Judiciário de Solução de Conflitos e Cidadania,,,,TRUE,TRUE,1,
+UNI0356,FOR0026,,UNIDADE,1ª Vara Cível e Vara da Fazenda Pública Regional,,,,TRUE,TRUE,2,
+UNI0357,FOR0026,,UNIDADE,1ª Vara Criminal Regional,,,,TRUE,TRUE,3,
+UNI0358,FOR0026,,UNIDADE,"1a Vara de Família, Vara de Órfãos Sucessões e Vara da Infância e da Juventude Regional",,,,TRUE,TRUE,4,
+UNI0359,FOR0026,,UNIDADE,"Juizado Especial Cível, Juizado Especial Criminal e da Fazenda Pública Regional",,,,TRUE,TRUE,5,
+UNI0360,FOR0026,UNI0355,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0361,FOR0026,UNI0356,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0362,FOR0026,UNI0357,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0363,FOR0026,UNI0358,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0364,FOR0026,UNI0359,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0365,FOR0026,UNI0356,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0366,FOR0026,UNI0357,SETOR,Assessoria,,,,FALSE,TRUE,2,
+UNI0367,FOR0026,UNI0358,SETOR,Sala de Audiências,,,,FALSE,TRUE,2,
+UNI0368,FOR0026,UNI0359,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0369,FOR0026,UNI0356,SETOR,Sala de Audiências,,,,FALSE,TRUE,3,
+UNI0370,FOR0026,UNI0357,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,3,
+UNI0371,FOR0026,UNI0358,SETOR,Comissários da Infância e Juventude,,,,FALSE,TRUE,3,
+UNI0372,FOR0026,UNI0359,SETOR,Sala de Audiências,,,,FALSE,TRUE,3,
+UNI0373,FOR0026,UNI0357,SETOR,Sala de Audiências,,,,FALSE,TRUE,4,
+UNI0374,FOR0026,UNI0359,SETOR,Sala de Conciliação,,,,FALSE,TRUE,4,
+UNI0375,FOR0026,UNI0359,SETOR,Sala de Abertura de Ação,,,,FALSE,TRUE,5,
+UNI0376,FOR0027,,UNIDADE,Contadoria e Protocolo,,,,TRUE,TRUE,1,
+UNI0377,FOR0027,,UNIDADE,1ª Vara,,,"Englobam: Vara de Família, Juizado Especial Cível, Vara de Execução Fiscal, Vara Cível e Vara da Fazenda Pública",TRUE,TRUE,2,
+UNI0378,FOR0027,,UNIDADE,2ª Vara,,,"Englobam: 1ª Vara Criminal, 2ª Vara Criminal, Tribunal do Júri, Vara Especializada em Violência Doméstica, Infância e Juventude, Órfãos e Sucessões, JECRIM e Execução Penal",TRUE,TRUE,3,
+UNI0379,FOR0027,UNI0376,SETOR,Oficiais de Justiça,,,,FALSE,TRUE,1,
+UNI0380,FOR0027,UNI0377,SETOR,Cartório (Família Juizado Especial Cível Execução Fiscal),,,,FALSE,TRUE,1,
+UNI0381,FOR0027,UNI0378,SETOR,Cartório (Criminal Tribunal do Júri e Maria da Penha),,,,FALSE,TRUE,1,
+UNI0382,FOR0027,UNI0376,SETOR,CEJUSC,,,,FALSE,TRUE,2,
+UNI0383,FOR0027,UNI0377,SETOR,Cartório (Cível e Fazenda Pública),,,,FALSE,TRUE,2,
+UNI0384,FOR0027,UNI0378,SETOR,Cartório (Infância e Juventude Órfãos e Sucessões Juizado Especial Criminal e da Fazenda Pública e Execução Penal),,,,FALSE,TRUE,2,
+UNI0385,FOR0027,UNI0377,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0386,FOR0027,UNI0378,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0387,FOR0030,,UNIDADE,Central de atendimento • PID,,,,TRUE,TRUE,1,
+UNI0388,FOR0030,,UNIDADE,Gabinete,,,,TRUE,TRUE,2,
+UNI0389,FOR0030,UNI0387,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0390,FOR0030,UNI0388,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0391,FOR0032,,UNIDADE,Contadoria e Distribuição,,,,TRUE,TRUE,1,
+UNI0392,FOR0032,,UNIDADE,Secretaria de Gestão do Foro,,,,TRUE,TRUE,2,
+UNI0393,FOR0032,,UNIDADE,Núcleo de Audiência de Custódia – Subnúcleo Sul,,,,TRUE,TRUE,3,
+UNI0394,FOR0032,,UNIDADE,6º CEJUSC – Centro Judiciário de Solução de Conflitos e Cidadania,,,,TRUE,TRUE,4,
+UNI0395,FOR0032,,UNIDADE,1ª Secretaria Unificada Inteligente,,,"Englobam: 1ª, 2ª, 3ª, 4ª e 5ª Vara Cível",TRUE,TRUE,5,
+UNI0396,FOR0032,,UNIDADE,2ª Secretaria Unificada,,,"Englobam: 1ª e 2ª Vara de Família, 3ª Vara de Família e Vara de Órfãos e Sucessões e a 1ª Vara da Infância e da Juventude",TRUE,TRUE,6,
+UNI0397,FOR0032,,UNIDADE,3ª Secretaria Unificada,,,"Englobam: 1º, 2º Juizado Especial Cível, Juizado Especial Criminal e Juizado Especial da Fazenda Pública",TRUE,TRUE,7,
+UNI0398,FOR0032,,UNIDADE,4ª Secretaria Unificada,,,"Englobam: 1ª e 2ª Vara da Fazenda Pública Estadual, Municipal, de Registros Públicos, do Meio-Ambiente e de Saúde",TRUE,TRUE,8,
+UNI0399,FOR0032,,UNIDADE,5ª Secretaria Unificada,,,"Englobam: 1ª, 2ª, 3ª e 4ª Vara Criminal",TRUE,TRUE,9,
+UNI0400,FOR0032,,UNIDADE,Secretaria da 2ª Vara Criminal (Vara de Execução Penal),,,,TRUE,TRUE,10,
+UNI0401,FOR0032,,UNIDADE,1º Secretaria Inteligente (Vara Cível),,,,TRUE,TRUE,11,
+UNI0402,FOR0032,,UNIDADE,2º Secretaria Inteligente (Vara de Família e Vara da Infância e da Juventude),,,,TRUE,TRUE,12,
+UNI0403,FOR0032,,UNIDADE,3º Secretaria Inteligente (Juizados Especiais),,,,TRUE,TRUE,13,
+UNI0404,FOR0032,,UNIDADE,4º Secretaria Inteligente (Vara da Fazenda Pública),,,,TRUE,TRUE,14,
+UNI0405,FOR0032,,UNIDADE,5º Secretaria Inteligente (Vara Criminal),,,,TRUE,TRUE,15,
+UNI0406,FOR0032,UNI0391,SETOR,Contadoria,,,,FALSE,TRUE,1,
+UNI0407,FOR0032,UNI0392,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0408,FOR0032,UNI0393,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0409,FOR0032,UNI0394,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0410,FOR0032,UNI0395,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0411,FOR0032,UNI0396,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0412,FOR0032,UNI0397,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0413,FOR0032,UNI0398,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0414,FOR0032,UNI0399,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0415,FOR0032,UNI0400,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0416,FOR0032,UNI0401,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0417,FOR0032,UNI0402,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0418,FOR0032,UNI0403,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0419,FOR0032,UNI0404,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0420,FOR0032,UNI0405,SETOR,Central de Atendimento ao Público,,,,FALSE,TRUE,1,
+UNI0421,FOR0032,UNI0391,SETOR,Distribuição,,,,FALSE,TRUE,2,
+UNI0422,FOR0032,UNI0392,SETOR,Analista de Informática,,,,FALSE,TRUE,2,
+UNI0423,FOR0032,UNI0393,SETOR,Sala de Audiências,,,,FALSE,TRUE,2,
+UNI0424,FOR0032,UNI0395,SETOR,Gabinete do Juiz • 1ª Vara Cível,,,,FALSE,TRUE,2,
+UNI0425,FOR0032,UNI0396,SETOR,Gabinete do Juiz • 1ª Vara de Família,,,,FALSE,TRUE,2,
+UNI0426,FOR0032,UNI0397,SETOR,Gabinete do Juiz • 1º JEC,,,,FALSE,TRUE,2,
+UNI0427,FOR0032,UNI0398,SETOR,Gabinete do Juiz • 1ª Vara,,,,FALSE,TRUE,2,
+UNI0428,FOR0032,UNI0399,SETOR,Gabinete do Juiz • 1ª Vara Criminal,,,,FALSE,TRUE,2,
+UNI0429,FOR0032,UNI0392,SETOR,Analista Judiciário,,,,FALSE,TRUE,3,
+UNI0430,FOR0032,UNI0393,SETOR,Equipe APEC,,,,FALSE,TRUE,3,
+UNI0431,FOR0032,UNI0395,SETOR,Gabinete do Juiz • 2ª Vara Cível,,,,FALSE,TRUE,3,
+UNI0432,FOR0032,UNI0396,SETOR,Gabinete do Juiz • 2ª Vara de Família,,,,FALSE,TRUE,3,
+UNI0433,FOR0032,UNI0397,SETOR,Sala de Conciliação • 1º JEC,,,,FALSE,TRUE,3,
+UNI0434,FOR0032,UNI0398,SETOR,Gabinete do Juiz • 2ª Vara,,,,FALSE,TRUE,3,
+UNI0435,FOR0032,UNI0399,SETOR,Central de Atendimento ao Público • 2ª Vara Criminal,,,,FALSE,TRUE,3,
+UNI0436,FOR0032,UNI0392,SETOR,Estagiária(o),,,,FALSE,TRUE,4,
+UNI0437,FOR0032,UNI0395,SETOR,Gabinete Juiz • 3ª Vara Cível,,,,FALSE,TRUE,4,
+UNI0438,FOR0032,UNI0396,SETOR,Gabinete do Juiz • 3ª Vara de Família e Vara de Órfãos e Sucessões,,,,FALSE,TRUE,4,
+UNI0439,FOR0032,UNI0397,SETOR,Sala de Instrução • 1º JEC,,,,FALSE,TRUE,4,
+UNI0440,FOR0032,UNI0399,SETOR,Gabinete do Juiz • 2ª Vara Criminal,,,,FALSE,TRUE,4,
+UNI0441,FOR0032,UNI0395,SETOR,Assessoria • 3ª Vara Cível,,,,FALSE,TRUE,5,
+UNI0442,FOR0032,UNI0396,SETOR,Gabinete do Juiz • 1ª Vara da Infância e da Juventude,,,,FALSE,TRUE,5,
+UNI0443,FOR0032,UNI0397,SETOR,Gabinete do Juiz • 2º JEC,,,,FALSE,TRUE,5,
+UNI0444,FOR0032,UNI0399,SETOR,Gabinete do Juiz • 3ª Vara Criminal,,,,FALSE,TRUE,5,
+UNI0445,FOR0032,UNI0395,SETOR,Gabinete do Juiz • 4ª Vara Cível,,,,FALSE,TRUE,6,
+UNI0446,FOR0032,UNI0397,SETOR,Sala de Conciliação • 2º JEC,,,,FALSE,TRUE,6,
+UNI0447,FOR0032,UNI0399,SETOR,Gabinete do Juiz • 4ª Vara Criminal,,,,FALSE,TRUE,6,
+UNI0448,FOR0032,UNI0395,SETOR,Gabinete do Juiz • 5ª Vara Cível,,,,FALSE,TRUE,7,
+UNI0449,FOR0032,UNI0397,SETOR,Sala de Instrução • 2º JEC,,,,FALSE,TRUE,7,
+UNI0450,FOR0032,UNI0397,SETOR,Gabinete do Juiz • 3º Juizado Especial Criminal e Juizado Especial da Fazenda Pública,,,,FALSE,TRUE,8,
+UNI0451,FOR0033,,UNIDADE,1ª Vara,,,,TRUE,TRUE,1,
+UNI0452,FOR0033,,UNIDADE,2ª Vara,,,,TRUE,TRUE,2,
+UNI0453,FOR0033,UNI0451,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0454,FOR0033,UNI0452,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0455,FOR0034,,UNIDADE,Vara Única,,,,TRUE,TRUE,1,
+UNI0456,FOR0035,,UNIDADE,Secretaria de Gestão do Foro,,,,TRUE,TRUE,1,
+UNI0457,FOR0035,,UNIDADE,1ª Vara Cível e Vara de Família,,,,TRUE,TRUE,2,
+UNI0458,FOR0035,,UNIDADE,2ª Vara Criminal,,,,TRUE,TRUE,3,
+UNI0459,FOR0035,,UNIDADE,Central de Atendimento Inteligente,,,,TRUE,TRUE,4,
+UNI0460,FOR0035,UNI0457,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0461,FOR0035,UNI0458,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0462,FOR0036,,UNIDADE,Vara Única,,,,TRUE,TRUE,1,
+UNI0463,FOR0036,UNI0462,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0464,FOR0039,,UNIDADE,Atendimento • Cartório,,,,TRUE,TRUE,1,
+UNI0465,FOR0039,,UNIDADE,Gabinete,,,,TRUE,TRUE,2,
+UNI0466,FOR0041,,UNIDADE,1ª Secretaria Inteligente,,,,TRUE,TRUE,1,
+UNI0467,FOR0041,UNI0466,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0468,FOR0041,UNI0466,SETOR,Gabinete,,,,FALSE,TRUE,2,
+UNI0469,FOR0043,,UNIDADE,Secretaria de Gestão do Foro • Portaria,,,,TRUE,TRUE,1,
+UNI0470,FOR0043,,UNIDADE,Vara Única,,,,TRUE,TRUE,2,
+UNI0471,FOR0043,UNI0469,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0472,FOR0043,UNI0470,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0473,FOR0043,UNI0470,SETOR,Plantão,,,,FALSE,TRUE,2,
+UNI0474,FOR0044,,UNIDADE,1ª Vara,,,,TRUE,TRUE,1,
+UNI0475,FOR0044,,UNIDADE,2ª Vara,,,,TRUE,TRUE,2,
+UNI0476,FOR0044,UNI0474,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0477,FOR0044,UNI0475,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0478,FOR0044,UNI0474,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0479,FOR0044,UNI0475,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0480,FOR0044,UNI0474,SETOR,Gabinete,,,,FALSE,TRUE,3,
+UNI0481,FOR0044,UNI0475,SETOR,Gabinete,,,,FALSE,TRUE,3,
+UNI0482,FOR0044,UNI0474,SETOR,Sala de Audiências,,,,FALSE,TRUE,4,
+UNI0483,FOR0044,UNI0475,SETOR,Sala de Audiências,,,,FALSE,TRUE,4,
+UNI0484,FOR0045,,UNIDADE,Vara Única,,,,TRUE,TRUE,1,
+UNI0485,FOR0045,UNI0484,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0486,FOR0046,,UNIDADE,Contadoria,,,,TRUE,TRUE,1,
+UNI0487,FOR0046,,UNIDADE,Gabinete,,,,TRUE,TRUE,2,
+UNI0488,FOR0046,,UNIDADE,PID • Central de Atendimento,,,,TRUE,TRUE,3,
+UNI0489,FOR0046,,UNIDADE,Secretaria,,,,TRUE,TRUE,4,
+UNI0490,FOR0046,,UNIDADE,Vara Única,,,,TRUE,TRUE,5,
+UNI0491,FOR0047,,UNIDADE,Protocolo,,,,TRUE,TRUE,1,
+UNI0492,FOR0047,,UNIDADE,Contadoria,,,,TRUE,TRUE,2,
+UNI0493,FOR0047,,UNIDADE,Central de Mandados,,,,TRUE,TRUE,3,
+UNI0494,FOR0047,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: 1ª Vara Cível, 2ª Vara Cível, Vara de Família, Vara da Fazenda Pública Estadual, Vara da Fazenda Pública Municipal, Vara de Registros Públicos e Vara do Meio Ambiente",TRUE,TRUE,4,
+UNI0495,FOR0047,,UNIDADE,2ª Secretaria Inteligente,,,Englobam: 1ª Vara Criminal e 2ª Vara Criminal,TRUE,TRUE,5,
+UNI0496,FOR0047,,UNIDADE,3ª Secretaria Inteligente,,,Englobam: Vara de Órfãos e Sucessões e Vara da Infância e da Juventude,TRUE,TRUE,6,
+UNI0497,FOR0047,,UNIDADE,4ª Secretaria Inteligente,,,"Englobam: 1º Juizado Especial Cível, 2º Juizado Especial Cível, Juizado Criminal e Juizado da Fazenda Pública",TRUE,TRUE,7,
+UNI0498,FOR0047,UNI0491,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0499,FOR0047,UNI0492,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0500,FOR0047,UNI0493,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0501,FOR0047,UNI0494,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0502,FOR0047,UNI0495,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0503,FOR0047,UNI0496,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0504,FOR0047,UNI0497,SETOR,Geral,,,,FALSE,TRUE,1,
+UNI0505,FOR0047,UNI0496,SETOR,Gabinete,,,,FALSE,TRUE,2,
+UNI0506,FOR0048,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: Vara de Família, Vara da Fazenda Pública Estadual, Vara da Fazenda Pública Municipal, 4ª Vara Cível, Vara de Registros Públicos, Vara do Meio Ambiente Regional",TRUE,TRUE,1,
+UNI0507,FOR0048,,UNIDADE,2ª Secretaria Inteligente (3ª Vara Criminal Regional),,,,TRUE,TRUE,2,
+UNI0508,FOR0048,,UNIDADE,Contadoria • Protocolo,,,,TRUE,TRUE,3,
+UNI0509,FOR0048,UNI0506,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0510,FOR0048,UNI0507,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0511,FOR0048,UNI0508,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0512,FOR0050,,UNIDADE,Central de Apoio Multidisciplinar,,,,TRUE,TRUE,1,
+UNI0513,FOR0050,,UNIDADE,Central de Mandados,,,,TRUE,TRUE,2,
+UNI0514,FOR0050,,UNIDADE,Contadoria,,,,TRUE,TRUE,3,
+UNI0515,FOR0050,,UNIDADE,Protocolo,,,,TRUE,TRUE,4,
+UNI0516,FOR0050,,UNIDADE,Colegiado Recursal (5ª Turma),,,,TRUE,TRUE,5,
+UNI0517,FOR0050,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: 1ª Vara Cível, 2ª Vara Cível, 1º e 2º Juizado Especial Cível, Vara da Fazenda Pública Estadual, Municipal, Registros Públicos, Meio Ambiente, JECRIM e Fazenda Pública",TRUE,TRUE,6,
+UNI0518,FOR0050,,UNIDADE,2ª Vara Cível de Comercial,,,,TRUE,TRUE,7,
+UNI0519,FOR0050,,UNIDADE,3ª Vara Cível,,,,TRUE,TRUE,8,
+UNI0520,FOR0050,,UNIDADE,1ª Vara de Família,,,,TRUE,TRUE,9,
+UNI0521,FOR0050,,UNIDADE,2ª Vara de Família,,,,TRUE,TRUE,10,
+UNI0522,FOR0050,,UNIDADE,1ª Vara Criminal,,,,TRUE,TRUE,11,
+UNI0523,FOR0050,,UNIDADE,2ª Vara Criminal,,,,TRUE,TRUE,12,
+UNI0524,FOR0050,,UNIDADE,3ª Vara Criminal,,,,TRUE,TRUE,13,
+UNI0525,FOR0050,,UNIDADE,4ª Vara Criminal,,,,TRUE,TRUE,14,
+UNI0526,FOR0050,,UNIDADE,1ª Vara da Infância e Juventude,,,,TRUE,TRUE,15,
+UNI0527,FOR0050,,UNIDADE,2ª Vara da Infância e Juventude,,,,TRUE,TRUE,16,
+UNI0528,FOR0050,,UNIDADE,1º Juizado Especial Cível,,,,TRUE,TRUE,17,
+UNI0529,FOR0050,,UNIDADE,2º Juizado Especial Cível,,,,TRUE,TRUE,18,
+UNI0530,FOR0050,,UNIDADE,Juizado Especial Criminal,,,,TRUE,TRUE,19,
+UNI0531,FOR0050,UNI0516,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0532,FOR0050,UNI0517,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0533,FOR0050,UNI0518,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0534,FOR0050,UNI0519,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0535,FOR0050,UNI0520,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0536,FOR0050,UNI0521,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0537,FOR0050,UNI0522,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0538,FOR0050,UNI0523,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0539,FOR0050,UNI0524,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0540,FOR0050,UNI0525,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0541,FOR0050,UNI0526,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0542,FOR0050,UNI0527,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0543,FOR0050,UNI0528,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0544,FOR0050,UNI0529,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0545,FOR0050,UNI0530,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0546,FOR0053,,UNIDADE,Protocolo • Contadoria,,,,TRUE,TRUE,1,
+UNI0547,FOR0053,,UNIDADE,1ª Vara,,,"Englobam: Vara Cível, Vara de Execução Fiscal, Vara de Família e Juizado Especial Cível",TRUE,TRUE,2,
+UNI0548,FOR0053,,UNIDADE,2ª Vara,,,"Englobam: Vara Criminal, Juizados Especiais Criminais, Vara da Fazenda Pública, Vara de Órfãos e Sucessões e Vara Infância e da Juventude",TRUE,TRUE,3,
+UNI0549,FOR0053,UNI0546,SETOR,Contadoria,,,,FALSE,TRUE,1,
+UNI0550,FOR0053,UNI0547,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0551,FOR0053,UNI0548,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0552,FOR0053,UNI0547,SETOR,Gabinete,,,,FALSE,TRUE,2,
+UNI0553,FOR0053,UNI0548,SETOR,Celular,,,,FALSE,TRUE,2,
+UNI0554,FOR0054,,UNIDADE,Central de Mandados,,,,TRUE,TRUE,1,
+UNI0555,FOR0054,,UNIDADE,Central de Atendimento Unificado • Protocolo e Distribuição,,,,TRUE,TRUE,2,
+UNI0556,FOR0054,,UNIDADE,Plantão de Flagrantes (Audiência de Custódia),,,,TRUE,TRUE,3,
+UNI0557,FOR0054,,UNIDADE,Contadoria,,,,TRUE,TRUE,4,
+UNI0558,FOR0054,,UNIDADE,Central de Apoio Multidisciplinar,,,,TRUE,TRUE,5,
+UNI0559,FOR0054,,UNIDADE,2º CEJUSC – Centro Judiciário de Solução de Conflitos e Cidadania,,,,TRUE,TRUE,6,
+UNI0560,FOR0054,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: 1ª Vara Cível, 2ª Vara Cível, Vara Comercial, Vara da Fazenda Pública Estadual, Vara da Fazenda Pública Municipal, Vara de Registros Públicos e Vara do Meio Ambiente",TRUE,TRUE,7,
+UNI0561,FOR0054,,UNIDADE,2ª Secretaria Inteligente,,,"Englobam: 1ª Vara de Família, 2ª Vara de Família, Vara de Órfãos e Sucessões e a Vara da Infância e da Juventude",TRUE,TRUE,8,
+UNI0562,FOR0054,,UNIDADE,3ª Secretaria Inteligente,,,"Englobam: 1º Juizado Especial Cível, 2º Juizado Especial Cível, 3º Juizado Especial Cível, Juizado Especial Criminal e Juizado da Fazenda Pública",TRUE,TRUE,9,
+UNI0563,FOR0054,,UNIDADE,4ª Secretaria Inteligente,,,"Englobam: 1ª Vara Criminal, 3ª Vara Criminal e 4ª Vara Criminal",TRUE,TRUE,10,
+UNI0564,FOR0054,,UNIDADE,2ª Vara Criminal • Execuções Penais,,,,TRUE,TRUE,11,
+UNI0565,FOR0054,,UNIDADE,Núcleo de Audiências de Custódia • Subnúcleos Norte e Noroeste,,,,TRUE,TRUE,12,
+UNI0566,FOR0054,UNI0554,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0567,FOR0054,UNI0555,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0568,FOR0054,UNI0556,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0569,FOR0054,UNI0557,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0570,FOR0054,UNI0558,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0571,FOR0054,UNI0559,SETOR,Central de Queixas,,,,FALSE,TRUE,1,
+UNI0572,FOR0054,UNI0560,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0573,FOR0054,UNI0561,SETOR,Assessoria (1ª Vara de Família e da Vara de Órfãos e Sucessões • 2ª Vara de Família e da Vara de Órfãos e Sucessões • Vara da Infância e da Juventude),,,,FALSE,TRUE,1,
+UNI0574,FOR0054,UNI0562,SETOR,Assessoria (1º Juizado Especial Cível • 2º Juizado Especial Cível • 3º Juizado Especial Cível • Juizado Especial Criminal • Juizado Especial da Fazenda Pública),,,,FALSE,TRUE,1,
+UNI0575,FOR0054,UNI0563,SETOR,Assessoria (1ª Vara Criminal • 3ª Vara Criminal • 4ª Vara Criminal),,,,FALSE,TRUE,1,
+UNI0576,FOR0054,UNI0564,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0577,FOR0054,UNI0565,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0578,FOR0054,UNI0560,SETOR,Assessoria da 1ª Vara Cível e da Vara Comercial,,,,FALSE,TRUE,2,
+UNI0579,FOR0054,UNI0565,SETOR,Jurídico,,,,FALSE,TRUE,2,
+UNI0580,FOR0054,UNI0560,SETOR,Assessoria da 2ª Vara Cível e da Vara Comercial,,,,FALSE,TRUE,3,
+UNI0581,FOR0054,UNI0565,SETOR,Equipe APEC,,,,FALSE,TRUE,3,
+UNI0582,FOR0054,UNI0560,SETOR,"Assessoria da Vara da Fazenda Pública, da Vara de Registros Públicos e da Vara do Meio Ambiente",,,,FALSE,TRUE,4,
+UNI0583,FOR0055,,UNIDADE,Portaria,,,,TRUE,TRUE,1,
+UNI0584,FOR0055,,UNIDADE,Vara Única,,,,TRUE,TRUE,2,
+UNI0585,FOR0055,UNI0583,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0586,FOR0055,UNI0584,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0587,FOR0055,UNI0584,SETOR,Estagiária,,,,FALSE,TRUE,2,
+UNI0588,FOR0058,,UNIDADE,1ª Vara - Civel e Juizado Especial Civel,,,,TRUE,TRUE,1,
+UNI0589,FOR0058,,UNIDADE,2ª Vara,,,"Englobam: Vara Criminal, Juizado Especial Criminal, Juizado especial da Fazenda Publica, Vara de Órfãos e Sucessões e Vara da Infancia e da Juventude",TRUE,TRUE,2,
+UNI0590,FOR0058,UNI0588,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0591,FOR0058,UNI0589,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0592,FOR0060,,UNIDADE,1ª Vara,,,,TRUE,TRUE,1,
+UNI0593,FOR0060,,UNIDADE,2ª Vara,,,,TRUE,TRUE,2,
+UNI0594,FOR0060,UNI0592,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0595,FOR0060,UNI0593,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0596,FOR0060,UNI0592,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0597,FOR0060,UNI0593,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,2,
+UNI0598,FOR0062,,UNIDADE,Vara Única,,,,TRUE,TRUE,1,
+UNI0599,FOR0062,UNI0598,SETOR,Chefia da Vara Única,,,,FALSE,TRUE,1,
+UNI0600,FOR0062,UNI0598,SETOR,Cartório da Vara Única (Recepção do Cartório),,,,FALSE,TRUE,2,
+UNI0601,FOR0062,UNI0598,SETOR,Gabinete (Recepção),,,,FALSE,TRUE,3,
+UNI0602,FOR0062,UNI0598,SETOR,Assessoria do Magistrado,,,,FALSE,TRUE,4,
+UNI0603,FOR0062,UNI0598,SETOR,Sala de audiência,,,,FALSE,TRUE,5,
+UNI0604,FOR0062,UNI0598,SETOR,Celular Vara Única,,,,FALSE,TRUE,6,
+UNI0605,FOR0062,UNI0598,SETOR,Celular Plantão Vara Única,,,,FALSE,TRUE,7,
+UNI0606,FOR0066,,UNIDADE,1ª Secretaria Inteligente,,,"Englobam: 1ª Juizado Especial Cível, 2ª Juizado Especial Cível, Juizado Especial Criminal e Vara da Fazenda Pública",TRUE,TRUE,1,
+UNI0607,FOR0066,,UNIDADE,2ª Secretaria Inteligente,,,Englobam: 1ª Vara Cível e 2ª Vara Cível,TRUE,TRUE,2,
+UNI0608,FOR0066,,UNIDADE,3ª Secretaria Inteligente,,,"Englobam: 3ª Vara Cível, Vara da Família, Vara de Órfãos e Sucessões e Vara da Infância e da Juventude",TRUE,TRUE,3,
+UNI0609,FOR0066,,UNIDADE,4ª Secretaria Inteligente,,,Englobam: 1ª Vara Criminal e 3ª Vara Criminal,TRUE,TRUE,4,
+UNI0610,FOR0066,,UNIDADE,2ª Vara Criminal • Execuções Penais,,,,TRUE,TRUE,5,
+UNI0611,FOR0066,UNI0606,SETOR,Geral 1º JEC,,,,FALSE,TRUE,1,
+UNI0612,FOR0066,UNI0607,SETOR,Geral 1ª Vara Cível,,,,FALSE,TRUE,1,
+UNI0613,FOR0066,UNI0608,SETOR,Gabinete da Vara da Infância e da Juventute,,,,FALSE,TRUE,1,
+UNI0614,FOR0066,UNI0609,SETOR,Gabinete da 1ª Vara Criminal,,,,FALSE,TRUE,1,
+UNI0615,FOR0066,UNI0610,SETOR,Gabinete do Juiz,,,,FALSE,TRUE,1,
+UNI0616,FOR0066,UNI0606,SETOR,Gabinete 1º JEC,,,,FALSE,TRUE,2,
+UNI0617,FOR0066,UNI0607,SETOR,Gabinete 1ª Vara Cível,,,,FALSE,TRUE,2,
+UNI0618,FOR0066,UNI0608,SETOR,Cartório da Vara da Infância e da Juventute,,,,FALSE,TRUE,2,
+UNI0619,FOR0066,UNI0609,SETOR,Cartório da 1ª Vara Criminal,,,,FALSE,TRUE,2,
+UNI0620,FOR0066,UNI0610,SETOR,Cartório,,,,FALSE,TRUE,2,
+UNI0621,FOR0066,UNI0606,SETOR,Assessoria 1º JEC,,,,FALSE,TRUE,3,
+UNI0622,FOR0066,UNI0607,SETOR,Cartório 1ª Vara Cível,,,,FALSE,TRUE,3,
+UNI0623,FOR0066,UNI0608,SETOR,Gabinete Vara da Família,,,,FALSE,TRUE,3,
+UNI0624,FOR0066,UNI0609,SETOR,Gabinete da 3ª Vara Criminal,,,,FALSE,TRUE,3,
+UNI0625,FOR0066,UNI0606,SETOR,Cartório 1º JEC,,,,FALSE,TRUE,4,
+UNI0626,FOR0066,UNI0607,SETOR,Geral 2ª Vara Cível,,,,FALSE,TRUE,4,
+UNI0627,FOR0066,UNI0608,SETOR,Cartório Vara de Família,,,,FALSE,TRUE,4,
+UNI0628,FOR0066,UNI0609,SETOR,Cartório da 3ª Vara Criminal,,,,FALSE,TRUE,4,
+UNI0629,FOR0066,UNI0606,SETOR,Cartório Conciliador 1º JEC,,,,FALSE,TRUE,5,
+UNI0630,FOR0066,UNI0607,SETOR,Gabinete 2ª Vara Cível,,,,FALSE,TRUE,5,
+UNI0631,FOR0066,UNI0606,SETOR,Geral 2º JEC,,,,FALSE,TRUE,6,
+UNI0632,FOR0066,UNI0607,SETOR,Cartório 2ª Vara Cível,,,,FALSE,TRUE,6,
+UNI0633,FOR0066,UNI0606,SETOR,Gabinete 2º JEC,,,,FALSE,TRUE,7,
+UNI0634,FOR0066,UNI0606,SETOR,Cartório 2º JEC,,,,FALSE,TRUE,8,
+UNI0635,FOR0066,UNI0606,SETOR,Cartório Conciliador 2º JEC,,,,FALSE,TRUE,9,
+UNI0636,FOR0072,,UNIDADE,Central de Mandados • Sala dos Oficiais de Justiça,,,,TRUE,TRUE,1,
+UNI0637,FOR0072,,UNIDADE,Central de Apoio Multidisciplinar • Assistentes Sociais • Psicólogos,,,,TRUE,TRUE,2,
+UNI0638,FOR0072,,UNIDADE,Contadoria e Distribuição,,,,TRUE,TRUE,3,
+UNI0639,FOR0072,,UNIDADE,1ª Secretaria Inteligente,,,"Enblobam: 1ª Vara Cível, Vara da Fazenda Pública Estadual, Vara da Fazenda Pública Municipal, Vara de Execuções Fiscais, Vara de Registro Público, Vara de Acidente de Trabalho, Vara do Meio Ambiente, Mandado de Segurança e Vara de Ação Civil Pública, Previdenciário (competência delegada).",TRUE,TRUE,4,
+UNI0640,FOR0072,,UNIDADE,2ª Vara Cível,,,Englobam: Demais matérias Cíveis,TRUE,TRUE,5,
+UNI0641,FOR0072,,UNIDADE,2ª Secretaria Inteligente,,,"Englobam: Vara Criminal, Vara do Júri e Vara de Execuções Penais",TRUE,TRUE,6,
+UNI0642,FOR0072,,UNIDADE,3ª Secretaria Inteligente,,,"Englobam: Vara de Família, Vara Órfãos e Sucessões e Vara da Infância e da Juventude",TRUE,TRUE,7,
+UNI0643,FOR0072,,UNIDADE,4ª Secretaria Inteligente,,,"Englobam: Juizado Especial Cível, Juizado Especial Criminal e Juizado Especial da Fazenda Pública",TRUE,TRUE,8,
+UNI0644,FOR0072,UNI0636,SETOR,Central de Mandados • Oficiais de Justiça,,,,FALSE,TRUE,1,
+UNI0645,FOR0072,UNI0637,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0646,FOR0072,UNI0638,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0647,FOR0072,UNI0639,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0648,FOR0072,UNI0640,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0649,FOR0072,UNI0641,SETOR,Atendimento,,,,FALSE,TRUE,1,
+UNI0650,FOR0072,UNI0642,SETOR,Assessoria,,,,FALSE,TRUE,1,
+UNI0651,FOR0072,UNI0643,SETOR,Cartório,,,,FALSE,TRUE,1,
+UNI0652,FOR0072,UNI0639,SETOR,Assessoria 1ª Vara,,,,FALSE,TRUE,2,
+UNI0653,FOR0072,UNI0640,SETOR,Assessoria,,,,FALSE,TRUE,2,
+UNI0654,FOR0072,UNI0641,SETOR,Celular,,,,FALSE,TRUE,2,
+UNI0655,FOR0072,UNI0642,SETOR,Celular,,,,FALSE,TRUE,2,
+UNI0656,FOR0072,UNI0643,SETOR,Gabinete,,,,FALSE,TRUE,2,
+UNI0657,FOR0072,UNI0639,SETOR,Assessoria 2ª Vara,,,,FALSE,TRUE,3,
+UNI0658,FOR0072,UNI0641,SETOR,Assessoria,,,,FALSE,TRUE,3,
+UNI0659,FOR0072,UNI0642,SETOR,Comissariado da Infância e da Juventude,,,,FALSE,TRUE,3,
+UNI0660,,,UNIDADE,Presidência • Des. Janete Vargas Simões,,,Des. Janete Vargas Simões,TRUE,TRUE,1,MUN0000
+UNI0661,,,ASSESSORIA,Assessorias da Presidência,,,,TRUE,TRUE,2,MUN0000
+UNI0662,,,UNIDADE,Vice-Presidência,,,,TRUE,TRUE,3,MUN0000
+UNI0663,,,UNIDADE,Corregedoria-Geral de Justiça,,,,TRUE,TRUE,4,MUN0000
+UNI0664,,,ESCOLA,Escola da Magistratura,,,,TRUE,TRUE,5,MUN0000
+UNI0665,,,OUVIDORIA,Ouvidoria,,,,TRUE,TRUE,6,MUN0000
+UNI0666,,,COORDENADORIA,Coordenadorias,,,,TRUE,TRUE,7,MUN0000
+UNI0667,,,GABINETE,Desembargadores,,,,TRUE,TRUE,8,MUN0000
+UNI0668,,,UNIDADE,Tribunal do Pleno,,,,TRUE,TRUE,9,MUN0000
+UNI0669,,,UNIDADE,Conselho Superior da Magistratura,,,,TRUE,TRUE,10,MUN0000
+UNI0670,,,SECAO,Seção Cível,,,,TRUE,TRUE,11,MUN0000
+UNI0671,,,SECAO,Seção Criminal,,,,TRUE,TRUE,12,MUN0000
+UNI0672,,,SECRETARIA,Secretaria de Controle Interno,,,,TRUE,TRUE,13,MUN0000
+UNI0673,,,SECRETARIA,Secretaria Geral,,,,TRUE,TRUE,14,MUN0000
+UNI0674,,,SECRETARIA,Secretaria Judiciária,,,,TRUE,TRUE,15,MUN0000
+UNI0675,,,SECRETARIA,"Secretaria de Engenharia, Gestão Predial e Manutenção de Equipamentos",,,,TRUE,TRUE,16,MUN0000
+UNI0676,,,SECRETARIA,Secretaria de Infraestrutura,,,,TRUE,TRUE,17,MUN0000
+UNI0677,,,SECRETARIA,Secretaria de Tecnologia da Informação,,,,TRUE,TRUE,18,MUN0000
+UNI0678,,,SECRETARIA,Secretaria de Gestão de Pessoas,,,,TRUE,TRUE,19,MUN0000
+UNI0679,,,SECRETARIA,Secretaria de Finanças e Execução Orçamentária,,,,TRUE,TRUE,20,MUN0000
+UNI0680,,,COMISSAO,Comissões,,,,TRUE,TRUE,21,MUN0000
+UNI0681,,UNI0660,SETOR,Chefia de Gabinete,,,,FALSE,TRUE,1,MUN0000
+UNI0682,,UNI0661,SETOR,Assessoria Especial CNJ,,,,FALSE,TRUE,1,MUN0000
+UNI0683,,UNI0662,SETOR,Chefia de Gabinete,,,,FALSE,TRUE,1,MUN0000
+UNI0684,,UNI0663,SETOR,Chefia de Gabinete,,,,FALSE,TRUE,1,MUN0000
+UNI0685,,UNI0666,SETOR,Criminal e Execução Penal,,,,FALSE,TRUE,1,MUN0000
+UNI0686,,UNI0667,SETOR,Alexandre Puppim,,,,FALSE,TRUE,1,MUN0000
+UNI0687,,UNI0668,SETOR,Diretora,,,,FALSE,TRUE,1,MUN0000
+UNI0688,,UNI0670,SETOR,1ª Cível,,,,FALSE,TRUE,1,MUN0000
+UNI0689,,UNI0671,SETOR,1ª Criminal,,,,FALSE,TRUE,1,MUN0000
+UNI0690,,UNI0673,SETOR,Subsecretaria Geral,,,,FALSE,TRUE,1,MUN0000
+UNI0691,,UNI0674,SETOR,Secretaria Judiciária,,,,FALSE,TRUE,1,MUN0000
+UNI0692,,UNI0675,SETOR,Secretário,,,,FALSE,TRUE,1,MUN0000
+UNI0693,,UNI0676,SETOR,Secretária,,,,FALSE,TRUE,1,MUN0000
+UNI0694,,UNI0677,SETOR,Atendimento - Help Desk,,,,FALSE,TRUE,1,MUN0000
+UNI0695,,UNI0678,SETOR,Secretária SGP,,,,FALSE,TRUE,1,MUN0000
+UNI0696,,UNI0679,SETOR,Secretária,,,,FALSE,TRUE,1,MUN0000
+UNI0697,,UNI0680,SETOR,Núcleo de Comissões,,,,FALSE,TRUE,1,MUN0000
+UNI0698,,UNI0660,SETOR,Gabinete da Presidência (Apoio),,,,FALSE,TRUE,2,MUN0000
+UNI0699,,UNI0661,SETOR,Gabinete do Juiz Assessor Especial de Magistrados,,,,FALSE,TRUE,2,MUN0000
+UNI0700,,UNI0662,SETOR,Núcleo de Processamento de Recursos Eletrônicos,,,,FALSE,TRUE,2,MUN0000
+UNI0701,,UNI0663,SETOR,Núcleo de Juízes Corregedores,,,,FALSE,TRUE,2,MUN0000
+UNI0702,,UNI0666,SETOR,Infância e Juventude,,,,FALSE,TRUE,2,MUN0000
+UNI0703,,UNI0667,SETOR,Arthur José Neiva Almeida,,,,FALSE,TRUE,2,MUN0000
+UNI0704,,UNI0670,SETOR,2ª Cível,,,,FALSE,TRUE,2,MUN0000
+UNI0705,,UNI0671,SETOR,1ª Criminal - Diretoria,,,,FALSE,TRUE,2,MUN0000
+UNI0706,,UNI0673,SETOR,Assessoria de Gestão de Processos Judiciais,,,,FALSE,TRUE,2,MUN0000
+UNI0707,,UNI0674,SETOR,Plantão e Mandados (Seção),,,,FALSE,TRUE,2,MUN0000
+UNI0708,,UNI0675,SETOR,Projetos (Coordenadora),,,,FALSE,TRUE,2,MUN0000
+UNI0709,,UNI0676,SETOR,Serviços Gerais (edifício-sede),,,,FALSE,TRUE,2,MUN0000
+UNI0710,,UNI0677,SETOR,Administrativo,,,,FALSE,TRUE,2,MUN0000
+UNI0711,,UNI0678,SETOR,Assessoria Jurídica SGP,,,,FALSE,TRUE,2,MUN0000
+UNI0712,,UNI0679,SETOR,Contabilidade (Coordenadoria),,,,FALSE,TRUE,2,MUN0000
+UNI0713,,UNI0680,SETOR,Segurança Institucional (Seção),,,,FALSE,TRUE,2,MUN0000
+UNI0714,,UNI0660,SETOR,Recepção,,,,FALSE,TRUE,3,MUN0000
+UNI0715,,UNI0661,SETOR,Assessoria Especial de Magistrados,,,,FALSE,TRUE,3,MUN0000
+UNI0716,,UNI0662,SETOR,Núcleo de Precedentes e Ações Coletivas,,,,FALSE,TRUE,3,MUN0000
+UNI0717,,UNI0663,SETOR,Assessoria de Planejamento e Fiscalização das Serventias Judiciais e Extrajudiciais,,,,FALSE,TRUE,3,MUN0000
+UNI0718,,UNI0666,SETOR,Juizado Especial (Seção de Apoio),,,,FALSE,TRUE,3,MUN0000
+UNI0719,,UNI0667,SETOR,Aldary Nunes Júnior,,,,FALSE,TRUE,3,MUN0000
+UNI0720,,UNI0670,SETOR,2ª Cível - Diretoria,,,,FALSE,TRUE,3,MUN0000
+UNI0721,,UNI0671,SETOR,2ª Criminal,,,,FALSE,TRUE,3,MUN0000
+UNI0722,,UNI0673,SETOR,Assessoria Jurídica (Secretaria Geral),,,,FALSE,TRUE,3,MUN0000
+UNI0723,,UNI0674,SETOR,Contadoria Judicial (Seção),,,,FALSE,TRUE,3,MUN0000
+UNI0724,,UNI0675,SETOR,Projetos Arquitetônicos e outros (Seção),,,,FALSE,TRUE,3,MUN0000
+UNI0725,,UNI0676,SETOR,Zeladoria (Seção),,,,FALSE,TRUE,3,MUN0000
+UNI0726,,UNI0677,SETOR,Suporte e Manutenção (Seção),,,,FALSE,TRUE,3,MUN0000
+UNI0727,,UNI0678,SETOR,Suporte SIARHES,,,,FALSE,TRUE,3,MUN0000
+UNI0728,,UNI0679,SETOR,"Escrituração, Análise Contábil e Acompanhamento Patrimonial (Seção)",,,,FALSE,TRUE,3,MUN0000
+UNI0729,,UNI0680,SETOR,Mensageria,,,,FALSE,TRUE,3,MUN0000
+UNI0730,,UNI0660,SETOR,Copa,,,,FALSE,TRUE,4,MUN0000
+UNI0731,,UNI0661,SETOR,Secretaria de Precatório,,,,FALSE,TRUE,4,MUN0000
+UNI0732,,UNI0663,SETOR,Assessoria Jurídica,,,,FALSE,TRUE,4,MUN0000
+UNI0733,,UNI0666,SETOR,Violência Doméstica e Familiar contra a Mulher,,,,FALSE,TRUE,4,MUN0000
+UNI0734,,UNI0667,SETOR,Dair José Bregunce de Oliveira,,,,FALSE,TRUE,4,MUN0000
+UNI0735,,UNI0670,SETOR,3ª Cível,,,,FALSE,TRUE,4,MUN0000
+UNI0736,,UNI0671,SETOR,Criminais Reunidas,,,,FALSE,TRUE,4,MUN0000
+UNI0737,,UNI0673,SETOR,Núcleo de Planejamento das Contratações,,,,FALSE,TRUE,4,MUN0000
+UNI0738,,UNI0674,SETOR,"Protocolo, Registro e Distribuição (Coord.)",,,,FALSE,TRUE,4,MUN0000
+UNI0739,,UNI0675,SETOR,Projetos - Custos (Seção),,,,FALSE,TRUE,4,MUN0000
+UNI0740,,UNI0676,SETOR,Reserva de sala,,,,FALSE,TRUE,4,MUN0000
+UNI0741,,UNI0678,SETOR,Pagamento de Pessoal (Coord.),,,,FALSE,TRUE,4,MUN0000
+UNI0742,,UNI0679,SETOR,Prestação e Tomadas de Contas (Seção),,,,FALSE,TRUE,4,MUN0000
+UNI0743,,UNI0661,SETOR,Cerimonial e Relações Públicas,,,,FALSE,TRUE,5,MUN0000
+UNI0744,,UNI0663,SETOR,Comissão Estadual Judiciária de Adoção - CEJA/ES,,,,FALSE,TRUE,5,MUN0000
+UNI0745,,UNI0666,SETOR,NUPEMEC - 1º CEJUSC,,,,FALSE,TRUE,5,MUN0000
+UNI0746,,UNI0667,SETOR,Débora Maria Ambos C. da Silva,,,,FALSE,TRUE,5,MUN0000
+UNI0747,,UNI0670,SETOR,3ª Cível - Diretoria,,,,FALSE,TRUE,5,MUN0000
+UNI0748,,UNI0674,SETOR,Protocolo (Seção),,,,FALSE,TRUE,5,MUN0000
+UNI0749,,UNI0675,SETOR,Fiscalização (Coordenador),,,,FALSE,TRUE,5,MUN0000
+UNI0750,,UNI0676,SETOR,Coordenador,,,,FALSE,TRUE,5,MUN0000
+UNI0751,,UNI0678,SETOR,Recursos Humanos (Coordenadoria),,,,FALSE,TRUE,5,MUN0000
+UNI0752,,UNI0679,SETOR,Execução Orçamentária e Financeira (Coordenadoria),,,,FALSE,TRUE,5,MUN0000
+UNI0753,,UNI0661,SETOR,Imprensa e Comunicação Social,,,,FALSE,TRUE,6,MUN0000
+UNI0754,,UNI0663,SETOR,Protocolo (Corregedoria),,,,FALSE,TRUE,6,MUN0000
+UNI0755,,UNI0667,SETOR,Eder Pontes da Silva,,,,FALSE,TRUE,6,MUN0000
+UNI0756,,UNI0670,SETOR,4ª Cível,,,,FALSE,TRUE,6,MUN0000
+UNI0757,,UNI0674,SETOR,Gestão da Informação Documental (Coordenadoria),,,,FALSE,TRUE,6,MUN0000
+UNI0758,,UNI0675,SETOR,Fiscalização - Obras/Reformas,,,,FALSE,TRUE,6,MUN0000
+UNI0759,,UNI0676,SETOR,Suprimento e Controle Patrimonial (Coord.),,,,FALSE,TRUE,6,MUN0000
+UNI0760,,UNI0678,SETOR,Estágio Probatório e Movimento de Servidor (Seção),,,,FALSE,TRUE,6,MUN0000
+UNI0761,,UNI0679,SETOR,Empenho e Classificação de Despesa (Seção),,,,FALSE,TRUE,6,MUN0000
+UNI0762,,UNI0661,SETOR,Licitações e Contratos/Contencioso Judicial (Assessoria Jurídica),,,,FALSE,TRUE,7,MUN0000
+UNI0763,,UNI0663,SETOR,Secretaria de Monitoramento Judicial (Coord. de Monitoramento de Foro Judicial e Extrajudicial),,,,FALSE,TRUE,7,MUN0000
+UNI0764,,UNI0667,SETOR,Eliana Junqueira M. Ferreira,,,,FALSE,TRUE,7,MUN0000
+UNI0765,,UNI0670,SETOR,4ª Cível - Diretoria,,,,FALSE,TRUE,7,MUN0000
+UNI0766,,UNI0674,SETOR,Publicação/Gráfica/Diário da Justiça (Seção),,,,FALSE,TRUE,7,MUN0000
+UNI0767,,UNI0675,SETOR,Fiscalização - Locações,,,,FALSE,TRUE,7,MUN0000
+UNI0768,,UNI0676,SETOR,Patrimônio Administrativo,,,,FALSE,TRUE,7,MUN0000
+UNI0769,,UNI0678,SETOR,Legislação e Benefícios (Seção),,,,FALSE,TRUE,7,MUN0000
+UNI0770,,UNI0679,SETOR,Tesouraria (Seção),,,,FALSE,TRUE,7,MUN0000
+UNI0771,,UNI0661,SETOR,"Planejamento, Orçamento e Gestão Estratégica",,,,FALSE,TRUE,8,MUN0000
+UNI0772,,UNI0663,SETOR,Monitoramento de Magistrados (Coordenadoria),,,,FALSE,TRUE,8,MUN0000
+UNI0773,,UNI0667,SETOR,Ewerton Schwab Pinto Júnior,,,,FALSE,TRUE,8,MUN0000
+UNI0774,,UNI0670,SETOR,Cíveis Reunidas,,,,FALSE,TRUE,8,MUN0000
+UNI0775,,UNI0674,SETOR,Biblioteca (Seção),,,,FALSE,TRUE,8,MUN0000
+UNI0776,,UNI0675,SETOR,Fiscalização - Regularização de Imóveis,,,,FALSE,TRUE,8,MUN0000
+UNI0777,,UNI0676,SETOR,Patrimônio Guarita (Serra),,,,FALSE,TRUE,8,MUN0000
+UNI0778,,UNI0678,SETOR,Registro Funcional de Servidor (Seção),,,,FALSE,TRUE,8,MUN0000
+UNI0779,,UNI0661,SETOR,Segurança Institucional,,,,FALSE,TRUE,9,MUN0000
+UNI0780,,UNI0667,SETOR,Fábio Brasil Nery,,,,FALSE,TRUE,9,MUN0000
+UNI0781,,UNI0670,SETOR,Cíveis Reunidas - Diretoria,,,,FALSE,TRUE,9,MUN0000
+UNI0782,,UNI0674,SETOR,Arquivo (Seção),,,,FALSE,TRUE,9,MUN0000
+UNI0783,,UNI0675,SETOR,Manutenção Predial (Coord.),,,,FALSE,TRUE,9,MUN0000
+UNI0784,,UNI0676,SETOR,Almoxarifado Administrativo,,,,FALSE,TRUE,9,MUN0000
+UNI0785,,UNI0678,SETOR,Registro Funcional de Magistrados (Seção),,,,FALSE,TRUE,9,MUN0000
+UNI0786,,UNI0661,SETOR,Assessoria Militar,,,,FALSE,TRUE,10,MUN0000
+UNI0787,,UNI0667,SETOR,Fernando Estevam Bravin Ruy,,,,FALSE,TRUE,10,MUN0000
+UNI0788,,UNI0674,SETOR,Arquivo Administrativo,,,,FALSE,TRUE,10,MUN0000
+UNI0789,,UNI0675,SETOR,Manutenção Predial,,,,FALSE,TRUE,10,MUN0000
+UNI0790,,UNI0676,SETOR,Almoxarifado Depósito,,,,FALSE,TRUE,10,MUN0000
+UNI0791,,UNI0678,SETOR,Seleção e Acompanhamento de Estágio (Seção),,,,FALSE,TRUE,10,MUN0000
+UNI0792,,UNI0661,SETOR,Servidores/Magistrados (Assessoria Jurídica),,,,FALSE,TRUE,11,MUN0000
+UNI0793,,UNI0667,SETOR,Fernando Zardini Antonio,,,,FALSE,TRUE,11,MUN0000
+UNI0794,,UNI0674,SETOR,Sala de Apoio (Arquivo),,,,FALSE,TRUE,11,MUN0000
+UNI0795,,UNI0675,SETOR,Elevadores e ar condicionado,,,,FALSE,TRUE,11,MUN0000
+UNI0796,,UNI0676,SETOR,"Compras, Licitação e Contratos (Coord.)",,,,FALSE,TRUE,11,MUN0000
+UNI0797,,UNI0678,SETOR,Serviços Psicossociais e de Saúde (Coordenação),,,,FALSE,TRUE,11,MUN0000
+UNI0798,,UNI0661,SETOR,Núcleo Gestor de Justiça Restaurativa,,,,FALSE,TRUE,12,MUN0000
+UNI0799,,UNI0667,SETOR,Helimar Pinto,,,,FALSE,TRUE,12,MUN0000
+UNI0800,,UNI0674,SETOR,Taquigrafia (Coordenadoria),,,,FALSE,TRUE,12,MUN0000
+UNI0801,,UNI0675,SETOR,Instalações Elétricas,,,,FALSE,TRUE,12,MUN0000
+UNI0802,,UNI0676,SETOR,Compras (Seção),,,,FALSE,TRUE,12,MUN0000
+UNI0803,,UNI0678,SETOR,Recepção (CSPS),,,,FALSE,TRUE,12,MUN0000
+UNI0804,,UNI0661,SETOR,Unidade de Coordenação de Programas (UCP),,,,FALSE,TRUE,13,MUN0000
+UNI0805,,UNI0667,SETOR,Heloisa Cariello,,,,FALSE,TRUE,13,MUN0000
+UNI0806,,UNI0674,SETOR,Taquigrafia,,,,FALSE,TRUE,13,MUN0000
+UNI0807,,UNI0676,SETOR,Contratação (Seção),,,,FALSE,TRUE,13,MUN0000
+UNI0808,,UNI0678,SETOR,Administrativo (CSPS),,,,FALSE,TRUE,13,MUN0000
+UNI0809,,UNI0661,SETOR,Comissão Especial de Licitação (BID),,,,FALSE,TRUE,14,MUN0000
+UNI0810,,UNI0667,SETOR,Janete Vargas Simões,,,,FALSE,TRUE,14,MUN0000
+UNI0811,,UNI0676,SETOR,Controle de Contratos e Convênios (Seção),,,,FALSE,TRUE,14,MUN0000
+UNI0812,,UNI0678,SETOR,Comunicação (CSPS),,,,FALSE,TRUE,14,MUN0000
+UNI0813,,UNI0661,SETOR,Núcleo de Cooperação Judiciária (NUCOOP),,,,FALSE,TRUE,15,MUN0000
+UNI0814,,UNI0667,SETOR,Jorge Henrique Valle dos Santos,,,,FALSE,TRUE,15,MUN0000
+UNI0815,,UNI0676,SETOR,Equipe de Pregão,,,,FALSE,TRUE,15,MUN0000
+UNI0816,,UNI0678,SETOR,Enfermagem (CSPS),,,,FALSE,TRUE,15,MUN0000
+UNI0817,,UNI0661,SETOR,Núcleo Permanente de Gestão da Qualidade,,,,FALSE,TRUE,16,MUN0000
+UNI0818,,UNI0667,SETOR,José Paulo Calmon N. da Gama,,,,FALSE,TRUE,16,MUN0000
+UNI0819,,UNI0676,SETOR,Transporte Administrativo (Seção),,,,FALSE,TRUE,16,MUN0000
+UNI0820,,UNI0678,SETOR,Serviço Psicossocial (CSPS),,,,FALSE,TRUE,16,MUN0000
+UNI0821,,UNI0667,SETOR,Júlio César Costa de Oliveira,,,,FALSE,TRUE,17,MUN0000
+UNI0822,,UNI0676,SETOR,Transporte Agentes,,,,FALSE,TRUE,17,MUN0000
+UNI0823,,UNI0667,SETOR,Luiz Guilherme Risso,,,,FALSE,TRUE,18,MUN0000
+UNI0824,,UNI0676,SETOR,Transporte Agendamento,,,,FALSE,TRUE,18,MUN0000
+UNI0825,,UNI0667,SETOR,Marcos Valls Feu Rosa,,,,FALSE,TRUE,19,MUN0000
+UNI0826,,UNI0676,SETOR,Transporte Agendamento (Interior),,,,FALSE,TRUE,19,MUN0000
+UNI0827,,UNI0667,SETOR,Marianne Judice de Mattos,,,,FALSE,TRUE,20,MUN0000
+UNI0828,,UNI0676,SETOR,Logística,,,,FALSE,TRUE,20,MUN0000
+UNI0829,,UNI0667,SETOR,Namyr Carlos de Souza Filho,,,,FALSE,TRUE,21,MUN0000
+UNI0830,,UNI0667,SETOR,Pedro Valls Feu Rosa,,,,FALSE,TRUE,22,MUN0000
+UNI0831,,UNI0667,SETOR,Rachel Durão Correia Lima,,,,FALSE,TRUE,23,MUN0000
+UNI0832,,UNI0667,SETOR,Raphael Americano Câmara,,,,FALSE,TRUE,24,MUN0000
+UNI0833,,UNI0667,SETOR,Robson Luiz Albanez,,,,FALSE,TRUE,25,MUN0000
+UNI0834,,UNI0667,SETOR,Samuel Meira Brasil Júnior,,,,FALSE,TRUE,26,MUN0000
+UNI0835,,UNI0667,SETOR,Sérgio Ricardo de Souza,,,,FALSE,TRUE,27,MUN0000
+UNI0836,,UNI0667,SETOR,Ubiratan Almeida Azevedo,,,,FALSE,TRUE,28,MUN0000
+UNI0837,,UNI0667,SETOR,Walace Pandolpho Kiffer,,,,FALSE,TRUE,29,MUN0000
+UNI0838,,UNI0667,SETOR,Willian Silva,,,,FALSE,TRUE,30,MUN0000
