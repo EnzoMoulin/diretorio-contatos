@@ -104,16 +104,15 @@ class ValidationService {
   }
 
   validarCamposObrigatorios(dados) {
-    // V4 — MUNICIPIOS -> FORUM -> UNIDADES -> SETORES -> CONTATOS
+    // V4 — COMARCAS -> FORUM -> UNIDADES -> SETORES -> CONTATOS
     const temForum = textoSeguro(valorObjeto(dados, "forumId", "FORUM_ID", "forum_id", "forum", "FORUM"));
-    const temUnidade = textoSeguro(valorObjeto(dados, "unidadeId", "UNIDADE_ID", "unidade_id", "unidade", "UNIDADE"));
-    const temSetor = textoSeguro(valorObjeto(dados, "setorId", "SETOR_ID", "setor_id", "setor", "SETOR"));
+    const temNo = textoSeguro(valorObjeto(dados, "unidadeOrganizacionalId", "UNIDADE_ORGANIZACIONAL_ID", "unidade_organizacional_id", "noId", "no", "unidadeId", "UNIDADE_ID", "setorId", "SETOR_ID"));
     const isNormalizedCheck = (typeof DB !== "undefined" && DB.temModeloNormalizado && DB.temModeloNormalizado());
-    const ehNormalizado = !!(temForum || temUnidade || temSetor || isNormalizedCheck);
-    // Normalizado requer pelo menos um vínculo FORUM/UNIDADE/SETOR + TIPO
+    const ehNormalizado = !!(temForum || temNo || isNormalizedCheck);
+    // Normalizado requer vínculo Fórum ou Nó (unidade/setor) + TIPO
     if (ehNormalizado) {
       const faltantes = [];
-      const temVinculo = !!(temForum || temUnidade || temSetor || textoSeguro(valorObjeto(dados, "setor", "Setor")) || textoSeguro(valorObjeto(dados, "localidade", "Localidade")));
+      const temVinculo = !!(temForum || temNo || textoSeguro(valorObjeto(dados, "setor", "Setor")) || textoSeguro(valorObjeto(dados, "localidade", "Localidade")));
       // Se veio setor nome legado, será resolvido em TelefoneRepository — não falha aqui se tem setor nome
       if (!temVinculo) faltantes.push("Fórum/Unidade/Setor");
       const tipoV = textoSeguro(valorObjeto(dados, "tipo", "Tipo"));

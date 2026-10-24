@@ -7,8 +7,17 @@
     </div>
   </div>
   <div class="panel" style="margin-bottom:16px;padding:12px 16px;font-size:13px;color:#475569">
-    <strong>Gestor de Conteúdo:</strong> acesso por Fórum ou Unidade.
+    <strong>Gestor de Conteúdo:</strong> acesso por Fórum, Unidade ou Setor.
     <strong>Gestor do Sistema:</strong> acesso completo ao sistema.
+  </div>
+  <div class="panel" style="margin-bottom:16px;padding:12px 16px">
+    <strong>Quem tem acesso a…</strong>
+    <span style="color:#64748b;font-size:13px">Selecione um nó para ver os gestores que o alcançam (direto ou por herança).</span>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <select id="reverso-no" style="flex:1;min-width:220px"></select>
+      <button type="button" class="btn btn-secondary" onclick="consultarAcessoNo()">Consultar</button>
+    </div>
+    <div id="reverso-resultado" style="margin-top:8px;font-size:13px"></div>
   </div>
   <div class="table-panel" style="overflow-x:auto">
     <table class="data-table" id="tabela-usuarios">
@@ -37,7 +46,7 @@
 <div id="modal-localidades-usuario" class="modal hidden" onclick="if(event.target===this)voltarParaDadosUsuario()">
   <div class="modal-content" style="width:min(720px,95vw)">
     <div class="modal-header"><h2>Localidades sob gestão</h2><button type="button" class="modal-close" onclick="voltarParaDadosUsuario()">×</button></div>
-    <div class="modal-body"><p style="margin-top:0;color:#475569">Escolha uma Localidade para navegar pelos Fóruns e suas Unidades. Um Fórum selecionado concede acesso a todas as suas Unidades.</p><select id="usuario-municipio" onchange="renderizarSeletorLocalidadesUsuario()" style="width:100%"></select><div id="usuario-localidades" style="margin-top:12px;max-height:420px;overflow:auto;border:1px solid #cbd5e1;border-radius:8px;padding:12px"></div></div>
+    <div class="modal-body"><p style="margin-top:0;color:#475569">Escolha uma Localidade para navegar pelos Fóruns e suas Unidades. Um Fórum selecionado concede acesso a todas as suas Unidades.</p><select id="usuario-comarca" onchange="renderizarSeletorLocalidadesUsuario()" style="width:100%"></select><div id="usuario-localidades" style="margin-top:12px;max-height:420px;overflow:auto;border:1px solid #cbd5e1;border-radius:8px;padding:12px"></div></div>
     <div class="modal-footer"><button type="button" class="btn" onclick="voltarParaDadosUsuario()">← Voltar</button><button id="btn-confirmar-localidades-usuario" type="button" class="btn btn-primary" onclick="salvarUsuarioModal()">Concluir cadastro</button></div>
   </div>
 </div>

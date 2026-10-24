@@ -1,6 +1,6 @@
 /**
  * ==========================================================
- * INTEGRAÇÃO V5 — LEGACY -> MUNICIPIOS/FORUM/UNIDADES_ORGANIZACIONAIS/CONTATOS
+ * INTEGRAÇÃO V5 — LEGACY -> COMARCAS/FORUM/UNIDADES_ORGANIZACIONAIS/CONTATOS
  * ==========================================================
  *
  * Este arquivo faz a ponte dos caminhos legados do aplicativo para a
@@ -60,7 +60,7 @@ function _v4EscopoPermitido(usuario, forumId, noId) {
   if (!usuario || !usuario.logado || !usuario.ativo) return false;
   if (usuario.perfil === CONFIG.PERFIS.GESTOR_SISTEMA) return true;
   if (usuario.perfil !== CONFIG.PERFIS.GESTOR_CONTEUDO) return false;
-  const unidades = new Set(Array.isArray(usuario.unidadeIds) ? usuario.unidadeIds.map(textoSeguro) : []);
+  const unidades = new Set(Array.isArray(usuario.noIds) ? usuario.noIds.map(textoSeguro) : []);
   const nos = _fcIndiceOrganizacional();
   if (noId && nos[noId]) {
     const caminho = _fcResolverAncestros(nos, noId);
@@ -73,7 +73,7 @@ function _v4EscopoPermitido(usuario, forumId, noId) {
 function _v4ResolverContexto(dados) {
   const entrada = ehObjeto(dados) ? dados : {};
   let forumId = textoSeguro(valorObjeto(entrada, "forumId", "FORUM_ID"));
-  let noId = _v4PrimeiroValorObjeto(entrada, ["unidadeOrganizacionalId", "noId", "UNIDADE_ORGANIZACIONAL_ID", "setorId", "SETOR_ID", "unidadeId", "UNIDADE_ID"]);
+  let noId = _v4PrimeiroValorObjeto(entrada, ["unidadeOrganizacionalId", "noId", "UNIDADE_ORGANIZACIONAL_ID"]);
   const nos = _fcIndiceOrganizacional();
   if (noId) {
     if (!nos[noId]) throw new Error("Unidade organizacional não encontrada.");
@@ -94,8 +94,8 @@ function _v4ResolverContexto(dados) {
     forumId: forumId,
     noId: noId,
     unidadeOrganizacionalId: noId,
-    unidadeId: ancora ? ancora.id : "",
-    setorId: noId && (!ancora || ancora.id !== noId) ? noId : ""
+    noPaiId: ancora ? ancora.id : "",
+    contatoDiretoNo: !!noId && (!ancora || ancora.id === noId)
   };
 }
 
@@ -104,11 +104,11 @@ function _v4Flat(opcoes) {
   const out = [];
   const vistos = new Set();
 
-  (hier.municipios || []).forEach(function(m) {
+  (hier.comarcas || []).forEach(function(m) {
     (m.foruns || []).forEach(function(f) {
       const base = {
-        municipioId: m.id,
-        municipio: m.nome,
+        comarcaId: m.id,
+        comarca: m.nome,
         microrregiao: m.microrregiao || "",
         forumId: f.id,
         forum: f.nome,
@@ -135,10 +135,8 @@ function _v4Flat(opcoes) {
           tipoNo: no ? no.tipo : "FORUM",
           caminho: caminhoNomes,
           caminhoTexto: caminhoNomes.join(" › "),
-          setorId: no && no.id !== ancoraId ? no.id : "",
-          setor: no && no.id !== ancoraId ? no.nome : "",
-          unidadeId: ancoraId,
-          unidade: ancoraNome,
+          noPaiId: no && no.id !== ancoraId ? no.id : "",
+          noPai: no && no.id !== ancoraId ? no.nome : "",
           endereco: no ? no.enderecoExibicao : (f.endereco || ""),
           emailEfetivo: f.email || "",
           emailHerdado: tipo !== "E-mail",
@@ -178,31 +176,31 @@ function v4PesquisarContatos(texto) {
   const dados = _v4Flat({});
   const t = limparTexto(termo);
   if (!t) return respostaSucesso(dados);
-  return respostaSucesso(dados.filter(x => limparTexto([x.municipio, x.forum, x.caminhoTexto, x.unidade, x.setor, x.tipo, x.descricao, x.valor, x.email, x.endereco, x.observacao].join(" ")).includes(t)));
+  return respostaSucesso(dados.filter(x => limparTexto([x.comarca, x.forum, x.caminhoTexto, x.unidade, x.setor, x.tipo, x.descricao, x.valor, x.email, x.endereco, x.observacao].join(" ")).includes(t)));
 }
 
-function v4ListarMunicipios() {
+function v4ListarComarcas() {
   new AuthService().exigirPermissao(CONFIG.PERMISSOES.VISUALIZAR);
   const hier = construirHierarquiaForumContatos({});
-  return respostaSucesso((hier.municipios || []).map(m => m.nome));
+  return respostaSucesso((hier.comarcas || []).map(m => m.nome));
 }
 
 function v4CarregarDashboard() {
   new AuthService().exigirPermissao(CONFIG.PERMISSOES.VISUALIZAR);
   const dados = v4ListarContatos().dados || [];
-  const tipos = {}, setores = {}, localidades = {}, foruns = {}, unidades = {}, municipios = {};
+  const tipos = {}, setores = {}, localidades = {}, foruns = {}, unidades = {}, comarcas = {};
   dados.forEach(x => {
     const tipo = x.tipo || "Não informado";
-    const setor = x.setor || "Não informado";
-    const localidade = x.municipio || "Não informado";
+    const setor = x.noPai || "Não informado";
+    const localidade = x.comarca || "Não informado";
     tipos[tipo] = (tipos[tipo] || 0) + 1;
     setores[setor] = (setores[setor] || 0) + 1;
     localidades[localidade] = (localidades[localidade] || 0) + 1;
     if (x.forumId) foruns[x.forumId] = true;
-    if (x.unidadeId) unidades[x.unidadeId] = true;
-    if (x.municipioId) municipios[x.municipioId] = true;
+    if (x.noPaiId) unidades[x.noPaiId] = true;
+    if (x.comarcaId) comarcas[x.comarcaId] = true;
   });
-  return respostaSucesso({ total: dados.length, tipos, setores, localidades, totalForuns: Object.keys(foruns).length, totalUnidades: Object.keys(unidades).length, totalMunicipios: Object.keys(municipios).length });
+  return respostaSucesso({ total: dados.length, tipos, setores, localidades, totalForuns: Object.keys(foruns).length, totalUnidades: Object.keys(unidades).length, totalComarcas: Object.keys(comarcas).length });
 }
 
 function _v4DadosContatoPorId(id) {
@@ -277,8 +275,8 @@ function v4CriarContato(dados) {
     if (k === "ID") return id;
     if (k === "FORUMID") return contexto.forumId;
     if (k === "UNIDADEORGANIZACIONALID") return contexto.noId;
-    if (k === "UNIDADEID") return contexto.unidadeId;
-    if (k === "SETORID") return contexto.setorId;
+    if (k === "UNIDADEID") return contexto.noPaiId;
+    if (k === "SETORID") return (contexto.noId && contexto.noPaiId) ? contexto.noId : "";
     if (k === "TIPO") return tipo;
     if (k === "DESCRICAO") return descricao;
     if (k === "VALOR") return valor;
@@ -320,8 +318,8 @@ function v4AtualizarContato(id, dados) {
     if (k === "ID") return id;
     if (k === "FORUMID") return contexto.forumId;
     if (k === "UNIDADEORGANIZACIONALID") return contexto.noId;
-    if (k === "UNIDADEID") return contexto.unidadeId;
-    if (k === "SETORID") return contexto.setorId;
+    if (k === "UNIDADEID") return contexto.noPaiId;
+    if (k === "SETORID") return (contexto.noId && contexto.noPaiId) ? contexto.noId : "";
     if (k === "TIPO") return tipo;
     if (k === "DESCRICAO") return descricao;
     if (k === "VALOR") return valor;
@@ -375,7 +373,7 @@ function validarDadosReaisForumV4() {
   const ss = DB.getSpreadsheet();
 
   const obrigatorias = [
-    CONFIG.SHEETS.MUNICIPIOS,
+    CONFIG.SHEETS.COMARCAS,
     CONFIG.SHEETS.FORUM,
     CONFIG.SHEETS.UNIDADES,
     CONFIG.SHEETS.SETORES,
@@ -424,14 +422,14 @@ function validarDadosReaisForumV4() {
     return repetidos;
   };
 
-  const municipio = DB.municipiosOuNulo();
+  const comarca = DB.comarcasOuNulo();
   const forum = DB.forumOuNulo();
   const unidade = DB.unidadesOuNulo();
   const setor = DB.setoresOuNulo();
   const contato = DB.contatosOuNulo();
 
   [
-    ["MUNICIPIO", municipio],
+    ["COMARCA", comarca],
     ["FORUM", forum],
     ["UNIDADE", unidade],
     ["SETOR", setor],
@@ -452,28 +450,28 @@ function validarDadosReaisForumV4() {
 
   if (forum) {
     const mapaForum = DB.map(forum);
-    const municipiosValidos = new Set(
-      ids(municipio, "ID")
+    const comarcasValidas = new Set(
+      ids(comarca, "ID")
     );
 
     DB.read(forum).forEach(function(linha, indice) {
-      const municipioId = textoSeguro(
+      const comarcaId = textoSeguro(
         _v4Col(
           mapaForum,
           linha,
-          ["MUNICIPIO_ID"]
+          ["COMARCA_ID"]
         )
       );
 
       if (
-        municipioId &&
-        !municipiosValidos.has(municipioId)
+        comarcaId &&
+        !comarcasValidas.has(comarcaId)
       ) {
         problemas.push(
           "FORUM linha " +
           (indice + 2) +
-          " aponta para MUNICIPIO inexistente: " +
-          municipioId
+          " aponta para COMARCA inexistente: " +
+          comarcaId
         );
       }
     });
@@ -486,8 +484,8 @@ function validarDadosReaisForumV4() {
       ids(forum, "ID")
     );
 
-    const municipiosValidos = new Set(
-      ids(municipio, "ID")
+    const comarcasValidas = new Set(
+      ids(comarca, "ID")
     );
 
     DB.read(unidade).forEach(function(linha, indice) {
@@ -499,11 +497,11 @@ function validarDadosReaisForumV4() {
         )
       );
 
-      const municipioId = textoSeguro(
+      const comarcaId = textoSeguro(
         _v4Col(
           mapaUnidade,
           linha,
-          ["MUNICIPIO_ID"]
+          ["COMARCA_ID"]
         )
       );
 
@@ -520,14 +518,14 @@ function validarDadosReaisForumV4() {
       }
 
       if (
-        municipioId &&
-        !municipiosValidos.has(municipioId)
+        comarcaId &&
+        !comarcasValidas.has(comarcaId)
       ) {
         problemas.push(
           "UNIDADE linha " +
           (indice + 2) +
-          " aponta para MUNICIPIO inexistente: " +
-          municipioId
+          " aponta para COMARCA inexistente: " +
+          comarcaId
         );
       }
     });
@@ -570,12 +568,8 @@ function validarDadosReaisForumV4() {
       ids(forum, "ID")
     );
 
-    const unidadesValidas = new Set(
-      ids(unidade, "ID")
-    );
-
-    const setoresValidos = new Set(
-      ids(setor, "ID")
+    const nosValidos = new Set(
+      ids(DB.unidadesOrganizacionaisOuNulo(), "ID")
     );
 
     DB.read(contato).forEach(function(linha, indice) {
@@ -587,31 +581,22 @@ function validarDadosReaisForumV4() {
         )
       );
 
-      const unidadeId = textoSeguro(
+      const noId = textoSeguro(
         _v4Col(
           mapaContato,
           linha,
-          ["UNIDADE_ID"]
-        )
-      );
-
-      const setorId = textoSeguro(
-        _v4Col(
-          mapaContato,
-          linha,
-          ["SETOR_ID"]
+          ["UNIDADE_ORGANIZACIONAL_ID"]
         )
       );
 
       if (
         !forumId &&
-        !unidadeId &&
-        !setorId
+        !noId
       ) {
         problemas.push(
           "CONTATO linha " +
           (indice + 2) +
-          " não possui vínculo de Fórum/Unidade/Setor."
+          " não possui vínculo de Fórum/Nó."
         );
       }
 
@@ -628,26 +613,14 @@ function validarDadosReaisForumV4() {
       }
 
       if (
-        unidadeId &&
-        !unidadesValidas.has(unidadeId)
+        noId &&
+        !nosValidos.has(noId)
       ) {
         problemas.push(
           "CONTATO linha " +
           (indice + 2) +
-          " aponta para UNIDADE inexistente: " +
-          unidadeId
-        );
-      }
-
-      if (
-        setorId &&
-        !setoresValidos.has(setorId)
-      ) {
-        problemas.push(
-          "CONTATO linha " +
-          (indice + 2) +
-          " aponta para SETOR inexistente: " +
-          setorId
+          " aponta para NÓ inexistente: " +
+          noId
         );
       }
     });
@@ -658,8 +631,8 @@ function validarDadosReaisForumV4() {
     problemas: problemas,
     abasAusentes: ausentes,
     contagens: {
-      municipios: municipio
-        ? DB.count(municipio)
+      comarcas: comarca
+        ? DB.count(comarca)
         : 0,
 
       foruns: forum

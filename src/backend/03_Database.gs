@@ -97,8 +97,8 @@ class Database {
     );
   }
 
-  municipios() { return this.getSheet(CONFIG.SHEETS.MUNICIPIOS); }
-  municipiosOuNulo() { try { return this.getSpreadsheet().getSheetByName(CONFIG.SHEETS.MUNICIPIOS); } catch(e) { return null; } }
+  comarcas() { return this.getSheet(CONFIG.SHEETS.COMARCAS); }
+  comarcasOuNulo() { try { return this.getSpreadsheet().getSheetByName(CONFIG.SHEETS.COMARCAS); } catch(e) { return null; } }
 
   forum() { return this.getSheet(CONFIG.SHEETS.FORUM); }
   forumOuNulo() { try { return this.getSpreadsheet().getSheetByName(CONFIG.SHEETS.FORUM); } catch(e) { return null; } }
@@ -126,12 +126,12 @@ class Database {
 
   notificacoesOuNulo() { try { return this.getSpreadsheet().getSheetByName(CONFIG.SHEETS.NOTIFICACOES); } catch(e) { return null; } }
 
-  /** Modelo V5: MUNICIPIOS -> FORUM -> UNIDADES_ORGANIZACIONAIS -> CONTATOS. */
+  /** Modelo V5: COMARCAS -> FORUM -> UNIDADES_ORGANIZACIONAIS -> CONTATOS. */
   temModeloNormalizado() {
     try {
       const ss = this.getSpreadsheet();
       return !!(
-        ss.getSheetByName(CONFIG.SHEETS.MUNICIPIOS) &&
+        ss.getSheetByName(CONFIG.SHEETS.COMARCAS) &&
         ss.getSheetByName(CONFIG.SHEETS.FORUM) &&
         ss.getSheetByName(CONFIG.SHEETS.UNIDADES_ORGANIZACIONAIS) &&
         ss.getSheetByName(CONFIG.SHEETS.CONTATOS)

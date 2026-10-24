@@ -74,7 +74,7 @@ class AuthService {
       contexto: AuthService.modoAplicacao(),
       estadoAcesso: estado,
       podeSolicitarAcesso: false,
-      unidadeIds: [],
+      noIds: [],
       unidades: [],
       acessos: [],
       localidades: []
@@ -147,8 +147,8 @@ class AuthService {
     }
 
     const escopo = nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO
-      ? this.obterEscopoUnidades(id)
-      : { ids: [], unidades: [] };
+      ? this.obterEscopoNos(id)
+      : { ids: [], nos: [] };
 
     return {
       id: id,
@@ -163,16 +163,16 @@ class AuthService {
       contexto: CONFIG.AUTH.MODO_PRIVADO,
       estadoAcesso: "AUTORIZADO",
       podeSolicitarAcesso: nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO,
-      unidadeIds: escopo.ids,
-      unidades: escopo.unidades,
+      noIds: escopo.ids,
+      nos: escopo.nos,
       acessos: escopo.acessos,
-      localidades: Array.from(new Set(escopo.unidades.map(item => item.municipio).filter(Boolean)))
+      localidades: Array.from(new Set(escopo.nos.map(item => item.comarca).filter(Boolean)))
     };
   }
 
-  obterEscopoUnidades(usuarioId) {
+  obterEscopoNos(usuarioId) {
     const acessos = lerAcessosAtivosUsuario(usuarioId);
-    if (!acessos.length) return { ids: [], unidades: [], acessos: [] };
+    if (!acessos.length) return { ids: [], nos: [], acessos: [] };
 
     return resolverEscopoAcessos(acessos, montarCatalogoEscoposAcesso());
   }
@@ -202,19 +202,19 @@ class AuthService {
     return true;
   }
 
-  exigirPermissaoUnidade(unidadeId) {
+  exigirPermissaoNo(idNo) {
     this.exigirPermissao(CONFIG.PERMISSOES.EDITAR);
     const usuario = this.usuarioAtual();
     if (usuario.perfil === CONFIG.PERFIS.GESTOR_SISTEMA) return true;
-    const id = textoSeguro(unidadeId);
-    if (!id || !usuario.unidadeIds.includes(id)) {
-      throw new Error("Seu perfil não possui vínculo ativo com esta Unidade.");
+    const id = textoSeguro(idNo);
+    if (!id || !usuario.noIds.includes(id)) {
+      throw new Error("Seu perfil não possui vínculo ativo com este nó organizacional.");
     }
     return true;
   }
 
-  exigirPermissaoLocalidade(unidadeId) {
-    return this.exigirPermissaoUnidade(unidadeId);
+  exigirPermissaoLocalidade(idNo) {
+    return this.exigirPermissaoNo(idNo);
   }
 
   static salvarSessao() {

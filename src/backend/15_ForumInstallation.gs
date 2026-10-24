@@ -1,6 +1,6 @@
 /**
  * ==========================================================
- * INSTALAÇÃO V5 — MUNICIPIOS -> FORUM -> UNIDADES_ORGANIZACIONAIS -> CONTATOS
+ * INSTALAÇÃO V5 — COMARCAS -> FORUM -> UNIDADES_ORGANIZACIONAIS -> CONTATOS
  * ==========================================================
  */
 
@@ -15,19 +15,17 @@ function instalarSistemaForum(segredo) {
   try {
     const ss = DB.getSpreadsheet();
 
-    garantirAbaForumV4(ss, CONFIG.SHEETS.MUNICIPIOS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","ATIVO"]);
-    garantirAbaForumV4(ss, CONFIG.SHEETS.FORUM, ["ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO","OBSERVACAO"]);
+    garantirAbaForumV4(ss, CONFIG.SHEETS.COMARCAS, ["ID","NOME","CODIGO_IBGE","MICRORREGIAO","TIPO","ENDERECO","CEP","EMAIL","ATIVO"]);
+    garantirAbaForumV4(ss, CONFIG.SHEETS.FORUM, ["ID","COMARCA_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO"]);
     garantirAbaForumV4(ss, CONFIG.SHEETS.UNIDADES_ORGANIZACIONAIS, ["ID","FORUM_ID","PAI_ID","TIPO","NOME","ENDERECO","CEP","OBSERVACAO","SELECIONAVEL_ACESSO","ATIVO","ORDEM"]);
-    // Fontes de migração/rollback; a consulta operacional V5 não depende destas abas.
-    garantirAbaForumV4(ss, CONFIG.SHEETS.UNIDADES, ["ID","FORUM_ID","MUNICIPIO_ID","NOME","ENDERECO","CEP","EMAIL","ORDEM","ATIVO","OBSERVACAO"]);
-    garantirAbaForumV4(ss, CONFIG.SHEETS.SETORES, ["ID","UNIDADE_ID","NOME","ENDERECO","CEP","OBSERVACAO","ORDEM","ATIVO"]);
-    garantirAbaForumV4(ss, CONFIG.SHEETS.CONTATOS, ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","UNIDADE_ID","SETOR_ID","TIPO","DESCRICAO","VALOR","ORDEM","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","OBSERVACAO"]);
+    // Abas legadas UNIDADES/SETORES não são mais criadas (modelo UO-only; migração já concluída).
+    garantirAbaForumV4(ss, CONFIG.SHEETS.CONTATOS, ["ID","FORUM_ID","UNIDADE_ORGANIZACIONAL_ID","TIPO","DESCRICAO","VALOR","DATA_CRIACAO","DATA_ATUALIZACAO","ATIVO","ORDEM","OBSERVACAO"]);
 
     // Demais abas operacionais permanecem, mas TELEFONES não é criada.
     garantirAbaForumV4(ss, CONFIG.SHEETS.TELEFONES_UTEIS, ["ID","NOME","TIPO","VALOR","ATIVO"]);
     garantirEstruturaAcessosUnidades(garantirAbaForumV4(ss, CONFIG.SHEETS.ACESSOS_UNIDADES, ["ID","USUARIO_ID","TIPO_ESCOPO","ESCOPO_ID","ATIVO"]));
     garantirAbaForumV4(ss, CONFIG.SHEETS.USUARIOS, ["ID","NOME","EMAIL","NIVEL","ATIVO"]);
-    garantirColunaEscopoAcessos(garantirAbaForumV4(ss, CONFIG.SHEETS.SOLICITACOES_ACESSO, ["ID","EMAIL","NOME","LOCALIDADE","NIVEL_SOLICITADO","UNIDADE_ID","ESCOPO_ACESSOS","JUSTIFICATIVA","STATUS","DATA_SOLICITACAO","APROVADOR","DATA_APROVACAO"]));
+    garantirColunaEscopoAcessos(garantirAbaForumV4(ss, CONFIG.SHEETS.SOLICITACOES_ACESSO, ["ID","EMAIL","NOME","LOCALIDADE","NIVEL_SOLICITADO","UNIDADE_ORGANIZACIONAL_ID","ESCOPO_ACESSOS","JUSTIFICATIVA","STATUS","DATA_SOLICITACAO","APROVADOR","DATA_APROVACAO"]));
     garantirAbaForumV4(ss, CONFIG.SHEETS.CONFIGURACAO, ["CHAVE","VALOR"]);
     garantirAbaForumV4(ss, CONFIG.SHEETS.HISTORICO, ["ID","CONTATO_ID","ACAO","ANTES","DEPOIS","USUARIO","DATA"]);
     garantirAbaForumV4(ss, CONFIG.SHEETS.LOG, ["ID","DATA","USUARIO","TIPO","ACAO","MENSAGEM"]);

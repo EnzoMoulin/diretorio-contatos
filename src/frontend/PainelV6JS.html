@@ -2,9 +2,9 @@
 (function () {
   "use strict";
 
-  var municipiosPainelV6 = [];
-  var municipioSelecionadoPainelV6 = "";
-  var carregandoMunicipiosPainelV6 = false;
+  var comarcasPainelV6 = [];
+  var comarcaSelecionadaPainelV6 = "";
+  var carregandoComarcasPainelV6 = false;
   var dashboardCarregandoV6 = false;
 
   function normalizar(valor) {
@@ -51,7 +51,7 @@
     style.id = "demo-v6-ajustes-visuais";
     style.textContent =
       "#btn-status-acesso.btn-sair{min-width:112px;padding-left:18px!important;padding-right:18px!important;}" +
-      ".fc-municipio-select{margin:8px 0 12px;}";
+      ".fc-comarca-select{margin:8px 0 12px;}";
     document.head.appendChild(style);
   }
 
@@ -111,17 +111,17 @@
   function aplicarDashboardEstruturadoV6(dados) {
     dados = dados || {};
     var tipos = dados.tipos || { "Telefone": 0, "Ramal": 0, "WhatsApp": 0, "E-mail": 0 };
-    var municipios = dados.municipios || dados.localidades || {};
+    var comarcas = dados.comarcas || dados.localidades || {};
 
     atualizarTexto("total-telefones", Number(dados.total) || 0);
-    atualizarTexto("total-municipios", Number(dados.totalMunicipios) || Object.keys(municipios).length);
+    atualizarTexto("total-comarcas", Number(dados.totalComarcas) || Object.keys(comarcas).length);
     atualizarTexto("total-foruns", Number(dados.totalForuns) || 0);
     atualizarTexto("total-unidades", Number(dados.totalUnidades) || 0);
     atualizarTexto("total-setores", Number(dados.totalSetores) || 0);
     atualizarTexto("total-tipos", 4);
 
     renderizarResumoDashboardV6(document.getElementById("grafico-tipos"), tipos);
-    renderizarResumoDashboardV6(document.getElementById("grafico-localidades"), municipios);
+    renderizarResumoDashboardV6(document.getElementById("grafico-localidades"), comarcas);
   }
 
   function fallbackDashboardPorContatosV6() {
@@ -162,8 +162,8 @@
   window.atualizarDashboardPublico = function (dadosRaw) {
     var dados = Array.isArray(dadosRaw) ? dadosRaw : [];
     var porTipo = { "Telefone": 0, "Ramal": 0, "WhatsApp": 0, "E-mail": 0 };
-    var porMunicipio = {};
-    var municipios = new Set();
+    var porComarca = {};
+    var comarcas = new Set();
     var foruns = new Set();
     var unidades = new Set();
     var setores = new Set();
@@ -172,28 +172,29 @@
       var tipo = tipoContato(campo(item, ["tipo", "TIPO"]));
       if (tipo) porTipo[tipo] += 1;
 
-      var municipio = String(campo(item, ["municipio", "MUNICIPIO", "localidade", "LOCALIDADE"]) || "Não informado").trim();
-      var municipioId = String(campo(item, ["municipioId", "MUNICIPIO_ID"]) || municipio).trim();
-      if (municipioId) municipios.add(municipioId);
-      porMunicipio[municipio] = (porMunicipio[municipio] || 0) + 1;
+      var comarca = String(campo(item, ["comarca", "COMARCA", "localidade", "LOCALIDADE"]) || "Não informado").trim();
+      var comarcaId = String(campo(item, ["comarcaId", "COMARCA_ID"]) || comarca).trim();
+      if (comarcaId) comarcas.add(comarcaId);
+      porComarca[comarca] = (porComarca[comarca] || 0) + 1;
 
       var forumId = String(campo(item, ["forumId", "FORUM_ID", "forum", "FORUM"]) || "").trim();
-      var unidadeId = String(campo(item, ["unidadeId", "UNIDADE_ID"]) || "").trim();
-      var setorId = String(campo(item, ["setorId", "SETOR_ID"]) || "").trim();
+      var noPaiId = String(campo(item, ["noPaiId", "NO_PAI_ID"]) || "").trim();
+      var noId = String(campo(item, ["noId", "NO_ID"]) || "").trim();
+      var tipoNo = String(campo(item, ["tipoNo", "TIPO_NO"]) || "").trim();
       if (forumId) foruns.add(forumId);
-      if (unidadeId) unidades.add(unidadeId);
-      if (setorId) setores.add(setorId);
+      if (noPaiId) unidades.add(noPaiId);
+      if (noId && tipoNo.toUpperCase() === "SETOR") setores.add(noId);
     });
 
     atualizarTexto("total-telefones", dados.length);
-    atualizarTexto("total-municipios", municipios.size);
+    atualizarTexto("total-comarcas", comarcas.size);
     atualizarTexto("total-foruns", foruns.size);
     atualizarTexto("total-unidades", unidades.size);
     atualizarTexto("total-setores", setores.size);
     atualizarTexto("total-tipos", 4);
 
     renderizarResumoDashboardV6(document.getElementById("grafico-tipos"), porTipo);
-    renderizarResumoDashboardV6(document.getElementById("grafico-localidades"), porMunicipio);
+    renderizarResumoDashboardV6(document.getElementById("grafico-localidades"), porComarca);
   };
 
   function trocarTextoPainel() {
@@ -219,14 +220,14 @@
     });
   }
 
-  function capturarMunicipiosDoPainel() {
-    var cards = Array.prototype.slice.call(document.querySelectorAll('#fc-content .fc-card[data-mun]'));
+  function capturarComarcasDoPainel() {
+    var cards = Array.prototype.slice.call(document.querySelectorAll('#fc-content .fc-card[data-comarca]'));
     if (!cards.length) return;
 
     var vistos = {};
     var opcoes = [];
     cards.forEach(function (card) {
-      var id = String(card.getAttribute("data-mun") || "").trim();
+      var id = String(card.getAttribute("data-comarca") || "").trim();
       if (!id || vistos[id]) return;
       vistos[id] = true;
       var titulo = card.querySelector("h4");
@@ -235,65 +236,65 @@
 
     if (opcoes.length) {
       opcoes.sort(function (a, b) { return a.nome.localeCompare(b.nome, "pt-BR"); });
-      municipiosPainelV6 = opcoes;
+      comarcasPainelV6 = opcoes;
     }
   }
 
-  function carregarMunicipiosPainelV6() {
-    if (municipiosPainelV6.length || carregandoMunicipiosPainelV6) return;
+  function carregarComarcasPainelV6() {
+    if (comarcasPainelV6.length || carregandoComarcasPainelV6) return;
     if (typeof API === "undefined" || typeof API.hierarquiaForum !== "function") return;
 
-    carregandoMunicipiosPainelV6 = true;
+    carregandoComarcasPainelV6 = true;
     API.hierarquiaForum("", function (resp) {
-      carregandoMunicipiosPainelV6 = false;
-      var lista = resp && resp.sucesso === true && resp.dados && Array.isArray(resp.dados.municipios)
-        ? resp.dados.municipios
+      carregandoComarcasPainelV6 = false;
+      var lista = resp && resp.sucesso === true && resp.dados && Array.isArray(resp.dados.comarcas)
+        ? resp.dados.comarcas
         : [];
-      municipiosPainelV6 = lista.map(function (m) {
+      comarcasPainelV6 = lista.map(function (m) {
         return { id: String(m.id || ""), nome: String(m.nome || m.id || "") };
       }).filter(function (m) { return m.id; }).sort(function (a, b) {
         return a.nome.localeCompare(b.nome, "pt-BR");
       });
-      garantirSeletorMunicipioPainel();
+      garantirSeletorComarcaPainel();
     }, function () {
-      carregandoMunicipiosPainelV6 = false;
+      carregandoComarcasPainelV6 = false;
     });
   }
 
-  function detectarMunicipioAtualPainel() {
-    if (municipioSelecionadoPainelV6 || !municipiosPainelV6.length) return;
+  function detectarComarcaAtualPainel() {
+    if (comarcaSelecionadaPainelV6 || !comarcasPainelV6.length) return;
     var painel = document.getElementById("fc-content");
     if (!painel) return;
 
     var candidatos = [];
-    var backMunicipio = document.getElementById("fc-back-municipio");
+    var backComarca = document.getElementById("fc-back-comarca");
     var backNo = document.getElementById("fc-back-no");
     var titulo = painel.querySelector(".fc-head .fc-title");
     var subtitulo = painel.querySelector(".fc-head .fc-subtitle");
-    if (backMunicipio) candidatos.push(backMunicipio.textContent || "");
+    if (backComarca) candidatos.push(backComarca.textContent || "");
     if (backNo) candidatos.push(backNo.textContent || "");
     if (titulo) candidatos.push(titulo.textContent || "");
     if (subtitulo) candidatos.push(subtitulo.textContent || "");
 
-    for (var i = 0; i < municipiosPainelV6.length; i++) {
-      var municipio = municipiosPainelV6[i];
-      var alvo = normalizar(municipio.nome);
+    for (var i = 0; i < comarcasPainelV6.length; i++) {
+      var comarca = comarcasPainelV6[i];
+      var alvo = normalizar(comarca.nome);
       if (candidatos.some(function (texto) { return normalizar(texto).indexOf(alvo) !== -1; })) {
-        municipioSelecionadoPainelV6 = municipio.id;
+        comarcaSelecionadaPainelV6 = comarca.id;
         return;
       }
     }
   }
 
-  function navegarParaMunicipioPainel(id) {
-    municipioSelecionadoPainelV6 = String(id || "");
-    if (!municipioSelecionadoPainelV6) {
+  function navegarParaComarcaPainel(id) {
+    comarcaSelecionadaPainelV6 = String(id || "");
+    if (!comarcaSelecionadaPainelV6) {
       if (typeof window.fcInicio === "function") window.fcInicio();
       return;
     }
 
-    var destino = Array.prototype.slice.call(document.querySelectorAll('#fc-content .fc-card[data-mun]')).find(function (card) {
-      return String(card.getAttribute("data-mun") || "") === municipioSelecionadoPainelV6;
+    var destino = Array.prototype.slice.call(document.querySelectorAll('#fc-content .fc-card[data-comarca]')).find(function (card) {
+      return String(card.getAttribute("data-comarca") || "") === comarcaSelecionadaPainelV6;
     });
     if (destino) {
       destino.click();
@@ -303,52 +304,52 @@
     if (typeof window.fcInicio === "function") {
       window.fcInicio();
       setTimeout(function () {
-        var card = Array.prototype.slice.call(document.querySelectorAll('#fc-content .fc-card[data-mun]')).find(function (item) {
-          return String(item.getAttribute("data-mun") || "") === municipioSelecionadoPainelV6;
+        var card = Array.prototype.slice.call(document.querySelectorAll('#fc-content .fc-card[data-comarca]')).find(function (item) {
+          return String(item.getAttribute("data-comarca") || "") === comarcaSelecionadaPainelV6;
         });
         if (card) card.click();
       }, 40);
     }
   }
 
-  function garantirSeletorMunicipioPainel() {
+  function garantirSeletorComarcaPainel() {
     var painel = document.getElementById("fc-content");
     if (!painel) return;
 
-    capturarMunicipiosDoPainel();
-    if (!municipiosPainelV6.length) {
-      carregarMunicipiosPainelV6();
+    capturarComarcasDoPainel();
+    if (!comarcasPainelV6.length) {
+      carregarComarcasPainelV6();
       return;
     }
-    detectarMunicipioAtualPainel();
+    detectarComarcaAtualPainel();
 
     var existente = document.getElementById("fc-search");
-    if (existente && String(existente.tagName || "").toUpperCase() === "SELECT" && existente.getAttribute("data-demo-municipio-v6") === "true") {
-      existente.value = municipioSelecionadoPainelV6 || "";
+    if (existente && String(existente.tagName || "").toUpperCase() === "SELECT" && existente.getAttribute("data-demo-comarca-v6") === "true") {
+      existente.value = comarcaSelecionadaPainelV6 || "";
       return;
     }
 
     var select = document.createElement("select");
     select.id = "fc-search";
-    select.className = "fc-select fc-municipio-select";
+    select.className = "fc-select fc-comarca-select";
     select.setAttribute("aria-label", "Selecionar comarca");
-    select.setAttribute("data-demo-municipio-v6", "true");
+    select.setAttribute("data-demo-comarca-v6", "true");
 
     var inicial = document.createElement("option");
     inicial.value = "";
     inicial.textContent = "Selecione uma comarca";
     select.appendChild(inicial);
 
-    municipiosPainelV6.forEach(function (opcao) {
+    comarcasPainelV6.forEach(function (opcao) {
       var el = document.createElement("option");
       el.value = opcao.id;
       el.textContent = opcao.nome;
       select.appendChild(el);
     });
 
-    select.value = municipioSelecionadoPainelV6 || "";
+    select.value = comarcaSelecionadaPainelV6 || "";
     select.onchange = function () {
-      navegarParaMunicipioPainel(select.value);
+      navegarParaComarcaPainel(select.value);
     };
 
     if (existente) {
@@ -375,8 +376,8 @@
     painel.__demoV6Observer = true;
 
     painel.addEventListener("click", function (evento) {
-      var alvo = evento.target && evento.target.closest ? evento.target.closest("[data-mun]") : null;
-      if (alvo) municipioSelecionadoPainelV6 = String(alvo.getAttribute("data-mun") || "");
+      var alvo = evento.target && evento.target.closest ? evento.target.closest("[data-comarca]") : null;
+      if (alvo) comarcaSelecionadaPainelV6 = String(alvo.getAttribute("data-comarca") || "");
     }, true);
 
     aplicarAjustesContatos();

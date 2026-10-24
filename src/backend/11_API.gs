@@ -552,7 +552,7 @@ function normalizarEscoposAcesso(valor) {
     const objeto = ehObjeto(item) ? item : { id: item };
     const tipoInformado = textoSeguro(valorObjeto(objeto, "tipo", "TIPO", "tipoEscopo", "TIPO_ESCOPO"));
     const tipo = tipoEscopoAcesso(tipoInformado) || (!tipoInformado ? CONFIG.ACESSOS.UNIDADE : "");
-    const id = textoSeguro(valorObjeto(objeto, "id", "ID", "escopoId", "ESCOPO_ID", "unidadeId", "UNIDADE_ID"));
+    const id = textoSeguro(valorObjeto(objeto, "id", "ID", "escopoId", "ESCOPO_ID", "noId", "NO_ID", "unidadeOrganizacionalId", "UNIDADE_ORGANIZACIONAL_ID"));
     return { tipo: tipo, id: id };
   }).filter(function(item) {
     const chave = item.tipo + ":" + item.id;
@@ -611,44 +611,44 @@ function lerTodosAcessosAtivos() {
 function resolverEscopoAcessos(acessos, catalogo) {
   const ids = new Set();
   (acessos || []).forEach(function(acesso) {
-    (catalogo.unidadesPorEscopo[acesso.tipo + ":" + acesso.id] || []).forEach(function(id) { ids.add(id); });
+    (catalogo.nosPorEscopo[acesso.tipo + ":" + acesso.id] || []).forEach(function(id) { ids.add(id); });
   });
-  const unidades = (acessos || []).map(function(acesso) {
+  const nos = (acessos || []).map(function(acesso) {
     return catalogo.porChave[acesso.tipo + ":" + acesso.id] ||
-      { id: acesso.id, tipo: acesso.tipo, nome: acesso.id, caminhoTexto: acesso.id, municipio: "", forum: "" };
+      { id: acesso.id, tipo: acesso.tipo, nome: acesso.id, caminhoTexto: acesso.id, comarca: "", forum: "" };
   });
-  return { ids: Array.from(ids), unidades: unidades, acessos: acessos || [] };
+  return { ids: Array.from(ids), nos: nos, acessos: acessos || [] };
 }
 
 function montarCatalogoEscoposAcesso() {
-  const shMunicipios = DB.municipios();
+  const shComarcas = DB.comarcas();
   const shForuns = DB.forum();
-  const mapaM = DB.map(shMunicipios);
+  const mapaM = DB.map(shComarcas);
   const mapaF = DB.map(shForuns);
-  const municipios = {};
-  DB.read(shMunicipios).forEach(function(linha) {
+  const comarcas = {};
+  DB.read(shComarcas).forEach(function(linha) {
     const id = textoSeguro(linha[mapaM.ID - 1]);
     if (!id || (mapaM.ATIVO && !paraBoolean(linha[mapaM.ATIVO - 1]))) return;
-    municipios[id] = { id: id, nome: textoSeguro(linha[mapaM.NOME - 1]) || id };
+    comarcas[id] = { id: id, nome: textoSeguro(linha[mapaM.NOME - 1]) || id };
   });
   const foruns = {};
   DB.read(shForuns).forEach(function(linha) {
     const id = textoSeguro(linha[mapaF.ID - 1]);
-    const municipioId = textoSeguro(linha[mapaF.MUNICIPIOID - 1]);
-    if (!id || !municipios[municipioId] || (mapaF.ATIVO && !paraBoolean(linha[mapaF.ATIVO - 1]))) return;
-    foruns[id] = { id: id, nome: textoSeguro(linha[mapaF.NOME - 1]) || id, municipioId: municipioId };
+    const comarcaId = textoSeguro(linha[mapaF.COMARCAID - 1]);
+    if (!id || !comarcas[comarcaId] || (mapaF.ATIVO && !paraBoolean(linha[mapaF.ATIVO - 1]))) return;
+    foruns[id] = { id: id, nome: textoSeguro(linha[mapaF.NOME - 1]) || id, comarcaId: comarcaId };
   });
 
   const nos = _fcIndiceOrganizacional();
   const porChave = {};
   const itens = [];
-  const unidadesPorEscopo = {};
+  const nosPorEscopo = {};
   Object.keys(foruns).forEach(function(id) {
     const forum = foruns[id];
-    const item = { tipo: CONFIG.ACESSOS.FORUM, id: id, nome: forum.nome, municipio: municipios[forum.municipioId].nome, forumId: id, forum: forum.nome, caminhoTexto: forum.nome + " (" + municipios[forum.municipioId].nome + ")" };
+    const item = { tipo: CONFIG.ACESSOS.FORUM, id: id, nome: forum.nome, comarca: comarcas[forum.comarcaId].nome, forumId: id, forum: forum.nome, caminhoTexto: forum.nome + " (" + comarcas[forum.comarcaId].nome + ")" };
     porChave[item.tipo + ":" + id] = item;
     itens.push(item);
-    unidadesPorEscopo[item.tipo + ":" + id] = [];
+    nosPorEscopo[item.tipo + ":" + id] = [];
   });
 
   Object.keys(nos).forEach(function(id) {
@@ -657,28 +657,62 @@ function montarCatalogoEscoposAcesso() {
     if (!forum || !no.ativo) return;
     const caminho = _fcResolverAncestros(nos, id);
     if (caminho.some(function(item) { return !item.ativo; })) return;
-    const municipio = municipios[forum.municipioId];
+    const comarca = comarcas[forum.comarcaId];
     const chaveForum = CONFIG.ACESSOS.FORUM + ":" + forum.id;
-    unidadesPorEscopo[chaveForum].push(id);
+    nosPorEscopo[chaveForum].push(id);
     caminho.forEach(function(ancestral) {
       const chaveUnidade = CONFIG.ACESSOS.UNIDADE + ":" + ancestral.id;
-      if (!unidadesPorEscopo[chaveUnidade]) unidadesPorEscopo[chaveUnidade] = [];
-      unidadesPorEscopo[chaveUnidade].push(id);
+      if (!nosPorEscopo[chaveUnidade]) nosPorEscopo[chaveUnidade] = [];
+      nosPorEscopo[chaveUnidade].push(id);
     });
-    if (!no.selecionavelAcesso) return;
+    if (!no.selecionavelAcesso && !no.paiId) return;
+    const tipoItem = !no.paiId ? CONFIG.ACESSOS.UNIDADE : CONFIG.ACESSOS.SETOR;
     const item = {
-      tipo: CONFIG.ACESSOS.UNIDADE,
+      tipo: tipoItem,
       id: id,
       nome: no.nome || id,
-      municipio: municipio.nome,
+      comarca: comarca.nome,
       forumId: forum.id,
       forum: forum.nome,
+      paiId: no.paiId || "",
       caminhoTexto: caminho.map(function(ancestral) { return ancestral.nome; }).join(" › ")
     };
     porChave[item.tipo + ":" + id] = item;
     itens.push(item);
+    if (tipoItem === CONFIG.ACESSOS.SETOR) nosPorEscopo[item.tipo + ":" + id] = [id];
   });
-  return { porChave: porChave, itens: itens, unidadesPorEscopo: unidadesPorEscopo };
+  // Contagem de contatos sob cada escopo (para calibrar o pedido)
+  try {
+    const shCon = DB.contatosOuNulo();
+    if (shCon) {
+      const mapaC = DB.map(shCon);
+      const idxUo = mapaC.UNIDADEORGANIZACIONALID;
+      const idxFo = mapaC.FORUMID;
+      const idxAt = mapaC.ATIVO;
+      const diretos = {};
+      const totaisForum = {};
+      DB.read(shCon).forEach(function(linha) {
+        if (idxAt !== undefined && !paraBoolean(linha[idxAt - 1])) return;
+        const noId = idxUo !== undefined ? textoSeguro(linha[idxUo - 1]) : "";
+        const forumId = idxFo !== undefined ? textoSeguro(linha[idxFo - 1]) : "";
+        if (noId && nos[noId]) {
+          diretos[noId] = (diretos[noId] || 0) + 1;
+          _fcResolverAncestros(nos, noId).forEach(function(anc) {
+            if (anc.id !== noId) diretos[anc.id] = (diretos[anc.id] || 0) + 1;
+          });
+          const forumDoNo = nos[noId].forumId;
+          if (forumDoNo) totaisForum[forumDoNo] = (totaisForum[forumDoNo] || 0) + 1;
+        } else if (forumId && foruns[forumId]) {
+          totaisForum[forumId] = (totaisForum[forumId] || 0) + 1;
+        }
+      });
+      itens.forEach(function(item) {
+        if (item.tipo === CONFIG.ACESSOS.FORUM) item.n_contatos = totaisForum[item.id] || 0;
+        else item.n_contatos = diretos[item.id] || 0;
+      });
+    }
+  } catch (e) {}
+  return { porChave: porChave, itens: itens, nosPorEscopo: nosPorEscopo };
 }
 
 function validarEscoposAcesso(escopos) {
@@ -686,7 +720,7 @@ function validarEscoposAcesso(escopos) {
   const catalogo = montarCatalogoEscoposAcesso();
   normalizados.forEach(function(escopo) {
     if (!catalogo.porChave[escopo.tipo + ":" + escopo.id]) {
-      throw new Error("Um dos Municípios, Fóruns ou Unidades selecionados é inválido ou está inativo.");
+      throw new Error("Um dos Municípios, Fóruns, Unidades ou Setores selecionados é inválido ou está inativo.");
     }
   });
   return normalizados;
@@ -723,7 +757,7 @@ function indicesSolicitacao(linhaCabecalho) {
     NOME: ["NOME"],
     LOCALIDADE: ["LOCALIDADE"],
     NIVEL: ["NIVEL_SOLICITADO", "NIVEL", "PERFIL_SOLICITADO", "PERFIL"],
-    UNIDADE_ID: ["UNIDADE_ID", "UNIDADES", "UNIDADES_IDS"],
+    UNIDADE_ORGANIZACIONAL_ID: ["UNIDADE_ORGANIZACIONAL_ID"],
     ESCOPOS: ["ESCOPO_ACESSOS", "ACESSOS_SOLICITADOS"],
     JUSTIFICATIVA: ["JUSTIFICATIVA"],
     STATUS: ["STATUS"],
@@ -758,8 +792,8 @@ function escoposDaSolicitacao(linha, indices) {
   const estruturados = indices.ESCOPOS !== undefined
     ? normalizarEscoposAcesso(linha[indices.ESCOPOS])
     : [];
-  if (estruturados.length || indices.UNIDADE_ID === undefined) return estruturados;
-  return normalizarEscoposAcesso(linha[indices.UNIDADE_ID]);
+  if (estruturados.length || indices.UNIDADE_ORGANIZACIONAL_ID === undefined) return estruturados;
+  return normalizarEscoposAcesso(linha[indices.UNIDADE_ORGANIZACIONAL_ID]);
 }
 
 function nivelSolicitadoNumero(valor) {
@@ -771,7 +805,7 @@ function nivelSolicitadoNumero(valor) {
   return CONFIG.NIVEIS.POR_PERFIL[perfil] || 0;
 }
 
-function idsUnidadesSolicitadas(valor) {
+function idsNosSolicitados(valor) {
   const lista = Array.isArray(valor) ? valor : String(valor || "").split(/[,;|]+/);
   return Array.from(new Set(lista.map(textoSeguro).filter(Boolean)));
 }
@@ -789,18 +823,18 @@ function listarUnidadesParaAcesso() {
     const nos = _fcIndiceOrganizacional();
     const shForum = DB.forum();
     const mapaF = DB.map(shForum);
-    const shMunicipios = DB.municipios();
-    const mapaM = DB.map(shMunicipios);
+    const shComarcas = DB.comarcas();
+    const mapaM = DB.map(shComarcas);
     const foruns = {};
     DB.read(shForum).forEach(function(linha) {
       foruns[textoSeguro(linha[mapaF.ID - 1])] = {
         nome: textoSeguro(linha[mapaF.NOME - 1]),
-        municipioId: mapaF.MUNICIPIOID ? textoSeguro(linha[mapaF.MUNICIPIOID - 1]) : ""
+        comarcaId: mapaF.COMARCAID ? textoSeguro(linha[mapaF.COMARCAID - 1]) : ""
       };
     });
-    const municipios = {};
-    DB.read(shMunicipios).forEach(function(linha) {
-      municipios[textoSeguro(linha[mapaM.ID - 1])] = textoSeguro(linha[mapaM.NOME - 1]);
+    const comarcas = {};
+    DB.read(shComarcas).forEach(function(linha) {
+      comarcas[textoSeguro(linha[mapaM.ID - 1])] = textoSeguro(linha[mapaM.NOME - 1]);
     });
 
     const unidades = DB.read(shUnidades)
@@ -822,13 +856,13 @@ function listarUnidadesParaAcesso() {
           caminhoTexto: caminho.map(function(no) { return no.nome; }).join(" › "),
           forumId: forumId,
           forum: forum.nome || "",
-          municipio: municipios[forum.municipioId] || ""
+          comarca: comarcas[forum.comarcaId] || ""
         };
       })
       .filter(function(item) { return item && item.id && item.nome; })
       .sort(function(a, b) {
-        return [a.municipio, a.forum, a.nome].join("|").localeCompare(
-          [b.municipio, b.forum, b.nome].join("|"), "pt-BR"
+        return [a.comarca, a.forum, a.nome].join("|").localeCompare(
+          [b.comarca, b.forum, b.nome].join("|"), "pt-BR"
         );
       });
     return respostaSucesso(unidades);
@@ -911,7 +945,7 @@ function enviarFormularioAcesso(dados) {
     ));
     const escoposInformados = valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS");
     const escopos = normalizarEscoposAcesso(escoposInformados || valorObjeto(
-      entrada, "unidadeIds", "UNIDADE_IDS", "unidades", "UNIDADES", "UNIDADE_ID"
+      entrada, "noIds", "NO_IDS", "nos", "NOS", "UNIDADE_ORGANIZACIONAL_ID"
     ));
     const justificativa = textoSeguro(valorObjeto(entrada, "justificativa", "JUSTIFICATIVA"));
 
@@ -928,7 +962,7 @@ function enviarFormularioAcesso(dados) {
       throw new Error("Selecione uma alteração de nível, localidades adicionais ou ambos.");
     }
     if (!usuario.cadastrado && nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO && escopos.length === 0) {
-      throw new Error("Selecione ao menos um Município, Fórum ou Unidade para o Gestor de Conteúdo.");
+      throw new Error("Selecione ao menos um Município, Fórum, Unidade ou Setor para o Gestor de Conteúdo.");
     }
     if (nivel === CONFIG.NIVEIS.GESTOR_SISTEMA && escopos.length) {
       throw new Error("O Gestor do Sistema possui escopo global e não recebe vínculos adicionais.");
@@ -939,10 +973,10 @@ function enviarFormularioAcesso(dados) {
 
     const escoposValidados = escopos.length ? validarEscoposAcesso(escopos) : [];
     if (ehAmpliacaoGestorConteudo) {
-      const permitidas = new Set(usuario.unidadeIds || []);
+      const permitidas = new Set(usuario.noIds || []);
       const catalogo = montarCatalogoEscoposAcesso();
       const todosCobertos = escoposValidados.every(function(escopo) {
-        const unidades = catalogo.unidadesPorEscopo[escopo.tipo + ":" + escopo.id] || [];
+        const unidades = catalogo.nosPorEscopo[escopo.tipo + ":" + escopo.id] || [];
         return unidades.length > 0 && unidades.every(function(id) { return permitidas.has(id); });
       });
       if (todosCobertos) throw new Error("Todos os acessos selecionados já estão vinculados ao seu perfil.");
@@ -957,7 +991,7 @@ function enviarFormularioAcesso(dados) {
         throw new Error("Aba SOLICITACOES_ACESSO sem a coluna " + campo + ".");
       }
     });
-    if (indices.ESCOPOS === undefined && indices.UNIDADE_ID === undefined) {
+    if (indices.ESCOPOS === undefined && indices.UNIDADE_ORGANIZACIONAL_ID === undefined) {
       throw new Error("Aba SOLICITACOES_ACESSO sem a coluna ESCOPO_ACESSOS.");
     }
     const pendente = dadosSheet.slice(1).some(function(row) {
@@ -972,7 +1006,7 @@ function enviarFormularioAcesso(dados) {
       EMAIL: usuario.email,
       NOME: nome,
       NIVEL: nivel || "",
-      UNIDADE_ID: escoposValidados.filter(function(escopo) { return escopo.tipo === CONFIG.ACESSOS.UNIDADE; }).map(function(escopo) { return escopo.id; }).join(","),
+      UNIDADE_ORGANIZACIONAL_ID: escoposValidados.filter(function(escopo) { return escopo.tipo === CONFIG.ACESSOS.UNIDADE || escopo.tipo === CONFIG.ACESSOS.SETOR; }).map(function(escopo) { return escopo.id; }).join(","),
       ESCOPOS: serializarEscoposAcesso(escoposValidados),
       JUSTIFICATIVA: justificativa,
       STATUS: "PENDENTE",
@@ -990,12 +1024,12 @@ function enviarFormularioAcesso(dados) {
   }
 }
 
-function solicitarAcesso(nome, nivel, justificativa, unidadeIds) {
+function solicitarAcesso(nome, nivel, justificativa, noIds) {
   return enviarFormularioAcesso({
     nome: nome,
     nivel: nivel,
     justificativa: justificativa,
-    unidadeIds: unidadeIds
+    noIds: noIds
   });
 }
 
@@ -1078,7 +1112,7 @@ function adicionarAcessosUnidades(usuarioId, escopos) {
   if (linhasAtualizadas.length) sheet.getRange(2, 1, linhasAtualizadas.length, sheet.getLastColumn()).setValues(linhasAtualizadas);
 }
 
-function processarSolicitacaoAPI(id, novoStatus) {
+function processarSolicitacaoAPI(id, novoStatus, escoposAjustados) {
   const lock = LockService.getScriptLock();
   let bloqueado = false;
   try {
@@ -1103,6 +1137,9 @@ function processarSolicitacaoAPI(id, novoStatus) {
     }
 
     if (status === "APROVADO") {
+      if (Array.isArray(escoposAjustados)) {
+        solicitacao.escopos = validarEscoposAcesso(escoposAjustados);
+      }
       if (solicitacao.escopos.length) {
         solicitacao.escopos = validarEscoposAcesso(solicitacao.escopos);
       }
@@ -1150,6 +1187,14 @@ function processarSolicitacaoAPI(id, novoStatus) {
       sheetSolic.getRange(1, 1, 1, sheetSolic.getLastColumn()).getDisplayValues()[0]
     );
     sheetSolic.getRange(solicitacao.linha, indices.STATUS + 1).setValue(status);
+    if (status === "APROVADO" && Array.isArray(escoposAjustados)) {
+      if (indices.ESCOPOS !== undefined) {
+        sheetSolic.getRange(solicitacao.linha, indices.ESCOPOS + 1).setValue(serializarEscoposAcesso(solicitacao.escopos));
+      }
+      if (indices.UNIDADE_ORGANIZACIONAL_ID !== undefined) {
+        sheetSolic.getRange(solicitacao.linha, indices.UNIDADE_ORGANIZACIONAL_ID + 1).setValue(solicitacao.escopos.filter(function(e) { return e.tipo === CONFIG.ACESSOS.UNIDADE || e.tipo === CONFIG.ACESSOS.SETOR; }).map(function(e) { return e.id; }).join(","));
+      }
+    }
     if (indices.APROVADOR !== undefined) {
       sheetSolic.getRange(solicitacao.linha, indices.APROVADOR + 1)
         .setValue(auth.usuarioAtual().email);
@@ -1169,8 +1214,8 @@ function processarSolicitacaoAPI(id, novoStatus) {
   }
 }
 
-function aprovarSolicitacao(id) {
-  return processarSolicitacaoAPI(id, "APROVADO");
+function aprovarSolicitacao(id, escoposAjustados) {
+  return processarSolicitacaoAPI(id, "APROVADO", escoposAjustados);
 }
 
 function rejeitarSolicitacao(id) {
@@ -1628,9 +1673,11 @@ function listarHistoricoGeral(authDados) {
             "SETOR"
           );
 
-        const unidadeId =
+        const noPaiId =
           campo(
             snapshot,
+            "noPaiId",
+            "NO_PAI_ID",
             "unidadeId",
             "UNIDADE_ID"
           );
@@ -1674,8 +1721,8 @@ function listarHistoricoGeral(authDados) {
           setor:
             String(setor || "").trim(),
 
-          unidadeId:
-            textoSeguro(unidadeId),
+          noPaiId:
+            textoSeguro(noPaiId),
 
           data:
             dataFormatada,
@@ -1702,9 +1749,9 @@ function listarHistoricoGeral(authDados) {
       return respostaSucesso(resultado);
     }
 
-    const permitidas = new Set(usuarioHistPerm.unidadeIds || []);
+    const permitidas = new Set(usuarioHistPerm.noIds || []);
     return respostaSucesso(resultado.filter(function(item) {
-      return permitidas.has(textoSeguro(item.unidadeId || item.UNIDADE_ID));
+      return permitidas.has(textoSeguro(item.noPaiId || item.unidadeId || item.UNIDADE_ID));
     }));
 
   } catch (erro) {
@@ -2320,7 +2367,7 @@ function listarUsuarios() {
       const id = textoSeguro(linha[mapa.ID - 1]);
       const escopo = nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO
         ? resolverEscopoAcessos(acessosPorUsuario[id] || [], catalogo)
-        : { ids: [], unidades: [], acessos: [] };
+        : { ids: [], nos: [], acessos: [] };
       return {
         id: id,
         email: normalizarEmail(linha[mapa.EMAIL - 1]),
@@ -2328,14 +2375,58 @@ function listarUsuarios() {
         nivel: nivel,
         perfil: CONFIG.NIVEIS.POR_NIVEL[String(nivel)] || "",
         ativo: paraBoolean(linha[mapa.ATIVO - 1]),
-        unidadeIds: escopo.ids,
-        unidades: escopo.unidades,
+        noIds: escopo.ids,
+        nos: escopo.nos,
         escopos: escopo.acessos
       };
     });
     return respostaSucesso(resultado);
   } catch (erro) {
     registrarErroAPI("LISTAR_USUARIOS", erro);
+    return respostaErro(erro);
+  }
+}
+
+/** Visão reversa: quem tem acesso ao nó (direto ou por herança de cima). */
+function consultarUsuariosPorNo(noId) {
+  try {
+    new AuthService().exigirPerfil(CONFIG.PERFIS.GESTOR_SISTEMA);
+    const alvo = textoSeguro(noId);
+    if (!alvo) throw new Error("Nó não informado.");
+    const nos = _fcIndiceOrganizacional();
+    const no = nos[alvo];
+    if (!no) throw new Error("Nó organizacional não encontrado.");
+    const caminhoIds = {};
+    _fcResolverAncestros(nos, alvo).forEach(function(anc) { caminhoIds[anc.id] = true; });
+    const catalogo = montarCatalogoEscoposAcesso();
+    const acessosPorUsuario = {};
+    lerTodosAcessosAtivos().forEach(function(acesso) {
+      if (!acessosPorUsuario[acesso.usuarioId]) acessosPorUsuario[acesso.usuarioId] = [];
+      acessosPorUsuario[acesso.usuarioId].push({ tipo: acesso.tipo, id: acesso.id });
+    });
+    const sheet = DB.usuarios();
+    const mapa = DB.map(sheet);
+    const resultado = [];
+    DB.read(sheet).forEach(function(linha) {
+      const nivel = Number(linha[mapa.NIVEL - 1]);
+      if (nivel !== CONFIG.NIVEIS.GESTOR_CONTEUDO) return;
+      if (!paraBoolean(linha[mapa.ATIVO - 1])) return;
+      const id = textoSeguro(linha[mapa.ID - 1]);
+      const vias = (acessosPorUsuario[id] || []).filter(function(a) { return caminhoIds[a.id]; });
+      if (!vias.length) return;
+      resultado.push({
+        id: id,
+        nome: textoSeguro(linha[mapa.NOME - 1]),
+        email: normalizarEmail(linha[mapa.EMAIL - 1]),
+        vias: vias.map(function(a) {
+          const item = catalogo.porChave[a.tipo + ":" + a.id];
+          return { tipo: a.tipo, id: a.id, nome: item ? (item.caminhoTexto || item.nome) : a.id };
+        })
+      });
+    });
+    return respostaSucesso({ no: { id: alvo, nome: no.nome }, usuarios: resultado });
+  } catch (erro) {
+    registrarErroAPI("CONSULTAR_USUARIOS_POR_NO", erro);
     return respostaErro(erro);
   }
 }
@@ -2380,8 +2471,8 @@ function removerMeuAcesso(tipo, id) {
   }
 }
 
-function validarIdsUnidadesAdministrativas(unidadeIds) {
-  const ids = idsUnidadesSolicitadas(unidadeIds);
+function validarIdsNosAdministrativos(noIds) {
+  const ids = idsNosSolicitados(noIds);
   const sheet = DB.unidadesOrganizacionais();
   const mapa = DB.map(sheet);
   const validas = new Set(DB.read(sheet)
@@ -2391,7 +2482,7 @@ function validarIdsUnidadesAdministrativas(unidadeIds) {
     })
     .map(function(linha) { return textoSeguro(linha[mapa.ID - 1]); }));
   if (ids.some(function(id) { return !validas.has(id); })) {
-    throw new Error("Uma ou mais Unidades são inválidas ou inativas.");
+    throw new Error("Um ou mais nós são inválidos ou inativos.");
   }
   return ids;
 }
@@ -2441,10 +2532,10 @@ function atualizarUsuario(email, dados) {
     const nome = possuiCampo(entrada, "nome", "NOME")
       ? textoSeguro(valorObjeto(entrada, "nome", "NOME"))
       : textoSeguro(dadosSheet[indice][mapa.NOME - 1]);
-    const escoposInformados = valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "unidadeIds", "UNIDADE_IDS", "unidades");
-    const possuiEscopos = possuiCampo(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "unidadeIds", "UNIDADE_IDS", "unidades");
+    const escoposInformados = valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "noIds", "NO_IDS", "nos");
+    const possuiEscopos = possuiCampo(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "noIds", "NO_IDS", "nos");
     const escoposAtuais = nivelAtual === CONFIG.NIVEIS.GESTOR_CONTEUDO
-      ? auth.obterEscopoUnidades(textoSeguro(dadosSheet[indice][mapa.ID - 1])).acessos
+      ? auth.obterEscopoNos(textoSeguro(dadosSheet[indice][mapa.ID - 1])).acessos
       : [];
     const escopos = nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO
       ? validarEscoposAcesso(possuiEscopos ? escoposInformados : escoposAtuais)
@@ -2453,7 +2544,7 @@ function atualizarUsuario(email, dados) {
     if (nivel !== 1 && nivel !== 2) throw new Error("Nível inválido. Use 1 ou 2.");
     if (!nome) throw new Error("Nome obrigatório.");
     if (nivel === 1 && escopos.length === 0) {
-      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum ou Unidade.");
+      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum, Unidade ou Setor.");
     }
     if (nivelAtual === 2 && ativoAtual && (nivel !== 2 || !ativo) &&
         contarGestoresSistemaAtivos(emailAlvo) === 0) {
@@ -2500,7 +2591,7 @@ function criarUsuario(dados) {
       ? paraBoolean(valorObjeto(entrada, "ativo", "ATIVO"))
       : true;
     const escopos = nivel === 1
-      ? validarEscoposAcesso(valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "unidadeIds", "UNIDADE_IDS", "unidades"))
+      ? validarEscoposAcesso(valorObjeto(entrada, "escopos", "ESCOPOS", "acessos", "ACESSOS", "escopoAcessos", "ESCOPO_ACESSOS", "noIds", "NO_IDS", "nos"))
       : [];
 
     if (!emailValidoAPI(email)) throw new Error("E-mail inválido.");
@@ -2510,7 +2601,7 @@ function criarUsuario(dados) {
     if (!nome || nome.length > CONFIG.LIMITES.TAMANHO_MAXIMO_NOME) throw new Error("Nome inválido.");
     if (nivel !== 1 && nivel !== 2) throw new Error("Nível inválido. Use 1 ou 2.");
     if (nivel === 1 && escopos.length === 0) {
-      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum ou Unidade.");
+      throw new Error("Gestor de Conteúdo deve possuir ao menos um Município, Fórum, Unidade ou Setor.");
     }
 
     const sheet = DB.usuarios();

@@ -23,6 +23,16 @@ Arquivo: Sidebar.html
         <span>Consulta</span>
       </button>
 
+      <button type="button" id="menu-tjes" class="menu-item" data-view="tjes" onclick="navegarParaTJES()">
+        <span class="icon icon-txt" aria-hidden="true">🏛</span>
+        <span>TJES</span>
+      </button>
+
+      <button type="button" id="menu-uteis" class="menu-item" data-view="uteis" onclick="navegarParaUteis()">
+        <span class="icon icon-txt" aria-hidden="true">📋</span>
+        <span>Telefones Úteis</span>
+      </button>
+
       <button type="button" id="menu-login" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="entrarAreaAdministrativa()">
         <span class="icon" aria-hidden="true">🔐</span>
         <span>Entrar na área administrativa</span>

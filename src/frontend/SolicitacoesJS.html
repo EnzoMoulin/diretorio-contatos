@@ -6,6 +6,8 @@ function carregarSolicitacoes(){
   },function(erro){mostrarToast((erro&&erro.message)||"Falha de comunicação.","error");});
 }
 var solicitacaoEmDetalhe=null;
+var escoposAprovacaoEdicao=[];
+var catalogoAprovacao=[];
 function celulaSolicitacao(valor){var td=document.createElement("td");td.textContent=valor===null||valor===undefined||String(valor).trim()===""?"-":String(valor);return td;}
 function renderizarSolicitacoes(lista){
   var tbody=document.getElementById("corpo-tabela-solicitacoes");if(!tbody)return;tbody.textContent="";
@@ -16,9 +18,65 @@ function renderizarSolicitacoes(lista){
     tr.onclick=function(){abrirModalSolicitacao(sol);};tr.onkeydown=function(evento){if(evento.key==="Enter"||evento.key===" "){evento.preventDefault();abrirModalSolicitacao(sol);}};tbody.appendChild(tr);
   });
 }
-function abrirModalSolicitacao(sol){solicitacaoEmDetalhe=sol;var alvo=document.getElementById("detalhes-solicitacao");alvo.textContent="";[["Nome",sol.nome],["E-mail",sol.email],["Nível de acesso",sol.nivelTexto],["Localidades solicitadas",(sol.acessosSolicitados||[]).join(" • ")||"Nenhuma"],["Justificativa",sol.justificativa||"Não informada"],["Status",sol.status]].forEach(function(item){var bloco=document.createElement("div");bloco.style.marginBottom="14px";var titulo=document.createElement("strong");titulo.textContent=item[0];var valor=document.createElement("div");valor.textContent=item[1];valor.style.marginTop="4px";valor.style.whiteSpace="pre-wrap";bloco.appendChild(titulo);bloco.appendChild(valor);alvo.appendChild(bloco);});document.getElementById("modal-solicitacao").classList.remove("hidden");}
-function fecharModalSolicitacao(){document.getElementById("modal-solicitacao").classList.add("hidden");solicitacaoEmDetalhe=null;}
-function decidirSolicitacao(status){if(!solicitacaoEmDetalhe)return;var aprovando=status==="APROVADO";confirmarAcaoSistema({titulo:aprovando?"Aprovar solicitação":"Rejeitar solicitação",mensagem:(aprovando?"Aprovar":"Rejeitar")+" esta solicitação de acesso?",textoConfirmar:aprovando?"Aprovar":"Rejeitar",perigo:!aprovando,icone:aprovando?"✓":"!"}).then(function(confirmado){if(!confirmado||!solicitacaoEmDetalhe)return;var api=aprovando?API.aprovarSolicitacao:API.rejeitarSolicitacao;api(solicitacaoEmDetalhe.id,function(resp){if(resp&&resp.sucesso===true){fecharModalSolicitacao();mostrarToast(aprovando?"Solicitação aprovada.":"Solicitação rejeitada.",aprovando?"success":"info");carregarSolicitacoes();}else mostrarToast((resp&&resp.erro)||"Falha ao processar solicitação.","error");},function(erro){mostrarToast((erro&&erro.message)||"Falha de comunicação.","error");});});}
+function chaveEscopoAprovacao(escopo){return escopo.tipo+":"+escopo.id;}
+function rotuloEscopoAprovacao(escopo){
+  var item=catalogoAprovacao.filter(function(i){return i.tipo===escopo.tipo&&i.id===escopo.id;})[0];
+  var base=item?(item.caminhoTexto||item.nome||item.id):(escopo.id||"");
+  if(item&&typeof item.n_contatos==="number")base+=" ("+item.n_contatos+")";
+  return escopo.tipo+": "+base;
+}
+function abrirModalSolicitacao(sol){
+  solicitacaoEmDetalhe=sol;
+  escoposAprovacaoEdicao=(sol.escopos||[]).map(function(e){return {tipo:e.tipo,id:e.id};});
+  var alvo=document.getElementById("detalhes-solicitacao");alvo.textContent="";
+  [["Nome",sol.nome],["E-mail",sol.email],["Nível de acesso",sol.nivelTexto],["Justificativa",sol.justificativa||"Não informada"],["Status",sol.status]].forEach(function(item){var bloco=document.createElement("div");bloco.style.marginBottom="14px";var titulo=document.createElement("strong");titulo.textContent=item[0];var valor=document.createElement("div");valor.textContent=item[1];valor.style.marginTop="4px";valor.style.whiteSpace="pre-wrap";bloco.appendChild(titulo);bloco.appendChild(valor);alvo.appendChild(bloco);});
+  var blocoEsc=document.createElement("div");blocoEsc.style.marginBottom="14px";
+  var tituloEsc=document.createElement("strong");tituloEsc.textContent="Escopos (ajuste antes de aprovar, se preciso)";blocoEsc.appendChild(tituloEsc);
+  var listaEsc=document.createElement("div");listaEsc.id="escopos-aprovacao-lista";listaEsc.style.marginTop="6px";blocoEsc.appendChild(listaEsc);
+  var linhaAdd=document.createElement("div");linhaAdd.style.marginTop="8px";
+  var selectAdd=document.createElement("select");selectAdd.id="escopo-aprovacao-select";selectAdd.style.maxWidth="100%";
+  var btnAdd=document.createElement("button");btnAdd.type="button";btnAdd.className="btn";btnAdd.style.marginLeft="8px";btnAdd.textContent="Adicionar";btnAdd.onclick=adicionarEscopoAprovacao;
+  linhaAdd.appendChild(selectAdd);linhaAdd.appendChild(btnAdd);blocoEsc.appendChild(linhaAdd);
+  alvo.appendChild(blocoEsc);
+  API.listarEscoposParaAcesso(function(resp){
+    catalogoAprovacao=(resp&&resp.sucesso===true&&Array.isArray(resp.dados))?resp.dados:[];
+    renderizarEscoposAprovacao();
+  },function(){catalogoAprovacao=[];renderizarEscoposAprovacao();});
+  document.getElementById("modal-solicitacao").classList.remove("hidden");
+}
+function renderizarEscoposAprovacao(){
+  var lista=document.getElementById("escopos-aprovacao-lista");if(!lista)return;lista.textContent="";
+  if(!escoposAprovacaoEdicao.length){lista.textContent="Nenhum escopo.";}
+  escoposAprovacaoEdicao.forEach(function(escopo){
+    var chip=document.createElement("span");chip.className="config-comarca-chip";chip.style.margin="0 6px 6px 0";
+    chip.textContent=rotuloEscopoAprovacao(escopo)+" ";
+    var x=document.createElement("button");x.type="button";x.textContent="✕";x.title="Remover";x.style.marginLeft="6px";
+    x.onclick=function(){escoposAprovacaoEdicao=escoposAprovacaoEdicao.filter(function(e){return chaveEscopoAprovacao(e)!==chaveEscopoAprovacao(escopo);});renderizarEscoposAprovacao();};
+    chip.appendChild(x);lista.appendChild(chip);
+  });
+  var select=document.getElementById("escopo-aprovacao-select");if(!select)return;select.textContent="";
+  var vazio=document.createElement("option");vazio.value="";vazio.textContent="Selecionar escopo para adicionar…";select.appendChild(vazio);
+  catalogoAprovacao.forEach(function(item){
+    if(escoposAprovacaoEdicao.some(function(e){return e.tipo===item.tipo&&e.id===item.id;}))return;
+    var op=document.createElement("option");op.value=chaveEscopoAprovacao(item);op.textContent=rotuloEscopoAprovacao(item);select.appendChild(op);
+  });
+}
+function adicionarEscopoAprovacao(){
+  var select=document.getElementById("escopo-aprovacao-select");if(!select||!select.value)return;
+  var partes=select.value.split(":");var tipo=partes[0];var id=partes.slice(1).join(":");
+  escoposAprovacaoEdicao.push({tipo:tipo,id:id});renderizarEscoposAprovacao();
+}
+function fecharModalSolicitacao(){document.getElementById("modal-solicitacao").classList.add("hidden");solicitacaoEmDetalhe=null;escoposAprovacaoEdicao=[];}
+function decidirSolicitacao(status){
+  if(!solicitacaoEmDetalhe)return;var aprovando=status==="APROVADO";
+  confirmarAcaoSistema({titulo:aprovando?"Aprovar solicitação":"Rejeitar solicitação",mensagem:(aprovando?"Aprovar":"Rejeitar")+" esta solicitação de acesso?"+(aprovando&&escoposAprovacaoEdicao.length?" ("+escoposAprovacaoEdicao.length+" escopo(s))":""),textoConfirmar:aprovando?"Aprovar":"Rejeitar",perigo:!aprovando,icone:aprovando?"✓":"!"}).then(function(confirmado){
+    if(!confirmado||!solicitacaoEmDetalhe)return;
+    var feito=function(resp){if(resp&&resp.sucesso===true){fecharModalSolicitacao();mostrarToast(aprovando?"Solicitação aprovada.":"Solicitação rejeitada.",aprovando?"success":"info");carregarSolicitacoes();}else mostrarToast((resp&&resp.erro)||"Falha ao processar solicitação.","error");};
+    var falha=function(erro){mostrarToast((erro&&erro.message)||"Falha de comunicação.","error");};
+    if(aprovando)API.aprovarSolicitacao(solicitacaoEmDetalhe.id,escoposAprovacaoEdicao,feito,falha);
+    else API.rejeitarSolicitacao(solicitacaoEmDetalhe.id,feito,falha);
+  });
+}
 function aprovarSolicitacaoAtual(){decidirSolicitacao("APROVADO");}
 function rejeitarSolicitacaoAtual(){decidirSolicitacao("REJEITADO");}
 </script>

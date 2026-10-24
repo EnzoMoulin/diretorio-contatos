@@ -17,7 +17,7 @@ let mapaLeafletOverlay = null;
 let camadaGeoJson = null;
 let camadaGeoJsonOverlay = null;
 let geoJsonCache = null;
-let municipioSelecionado = "";
+let comarcaSelecionada = "";
 
 let tituloImpressaoComarca = "";
 let tituloImpressaoSetor = "";
@@ -432,11 +432,11 @@ function obterDensidadeComarca(nomeComarca){
   return Array.isArray(lista) ? lista.length : 0;
 }
 
-function municipioParaComarcas(nomeMunicipio){
-  var norm = normalizarTexto(nomeMunicipio||"");
+function comarcaParaComarcasLista(nomeComarca){
+  var norm = normalizarTexto(nomeComarca||"");
   if(!norm) return [];
   if(typeof ordemComarcas==="undefined" || !ordemComarcas || !ordemComarcas.length) return [];
-  // Show ALL comarcas of the municipio regardless of permission; filtering only applies to button visibility, not list presence.
+  // Show ALL comarcas of the comarca regardless of permission; filtering only applies to button visibility, not list presence.
   // Vitória fix: comarcas like "Vitória (Fórum Cível)" share base "vitoria"; parentheses stripped via normalizarTexto still allows includes match both directions.
   // Also handle município GeoJSON name sometimes including accents/case differences.
   var lista=[];
@@ -453,8 +453,8 @@ function municipioParaComarcas(nomeMunicipio){
   return lista;
 }
 
-function municipioParaComarca(nomeMunicipio){
-  var lista = (typeof municipioParaComarcas==="function") ? municipioParaComarcas(nomeMunicipio) : [];
+function comarcaParaComarca(nomeComarca){
+  var lista = (typeof comarcaParaComarcasLista==="function") ? comarcaParaComarcasLista(nomeComarca) : [];
   if(lista && lista.length) return lista[0];
   return "";
 }
@@ -466,12 +466,12 @@ function corPorDensidade(dens){
   return "#1d63b8";
 }
 
-function estiloMunicipio(feature){
+function estiloComarca(feature){
   var nome = String(feature.properties.name||feature.properties.NOME||"").trim();
-  var comarcas = (typeof municipioParaComarcas==="function") ? municipioParaComarcas(nome) : [];
+  var comarcas = (typeof comarcaParaComarcasLista==="function") ? comarcaParaComarcasLista(nome) : [];
   var dens = 0;
   for(var i=0;i<comarcas.length;i++) dens += obterDensidadeComarca(comarcas[i]);
-  var isSel = municipioSelecionado && normalizarTexto(nome)===normalizarTexto(municipioSelecionado);
+  var isSel = comarcaSelecionada && normalizarTexto(nome)===normalizarTexto(comarcaSelecionada);
   return {
     fillColor: isSel ? "#00adb5" : corPorDensidade(dens),
     fillOpacity: dens===0 ? 0.35 : 0.6,
@@ -481,14 +481,14 @@ function estiloMunicipio(feature){
   };
 }
 
-function aoClicarMunicipio(nomeMunicipio, feature, layer){
-  municipioSelecionado = String(nomeMunicipio||"").trim();
-  var comarcas = (typeof municipioParaComarcas==="function") ? municipioParaComarcas(nomeMunicipio) : [];
+function aoClicarComarca(nomeComarca, feature, layer){
+  comarcaSelecionada = String(nomeComarca||"").trim();
+  var comarcas = (typeof comarcaParaComarcasLista==="function") ? comarcaParaComarcasLista(nomeComarca) : [];
   var compNomes = (comarcas && comarcas.length) ? comarcas.slice() : [];
   if(!compNomes.length){
-    var single = municipioParaComarca(nomeMunicipio);
+    var single = comarcaParaComarca(nomeComarca);
     if(single) compNomes=[single];
-    else compNomes=[String(nomeMunicipio||"").trim()];
+    else compNomes=[String(nomeComarca||"").trim()];
   }
   // Sort compNomes by ordemComarcas order (sheet order)
   try{
@@ -520,7 +520,7 @@ function aoClicarMunicipio(nomeMunicipio, feature, layer){
       microrregiaoSelecionada = "";
       var selClear = document.getElementById("filtro-microrregiao-consulta");
       if(selClear) selClear.value = "";
-      renderizarListaComarcasMunicipio(compNomes, temComarcaReal, layer);
+      renderizarListaComarcasComarca(compNomes, temComarcaReal, layer);
       return;
     }catch(eDirect){ /* fallback to old flow */ }
   }
@@ -544,7 +544,7 @@ function aoClicarMunicipio(nomeMunicipio, feature, layer){
   else if(micros.length>1) microEscolhida=micros[0];
   else if(!temComarcaReal){
     try{
-      var fallbackNome = String(nomeMunicipio||"").trim();
+      var fallbackNome = String(nomeComarca||"").trim();
       if(typeof comarcasPorMicrorregiao!=="undefined"){
         for(var k2 in comarcasPorMicrorregiao){
           if((comarcasPorMicrorregiao[k2]||[]).indexOf(fallbackNome)!==-1){ microEscolhida=k2; break; }
@@ -558,7 +558,7 @@ function aoClicarMunicipio(nomeMunicipio, feature, layer){
     selecionarMicrorregiaoConsulta(microEscolhida);
   }
 
-function renderizarListaComarcasMunicipio(compNomes, temComarcaReal, layer){
+function renderizarListaComarcasComarca(compNomes, temComarcaReal, layer){
   try{
     var container = document.getElementById("consulta-lista");
     if(!container){ return; }
@@ -787,8 +787,8 @@ function renderizarListaComarcasMunicipio(compNomes, temComarcaReal, layer){
   }catch(e3){}
 }
 
-function construirTooltipMunicipio(nomeMunicipio){
-  var comarcas = (typeof municipioParaComarcas==="function") ? municipioParaComarcas(nomeMunicipio) : [];
+function construirTooltipComarca(nomeComarca){
+  var comarcas = (typeof comarcaParaComarcasLista==="function") ? comarcaParaComarcasLista(nomeComarca) : [];
   if(comarcas && comarcas.length){
     var densTotal=0;
     var microSet={};
@@ -804,14 +804,14 @@ function construirTooltipMunicipio(nomeMunicipio){
     var nomesStr = comarcas.length===1 ? comarcas[0] : comarcas.join(", ");
     var linha2 = nomesStr + " \u00b7 " + densTotal + " setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
     if(comarcas.length>1) linha2 = comarcas.length + " comarcas: " + nomesStr + " \u00b7 " + densTotal + " setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
-    return '<div class="tooltip-premium">'+ escaparConsulta(nomeMunicipio) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
+    return '<div class="tooltip-premium">'+ escaparConsulta(nomeComarca) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
   }
-  var comarca = municipioParaComarca(nomeMunicipio);
+  var comarca = comarcaParaComarca(nomeComarca);
   var dens = comarca ? obterDensidadeComarca(comarca) : 0;
   var micro = "";
   try{ if(comarca && typeof microrregioesPorComarca!=="undefined") micro = String(microrregioesPorComarca[comarca]||"").trim(); }catch(e){}
   var linha2 = comarca ? (dens+" setor"+(dens===1?"":"es")+(micro?" \u00b7 "+micro:"")) : (micro||"Comarca sem correspond\u00eancia direta");
-  return '<div class="tooltip-premium">'+ escaparConsulta(nomeMunicipio) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
+  return '<div class="tooltip-premium">'+ escaparConsulta(nomeComarca) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
 }
 
 function initMapaLeaflet(containerId, isOverlay){
@@ -853,20 +853,20 @@ function initMapaLeaflet(containerId, isOverlay){
 
   function desenhar(data){
     var layer = L.geoJSON(data, {
-      style: estiloMunicipio,
+      style: estiloComarca,
       onEachFeature: function(feature, lyr){
         var nome = String(feature.properties.name||feature.properties.NOME||"").trim();
-        lyr.bindTooltip(construirTooltipMunicipio(nome), { permanent:false, direction:"auto", className:"tooltip-premium", sticky:true });
+        lyr.bindTooltip(construirTooltipComarca(nome), { permanent:false, direction:"auto", className:"tooltip-premium", sticky:true });
         lyr.on({
           mouseover: function(e){
             var t = e.target;
-            if(normalizarTexto(municipioSelecionado)!==normalizarTexto(nome)){
+            if(normalizarTexto(comarcaSelecionada)!==normalizarTexto(nome)){
               t.setStyle({ fillColor:"#00adb5", fillOpacity:0.78, weight:2.2, color:"#0f172a" });
               t.bringToFront();
             }
           },
           mouseout: function(e){
-            if(normalizarTexto(municipioSelecionado)===normalizarTexto(nome)){
+            if(normalizarTexto(comarcaSelecionada)===normalizarTexto(nome)){
               e.target.setStyle({fillColor:"#00adb5", fillOpacity:0.85, weight:2.4, color:"#0f172a"});
             } else {
               var parent = isOverlay ? camadaGeoJsonOverlay : camadaGeoJson;
@@ -875,7 +875,7 @@ function initMapaLeaflet(containerId, isOverlay){
           },
           click: function(e){
             L.DomEvent.stopPropagation(e);
-            aoClicarMunicipio(nome, feature, e.target);
+            aoClicarComarca(nome, feature, e.target);
           }
         });
       }
@@ -896,7 +896,7 @@ function initMapaLeaflet(containerId, isOverlay){
 function resetarMapaLeaflet(){
   try{
     if(mapaLeaflet && camadaGeoJson){
-      municipioSelecionado = "";
+      comarcaSelecionada = "";
       camadaGeoJson.eachLayer(function(l){ camadaGeoJson.resetStyle(l); });
       mapaLeaflet.fitBounds(camadaGeoJson.getBounds(), {padding:[6,6]});
       document.querySelectorAll(".comarca-item").forEach(function(el){ el.style.outline=""; });
@@ -910,7 +910,7 @@ function resetarMapaLeaflet(){
     if(typeof microrregiaoSelecionada!=="undefined") microrregiaoSelecionada="";
     var selMicro=document.getElementById("filtro-microrregiao-consulta"); if(selMicro) selMicro.value="";
     try{ if(typeof estadoColapsadoComarca!=="undefined") for(var k in estadoColapsadoComarca) delete estadoColapsadoComarca[k]; }catch(e){}
-    try{ municipioSelecionado=""; }catch(e){}
+    try{ comarcaSelecionada=""; }catch(e){}
     try{ if(typeof popularFiltrosConsulta==="function") popularFiltrosConsulta(); else if(typeof atualizarFiltroSetorConsultaPorComarca==="function") atualizarFiltroSetorConsultaPorComarca(); }catch(e){}
     if(typeof renderizarComarcas==="function"){
       try{ renderizarComarcas(); }catch(e){}
@@ -927,12 +927,12 @@ function destacarMapaPorBusca(termoNorm){
     var parent = camadaGeoJson;
     if(!parent) return;
     if(!termoNorm){
-      parent.eachLayer(function(l){ parent.resetStyle(l); l.setStyle({opacity:1, fillOpacity: l.feature? estiloMunicipio(l.feature).fillOpacity : 0.5}); });
+      parent.eachLayer(function(l){ parent.resetStyle(l); l.setStyle({opacity:1, fillOpacity: l.feature? estiloComarca(l.feature).fillOpacity : 0.5}); });
       return;
     }
     parent.eachLayer(function(l){
       var nome = l._nomeNorm || normalizarTexto(String(l.feature.properties.name||""));
-      var lista = (typeof municipioParaComarcas==="function") ? municipioParaComarcas(String(l.feature.properties.name||"")) : [];
+      var lista = (typeof comarcaParaComarcasLista==="function") ? comarcaParaComarcasLista(String(l.feature.properties.name||"")) : [];
       var match = nome.indexOf(termoNorm)!==-1;
       if(!match && lista && lista.length){
         for(var i=0;i<lista.length;i++){
@@ -940,7 +940,7 @@ function destacarMapaPorBusca(termoNorm){
           if(cn.indexOf(termoNorm)!==-1 || termoNorm.indexOf(cn)!==-1){ match=true; break; }
         }
       } else if(!match){
-        var comarca = normalizarTexto(municipioParaComarca(String(l.feature.properties.name||"")));
+        var comarca = normalizarTexto(comarcaParaComarca(String(l.feature.properties.name||"")));
         match = comarca.indexOf(termoNorm)!==-1;
       }
       if(match){

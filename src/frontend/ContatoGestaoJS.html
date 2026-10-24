@@ -63,41 +63,40 @@
 
   window.atualizarDashboardPublico = function (telefonesRaw) {
     var contatos = Array.isArray(telefonesRaw) ? telefonesRaw : [];
-    var municipios = new Set();
+    var comarcas = new Set();
     var foruns = new Set();
     var unidades = new Set();
     var setores = new Set();
     var tipos = new Set();
     var porTipo = {};
-    var porMunicipio = {};
+    var porComarca = {};
 
     contatos.forEach(function (item) {
-      var municipio = texto(item, ["municipio", "comarca", "MUNICIPIO", "COMARCA"]) || "Não informado";
+      var comarca = texto(item, ["comarca", "comarca", "COMARCA", "COMARCA"]) || "Não informado";
       var forumId = texto(item, ["forumId", "FORUM_ID"]);
       var forum = texto(item, ["forum", "FORUM"]);
-      var unidadeId = texto(item, ["unidadeId", "UNIDADE_ID"]);
-      var setorId = texto(item, ["setorId", "SETOR_ID"]);
+      var noPaiId = texto(item, ["noPaiId", "NO_PAI_ID"]);
       var noId = texto(item, ["noId", "unidadeOrganizacionalId", "UNIDADE_ORGANIZACIONAL_ID"]);
       var tipoNo = texto(item, ["tipoNo"]);
       var tipo = texto(item, ["tipo", "TIPO"]) || "Não informado";
 
-      if (municipio !== "Não informado") municipios.add(municipio);
+      if (comarca !== "Não informado") comarcas.add(comarca);
       if (forumId || forum) foruns.add(forumId || forum);
-      if (unidadeId) unidades.add(unidadeId);
-      if (setorId || String(tipoNo).toUpperCase() === "SETOR") setores.add(setorId || noId);
+      if (noPaiId) unidades.add(noPaiId);
+      if (noId && String(tipoNo).toUpperCase() === "SETOR") setores.add(noId);
       tipos.add(tipo);
       porTipo[tipo] = (porTipo[tipo] || 0) + 1;
-      porMunicipio[municipio] = (porMunicipio[municipio] || 0) + 1;
+      porComarca[comarca] = (porComarca[comarca] || 0) + 1;
     });
 
     atualizarTextoSeguro("total-telefones", contatos.length);
-    atualizarTextoSeguro("total-municipios", municipios.size);
+    atualizarTextoSeguro("total-comarcas", comarcas.size);
     atualizarTextoSeguro("total-foruns", foruns.size);
     atualizarTextoSeguro("total-unidades", unidades.size);
     atualizarTextoSeguro("total-setores", setores.size);
     atualizarTextoSeguro("total-tipos", tipos.size);
     renderResumo("grafico-tipos", porTipo);
-    renderResumo("grafico-comarcas", porMunicipio);
+    renderResumo("grafico-comarcas", porComarca);
   };
 
   function contarSetores(lista) {
@@ -110,19 +109,19 @@
   }
 
   window.fcAtualizarDashboardHierarquia = function (dados) {
-    var municipios = dados && Array.isArray(dados.municipios) ? dados.municipios : [];
+    var comarcas = dados && Array.isArray(dados.comarcas) ? dados.comarcas : [];
     var totalForuns = 0;
     var totalUnidades = 0;
     var totalSetores = 0;
     var totalContatos = 0;
-    municipios.forEach(function (m) {
+    comarcas.forEach(function (m) {
       totalForuns += Number(m.qtdForuns || (m.foruns || []).length || 0);
       totalUnidades += Number(m.qtdUnidades || 0);
       totalContatos += Number(m.qtdContatos || 0);
       (m.foruns || []).forEach(function (f) { totalSetores += contarSetores(f.nos || []); });
     });
     atualizarTextoSeguro("total-telefones", totalContatos);
-    atualizarTextoSeguro("total-municipios", municipios.length);
+    atualizarTextoSeguro("total-comarcas", comarcas.length);
     atualizarTextoSeguro("total-foruns", totalForuns);
     atualizarTextoSeguro("total-unidades", totalUnidades);
     atualizarTextoSeguro("total-setores", totalSetores);

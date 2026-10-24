@@ -3,17 +3,46 @@ var escoposUsuarios = [];
 var usuarioEmEdicao = null;
 
 function textoEscopoUsuario(escopo) {
-  return escopo.caminhoTexto || escopo.nome || escopo.id;
+  var base = escopo.caminhoTexto || escopo.nome || escopo.id;
+  return (typeof escopo.n_contatos === "number") ? base + " (" + escopo.n_contatos + ")" : base;
 }
 
 function carregarUsuarios() {
   API.listarEscoposParaAcesso(function(respEscopos) {
     escoposUsuarios = respEscopos && respEscopos.sucesso === true ? (respEscopos.dados || []) : [];
+    preencherSeletorReverso();
     API.listarUsuarios(function(resp) {
       if (!resp || resp.sucesso !== true) { mostrarToast((resp && resp.erro) || "Erro ao carregar usuários.", "error"); return; }
       renderizarUsuarios(resp.dados || []);
     }, function(erro) { mostrarToast((erro && erro.message) || "Falha de comunicação.", "error"); });
   }, function(erro) { mostrarToast((erro && erro.message) || "Falha ao carregar escopos de acesso.", "error"); });
+}
+function preencherSeletorReverso() {
+  var select = document.getElementById("reverso-no"); if (!select) return; select.textContent = "";
+  var vazio = document.createElement("option"); vazio.value = ""; vazio.textContent = "Selecione Fórum, Unidade ou Setor…"; select.appendChild(vazio);
+  escoposUsuarios.filter(function(i) { return i.tipo === "FORUM" || i.tipo === "UNIDADE" || i.tipo === "SETOR"; }).forEach(function(item) {
+    var op = document.createElement("option"); op.value = item.id; op.textContent = textoEscopoUsuario(item); select.appendChild(op);
+  });
+}
+function consultarAcessoNo() {
+  var select = document.getElementById("reverso-no"); var saida = document.getElementById("reverso-resultado");
+  if (!select || !saida) return;
+  if (!select.value) { saida.textContent = "Selecione um nó."; return; }
+  saida.textContent = "Consultando…";
+  API.consultarUsuariosPorNo(select.value, function(resp) {
+    if (!resp || resp.sucesso !== true) { saida.textContent = (resp && resp.erro) || "Falha na consulta."; return; }
+    var dados = resp.dados || {}; var usuarios = dados.usuarios || [];
+    if (!usuarios.length) { saida.textContent = "Nenhum gestor alcança " + ((dados.no && dados.no.nome) || select.value) + "."; return; }
+    saida.textContent = "";
+    var titulo = document.createElement("div"); titulo.innerHTML = "<strong>" + usuarios.length + "</strong> gestor(es) com acesso a <strong>" + ((dados.no && dados.no.nome) || "") + "</strong>:"; saida.appendChild(titulo);
+    var ul = document.createElement("ul"); ul.style.margin = "6px 0 0 18px";
+    usuarios.forEach(function(u) {
+      var li = document.createElement("li");
+      li.textContent = (u.nome || u.email) + " <" + u.email + "> — via " + (u.vias || []).map(function(v) { return v.nome || v.id; }).join(", ");
+      ul.appendChild(li);
+    });
+    saida.appendChild(ul);
+  }, function(erro) { saida.textContent = (erro && erro.message) || "Falha de comunicação."; });
 }
 
 function renderizarUsuarios(lista) {
@@ -33,30 +62,32 @@ function renderizarUsuarios(lista) {
 
 var escoposUsuarioSelecionados = new Set();
 var forumUsuarioAberto = "";
+var unidadeUsuarioAberta = "";
 function chaveEscopoUsuario(escopo) { return escopo.tipo + ":" + escopo.id; }
 function prepararSeletorLocalidadesUsuario(selecionados) {
   escoposUsuarioSelecionados = new Set((selecionados || []).map(chaveEscopoUsuario));
   forumUsuarioAberto = "";
-  var select = document.getElementById("usuario-municipio"); if (!select) return; select.textContent = "";
-  var municipios = [];
-  escoposUsuarios.forEach(function(escopo) { if (escopo.municipio && municipios.indexOf(escopo.municipio) < 0) municipios.push(escopo.municipio); });
+  var select = document.getElementById("usuario-comarca"); if (!select) return; select.textContent = "";
+  var comarcas = [];
+  escoposUsuarios.forEach(function(escopo) { if (escopo.comarca && comarcas.indexOf(escopo.comarca) < 0) comarcas.push(escopo.comarca); });
   var inicial = document.createElement("option"); inicial.value = ""; inicial.textContent = "Selecione uma comarca"; select.appendChild(inicial);
-  municipios.forEach(function(nome) { var opcao = document.createElement("option"); opcao.value = nome; opcao.textContent = nome; select.appendChild(opcao); });
+  comarcas.forEach(function(nome) { var opcao = document.createElement("option"); opcao.value = nome; opcao.textContent = nome; select.appendChild(opcao); });
   var primeiroSelecionado = escoposUsuarios.find(function(escopo) { return escoposUsuarioSelecionados.has(chaveEscopoUsuario(escopo)); });
-  select.value = primeiroSelecionado ? primeiroSelecionado.municipio : (municipios[0] || "");
+  select.value = primeiroSelecionado ? primeiroSelecionado.comarca : (comarcas[0] || "");
   renderizarSeletorLocalidadesUsuario();
 }
 function marcarEscopoUsuario(escopo, marcado) {
   var chave = chaveEscopoUsuario(escopo);
   if (marcado) {
-    escoposUsuarioSelecionados.add(chave);
-    if (escopo.tipo === "FORUM") escoposUsuarios.filter(function(item) { return item.tipo === "UNIDADE" && item.forumId === escopo.forumId; }).forEach(function(item) { escoposUsuarioSelecionados.delete(chaveEscopoUsuario(item)); });
+  escoposUsuarioSelecionados.add(chave);
+  if (escopo.tipo === "FORUM") escoposUsuarios.filter(function(item) { return (item.tipo === "UNIDADE" || item.tipo === "SETOR") && item.forumId === escopo.forumId; }).forEach(function(item) { escoposUsuarioSelecionados.delete(chaveEscopoUsuario(item)); });
+  if (escopo.tipo === "UNIDADE") escoposUsuarios.filter(function(item) { return item.tipo === "SETOR" && item.paiId === escopo.id; }).forEach(function(item) { escoposUsuarioSelecionados.delete(chaveEscopoUsuario(item)); });
   } else escoposUsuarioSelecionados.delete(chave);
   renderizarSeletorLocalidadesUsuario();
 }
 function renderizarSeletorLocalidadesUsuario() {
-  var municipio = document.getElementById("usuario-municipio"); var holder = document.getElementById("usuario-localidades"); if (!municipio || !holder) return; holder.textContent = "";
-  var foruns = escoposUsuarios.filter(function(item) { return item.tipo === "FORUM" && item.municipio === municipio.value; });
+  var comarca = document.getElementById("usuario-comarca"); var holder = document.getElementById("usuario-localidades"); if (!comarca || !holder) return; holder.textContent = "";
+  var foruns = escoposUsuarios.filter(function(item) { return item.tipo === "FORUM" && item.comarca === comarca.value; });
   if (!foruns.length) { holder.textContent = "Selecione uma comarca para visualizar os Fóruns."; return; }
   var titulo = document.createElement("strong"); titulo.textContent = "Fóruns"; holder.appendChild(titulo);
   foruns.forEach(function(forum) {
@@ -67,9 +98,18 @@ function renderizarSeletorLocalidadesUsuario() {
     if (forumUsuarioAberto === forum.id) {
       var subtitulo = document.createElement("strong"); subtitulo.textContent = "Unidades"; subtitulo.style.cssText = "display:block;margin:8px 0 4px 28px"; holder.appendChild(subtitulo);
       escoposUsuarios.filter(function(item) { return item.tipo === "UNIDADE" && item.forumId === forum.forumId; }).forEach(function(unidade) {
-        var unidadeLinha = document.createElement("label"); unidadeLinha.style.cssText = "display:block;margin:5px 0 5px 28px";
+        var unidadeLinha = document.createElement("div"); unidadeLinha.style.cssText = "display:block;margin:5px 0 5px 28px";
         var unidadeCheck = document.createElement("input"); unidadeCheck.type = "checkbox"; unidadeCheck.checked = escoposUsuarioSelecionados.has(chaveEscopoUsuario(unidade)); unidadeCheck.disabled = check.checked; unidadeCheck.onchange = function() { marcarEscopoUsuario(unidade, unidadeCheck.checked); };
-        unidadeLinha.appendChild(unidadeCheck); unidadeLinha.appendChild(document.createTextNode(" " + textoEscopoUsuario(unidade))); holder.appendChild(unidadeLinha);
+        unidadeLinha.appendChild(unidadeCheck);
+        var unidadeNome = document.createElement("button"); unidadeNome.type = "button"; unidadeNome.className = "btn"; unidadeNome.style.marginLeft = "8px"; unidadeNome.textContent = " " + textoEscopoUsuario(unidade); unidadeNome.onclick = function() { unidadeUsuarioAberta = unidadeUsuarioAberta === unidade.id ? "" : unidade.id; renderizarSeletorLocalidadesUsuario(); };
+        unidadeLinha.appendChild(unidadeNome); holder.appendChild(unidadeLinha);
+        if (unidadeUsuarioAberta === unidade.id) {
+          escoposUsuarios.filter(function(item) { return item.tipo === "SETOR" && item.paiId === unidade.id; }).forEach(function(setor) {
+            var setorLinha = document.createElement("label"); setorLinha.style.cssText = "display:block;margin:4px 0 4px 56px";
+            var setorCheck = document.createElement("input"); setorCheck.type = "checkbox"; setorCheck.checked = escoposUsuarioSelecionados.has(chaveEscopoUsuario(setor)); setorCheck.disabled = check.checked || unidadeCheck.checked; setorCheck.onchange = function() { marcarEscopoUsuario(setor, setorCheck.checked); };
+            setorLinha.appendChild(setorCheck); setorLinha.appendChild(document.createTextNode(" " + textoEscopoUsuario(setor))); holder.appendChild(setorLinha);
+          });
+        }
       });
     }
   });

@@ -20,7 +20,7 @@ function pesquisarHierarquiaPublicaForum(termo) {
     new AuthService().exigirPermissao(CONFIG.PERMISSOES.PESQUISAR);
     const valor = termo === null || termo === undefined ? "" : String(termo);
     if (valor.trim() && limparTexto(valor).length < CONFIG.LIMITES.TAMANHO_PESQUISA) {
-      return respostaSucesso({ sucesso: true, municipios: [] });
+      return respostaSucesso({ sucesso: true, comarcas: [] });
     }
     return respostaSucesso(pesquisarHierarquiaContatos(valor));
   } catch (erro) {
