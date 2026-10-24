@@ -802,15 +802,15 @@ function construirTooltipComarca(nomeComarca){
     }
     var microStr = microLista.join(", ");
     var nomesStr = comarcas.length===1 ? comarcas[0] : comarcas.join(", ");
-    var linha2 = nomesStr + " \u00b7 " + densTotal + " setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
-    if(comarcas.length>1) linha2 = comarcas.length + " comarcas: " + nomesStr + " \u00b7 " + densTotal + " setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
+    var linha2 = nomesStr + " \u00b7 " + densTotal + " Setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
+    if(comarcas.length>1) linha2 = comarcas.length + " comarcas: " + nomesStr + " \u00b7 " + densTotal + " Setor" + (densTotal===1?"":"es") + (microStr?" \u00b7 "+microStr:"");
     return '<div class="tooltip-premium">'+ escaparConsulta(nomeComarca) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
   }
   var comarca = comarcaParaComarca(nomeComarca);
   var dens = comarca ? obterDensidadeComarca(comarca) : 0;
   var micro = "";
   try{ if(comarca && typeof microrregioesPorComarca!=="undefined") micro = String(microrregioesPorComarca[comarca]||"").trim(); }catch(e){}
-  var linha2 = comarca ? (dens+" setor"+(dens===1?"":"es")+(micro?" \u00b7 "+micro:"")) : (micro||"Comarca sem correspond\u00eancia direta");
+  var linha2 = comarca ? (dens+" Setor"+(dens===1?"":"es")+(micro?" \u00b7 "+micro:"")) : (micro||"Comarca sem correspond\u00eancia direta");
   return '<div class="tooltip-premium">'+ escaparConsulta(nomeComarca) + '<small>'+ escaparConsulta(linha2) +'</small></div>';
 }
 
@@ -1043,10 +1043,10 @@ function renderizarMapaConsulta(){
       '</div>' +
       '<div id="mapa-leaflet"></div>' +
       '<div class="mapa-legenda">' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#e2e8f0"></span> Sem setor</span>' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#bfdbfe"></span> 1\u20133 setores</span>' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#60a5fa"></span> 4\u20137 setores</span>' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#1d63b8"></span> 8+ setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#e2e8f0"></span> Sem Setor</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#bfdbfe"></span> 1\u20133 Setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#60a5fa"></span> 4\u20137 Setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#1d63b8"></span> 8+ Setores</span>' +
         '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#00adb5"></span> Selecionado / hover</span>' +
       '</div>' +
     '</div>';
@@ -1066,10 +1066,10 @@ function renderizarMapaConsulta(){
       '</div>' +
       '<div id="mapa-leaflet"></div>' +
       '<div class="mapa-legenda">' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#e2e8f0"></span> Sem setor</span>' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#bfdbfe"></span> 1\u20133 setores</span>' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#60a5fa"></span> 4\u20137 setores</span>' +
-        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#1d63b8"></span> 8+ setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#e2e8f0"></span> Sem Setor</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#bfdbfe"></span> 1\u20133 Setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#60a5fa"></span> 4\u20137 Setores</span>' +
+        '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#1d63b8"></span> 8+ Setores</span>' +
         '<span class="mapa-legenda-item"><span class="mapa-legenda-cor" style="background:#00adb5"></span> Selecionado / hover</span>' +
       '</div>' +
     '</div>';
