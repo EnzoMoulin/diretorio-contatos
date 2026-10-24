@@ -506,9 +506,29 @@
     }).join("") + "</div>";
   }
 
+  function cardContatosGerais(contatos, contexto) {
+    var lista = contatos || [];
+    return '<div class="fc-section"><div class="fc-card fc-card--toggle" data-gerais-toggle title="Expandir/recolher contatos gerais">' +
+      '<div class="fc-card-head"><div><h4>Contatos gerais</h4></div>' +
+      '<div class="fc-meta">' + badgeQuantidade(lista.length, "Contato", "Contatos") +
+      '<span class="fc-toggle" aria-hidden="true">▾</span></div></div></div>' +
+      '<div data-gerais-body hidden>' + (lista.length ? contatosCards(lista, contexto) : '<div class="fc-empty">Sem contatos gerais.</div>') + "</div></div>";
+  }
+
   function bindAcoesContexto(contexto) {
     vincularSolicitacoes();
     vincularCopias();
+
+    document.querySelectorAll("[data-gerais-toggle]").forEach(function (card) {
+      card.onclick = function () {
+        var body = card.nextElementSibling;
+        if (!body) return;
+        var abrir = body.hasAttribute("hidden");
+        if (abrir) body.removeAttribute("hidden");
+        else body.setAttribute("hidden", "");
+        card.classList.toggle("aberto", abrir);
+      };
+    });
 
     document.querySelectorAll("[data-scroll-top]").forEach(function (btn) {
       btn.onclick = function () {
@@ -568,7 +588,8 @@
 
   function opcoesComarcas(comarcas, selecionado) {
     return '<option value="">Selecione a Comarca</option>' + (comarcas || []).filter(function (m) { return !ehOrgao(m); }).map(function (m) {
-      return '<option value="' + esc(m.id) + '"' + (m.id === selecionado ? " selected" : "") + ">" + esc(m.nome) + "</option>";
+      var n = Number(m.qtdContatos || 0);
+      return '<option value="' + esc(m.id) + '"' + (m.id === selecionado ? " selected" : "") + ">" + esc(m.nome) + " (" + n + (n === 1 ? " contato)" : " contatos)") + "</option>";
     }).join("");
   }
 
@@ -750,8 +771,7 @@
       '<div class="fc-address-row"><div class="fc-inherit"><strong>Endereço do TJES:</strong> ' + linkEndereco(m.endereco) +
       (m.cep ? ' • CEP ' + esc(m.cep) : '') + '</div></div>' +
       acoesLocalidade("COMARCA", m, pode) +
-      '<div class="fc-section"><div class="fc-section-title"><h3>Contatos gerais</h3></div>' +
-      contatosCards(m.contatos || [], contexto) + '</div>' +
+      cardContatosGerais(m.contatos || [], contexto) +
       '<div class="fc-section"><div class="fc-section-title"><h3>Unidades e Setores</h3></div>' +
       ((m.nos || []).length ? (m.nos || []).map(cardNo).join("") : '<div class="fc-empty">Nenhuma Unidade cadastrada.</div>') +
       '</div>' + botaoImpressaoLocalidade("COMARCA") + barraNavegacaoInferior("Comarcas", true);
@@ -808,8 +828,7 @@
       (f.cep ? " • CEP " + esc(f.cep) : "") + "</div></div>" +
       acoesLocalidade("FORUM", f, pode) +
       (pode ? "" : botaoSolicitar("FORUM", f.id)) +
-      '<div class="fc-section"><div class="fc-section-title"><h3>Contatos gerais</h3></div>' +
-      contatosCards(f.contatos || [], contexto) + "</div>" +
+      cardContatosGerais(f.contatos || [], contexto) +
       '<div class="fc-section"><div class="fc-section-title"><h3>Unidades e Setores</h3></div>' +
       ((f.nos || []).length ? (f.nos || []).map(cardNo).join("") : '<div class="fc-empty">Nenhuma Unidade cadastrada.</div>') +
       "</div>" + botaoImpressaoLocalidade("FORUM") + barraNavegacaoInferior("Fóruns", true);
@@ -1195,10 +1214,25 @@
     return String(p.CD_MUN || p.codmun || p.id || p.code || "").replace(/\D/g, "");
   }
 
+  function comarcaPorCodigo(codigo) {
+    var lista = (estado.dados && estado.dados.comarcas) || [];
+    for (var i = 0; i < lista.length; i++) {
+      if (String(lista[i].codigoIbge || "").replace(/\D/g, "") === codigo) return lista[i];
+    }
+    return null;
+  }
+
   function comarcaComContatos(codigo) {
-    return (estado.dados.comarcas || []).some(function (m) {
-      return String(m.codigoIbge || "").replace(/\D/g, "") === codigo && Number(m.qtdContatos || 0) > 0;
-    });
+    var m = comarcaPorCodigo(codigo);
+    return !!m && Number(m.qtdContatos || 0) > 0;
+  }
+
+  function rotuloMapaComarca(codigo, nome) {
+    var m = comarcaPorCodigo(codigo);
+    if (!m || Number(m.qtdContatos || 0) === 0) return esc(nome) + "<br><small>Sem contatos cadastrados</small>";
+    var nf = Number(m.qtdForuns || (m.foruns || []).length || 0);
+    var nc = Number(m.qtdContatos || 0);
+    return esc(nome) + "<br><small>" + nf + (nf === 1 ? " Fórum" : " Fóruns") + " • " + nc + (nc === 1 ? " contato" : " contatos") + "</small>";
   }
 
   function estiloComarca(feature) {
@@ -1259,7 +1293,7 @@
               var nome = String(p.name || p.NOME || p.NM_MUN || "Comarca");
               var tem = comarcaComContatos(codigo);
               layer.bindTooltip(
-                esc(nome) + (tem ? "<br><small>Possui contatos cadastrados</small>" : "<br><small>Sem contatos cadastrados</small>"),
+                rotuloMapaComarca(codigo, nome),
                 { sticky: true }
               );
               if (tem) {
