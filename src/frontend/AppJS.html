@@ -711,12 +711,12 @@ function navegarParaTelefones() {
 }
 function navegarParaTJES() {
   marcarMenuAtivo("menu-tjes");
-  mostrarView("consulta-telefones-view");
+  mostrarView("consulta-telefones-view", "menu-tjes");
   try { if (typeof window.fcTJES === "function") setTimeout(window.fcTJES, 80); } catch (e) {}
 }
 function navegarParaUteis() {
   marcarMenuAtivo("menu-uteis");
-  mostrarView("consulta-telefones-view");
+  mostrarView("consulta-telefones-view", "menu-uteis");
   try { if (typeof window.fcUteis === "function") setTimeout(window.fcUteis, 80); } catch (e) {}
 }
 function navegarParaTabelaTelefones(){
@@ -1039,7 +1039,7 @@ function tratarCliqueAcesso() {
  * ----------------------------------------------------------
  */
 
-function mostrarView(viewId) {
+function mostrarView(viewId, menuId) {
   // --- Bloqueio por perfil ---
   try {
     var p = (typeof usuarioAtual !== "undefined" && usuarioAtual) ? String(usuarioAtual.perfil || "USUARIO_CONSULTA") : "USUARIO_CONSULTA";
@@ -1131,10 +1131,10 @@ function mostrarView(viewId) {
       }
     });
 
-  // v3.32: Telefones abrange telefones-view e consulta-telefones-view — marca menu-telefones como ativo
+  // v3.32: Telefones abrange telefones-view e consulta-telefones-view — marca o menu correspondente
   try {
     if (viewId === "telefones-view" || viewId === "consulta-telefones-view") {
-      var _btnTel = document.getElementById("menu-telefones");
+      var _btnTel = document.getElementById(menuId || "menu-telefones");
       if (_btnTel) _btnTel.classList.add("active");
     }
   } catch(eActiveTel) {}
