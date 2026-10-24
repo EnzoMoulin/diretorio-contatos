@@ -1336,6 +1336,10 @@
       if (estado.geojson) {
         estado.geojson.eachLayer(function (layer) {
           layer.setStyle(estiloComarca(layer.feature));
+          var codigo = codigoComarca(layer.feature);
+          var p = (layer.feature && layer.feature.properties) || {};
+          var nome = String(p.name || p.NOME || p.NM_MUN || "Comarca");
+          layer.bindTooltip(rotuloMapaComarca(codigo, nome), { sticky: true });
         });
       }
       estado.mapa.invalidateSize();
