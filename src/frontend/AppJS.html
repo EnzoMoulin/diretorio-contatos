@@ -682,6 +682,8 @@ function marcarMenuAtivo(id) {
 
 function navegarParaTelefones() {
   marcarMenuAtivo("menu-telefones");
+  mostrarView("consulta-telefones-view", "menu-telefones");
+  try { if (typeof window.fcInicio === "function") setTimeout(window.fcInicio, 80); } catch (e) {}
   // v3.33 GS usa mapa (consulta-telefones-view) com todas comarcas, igual GC mas sem restricao
   try{
     var _pNav = (typeof usuarioAtual!=="undefined" && usuarioAtual) ? String(usuarioAtual.perfil||"").toUpperCase() : "";
