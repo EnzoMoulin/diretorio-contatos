@@ -509,9 +509,9 @@
   function cardContatosGerais(contatos, contexto, comPrint) {
     var lista = contatos || [];
     return '<div class="fc-section"><div class="fc-card fc-card--toggle" data-gerais-toggle title="Expandir/recolher contatos gerais">' +
-      '<div class="fc-card-head"><div><h4>Contatos gerais</h4></div>' +
+      '<div class="fc-card-head"><div><h4>Contatos Gerais</h4></div>' +
       '<div class="fc-meta">' + badgeQuantidade(lista.length, "Contato", "Contatos") +
-      (comPrint ? '<button type="button" class="fc-icon-btn" data-gerais-print title="Imprimir / Salvar PDF dos Contatos gerais">🖨</button>' : "") +
+      (comPrint ? '<button type="button" class="fc-icon-btn" data-gerais-print title="Imprimir / Salvar PDF dos Contatos Gerais">🖨</button>' : "") +
       '<span class="fc-toggle" aria-hidden="true">▾</span></div></div></div>' +
       '<div data-gerais-body hidden>' + (lista.length ? contatosCards(lista, contexto) : '<div class="fc-empty">Sem contatos gerais.</div>') + "</div></div>";
   }
@@ -613,6 +613,16 @@
         '" data-copy-label="' + esc(tipo) + '" title="Copiar ' + esc(tipo) + '">⧉</button></div>' +
         "</div></article>";
     }).join("") + "</div>";
+  }
+
+  function barraAcoesUnidade(tipoNo, rotuloVoltar) {
+    var rotulo = tipoNo === "Setor" ? "Setor" : "Unidade";
+    var artigo = rotulo === "Unidade" ? "da" : "do";
+    return '<div class="fc-print-footer fc-actions-row">' +
+      '<button type="button" class="fc-btn" id="fc-back-bottom">← ' + esc(rotuloVoltar || "Voltar") + "</button>" +
+      '<button type="button" class="fc-btn" id="fc-print-unit" title="Imprimir / Salvar PDF dos contatos ' +
+      artigo + " " + rotulo + '">🖨 Imprimir / Salvar PDF</button>' +
+      '<button type="button" class="fc-btn" data-scroll-top title="Voltar ao topo">↑ Voltar ao topo</button></div>';
   }
 
   function barraNavegacaoInferior(rotuloVoltar, semLinha) {
@@ -896,7 +906,7 @@
         ? '<div class="fc-section"><div class="fc-section-title"><h3>Setores</h3></div>' +
           no.filhos.map(cardNo).join("") + "</div>"
         : "") +
-      botaoImpressaoLocalidade("UNIDADE", tipoTela) + barraNavegacaoInferior(pai ? "Unidade" : (ehOrgao(m) ? "TJES" : "Fórum"), true);
+      barraAcoesUnidade(tipoTela, pai ? "Unidade" : (ehOrgao(m) ? "TJES" : "Fórum"));
 
     document.getElementById("fc-back-no").onclick = function () {
       if (pai) abrirNo(pai.id);
@@ -1190,7 +1200,7 @@
     var corpo = (m.contatos || []).length
       ? "<ul>" + (m.contatos || []).map(contatoPrint).join("") + "</ul>"
       : '<p class="muted">Sem contatos gerais.</p>';
-    abrirImpressao("Contatos gerais — TJES",
+    abrirImpressao("Contatos Gerais — TJES",
       "<section><h2>TJES</h2>" +
       '<p class="meta">' + printEsc(m.endereco || "Endereço não informado") +
       (m.cep ? " • CEP " + printEsc(m.cep) : "") + "</p>" + corpo + "</section>");
@@ -1203,7 +1213,7 @@
     var corpo = (f.contatos || []).length
       ? "<ul>" + (f.contatos || []).map(contatoPrint).join("") + "</ul>"
       : '<p class="muted">Sem contatos gerais.</p>';
-    abrirImpressao("Contatos gerais — " + f.nome,
+    abrirImpressao("Contatos Gerais — " + f.nome,
       "<section><h2>" + printEsc(f.nome) + "</h2>" +
       '<p class="meta">' + printEsc(ehOrgao(m) ? "TJES" : m.nome) + " • " +
       printEsc(f.endereco || "Endereço não informado") +
@@ -1336,6 +1346,10 @@
       if (estado.geojson) {
         estado.geojson.eachLayer(function (layer) {
           layer.setStyle(estiloComarca(layer.feature));
+          var codigo = codigoComarca(layer.feature);
+          var p = (layer.feature && layer.feature.properties) || {};
+          var nome = String(p.name || p.NOME || p.NM_MUN || "Comarca");
+          layer.bindTooltip(rotuloMapaComarca(codigo, nome), { sticky: true });
         });
       }
       estado.mapa.invalidateSize();

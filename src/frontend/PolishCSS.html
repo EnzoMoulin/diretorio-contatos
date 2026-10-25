@@ -249,6 +249,8 @@ button{touch-action:manipulation}
   font-weight:700;
 }
 .user-info-button{font-family:inherit;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+.topbar #user-info{margin-top:0;margin-bottom:0}
+.topbar .system-title h1{margin:0;line-height:1.2}
 .user-info-button:not(:disabled):hover{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8;transform:translateY(-1px)}
 .user-info-button:disabled{cursor:default}
 .user-info::before{content:"●";color:#22c55e;font-size:8px}
@@ -674,17 +676,17 @@ body[data-theme="dark"] .fc-back {color:#93c5fd}
 .fc-map-legenda span {display:block;margin:2px 0}
 .fc-map-legenda .tem-contato {color:#2563eb}
 .fc-map-legenda .sem-contato {color:#94a3b8}
-.fc-bottom-nav {display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:12px;border-top:1px solid #e2e8f0;background:#fff;padding-bottom:4px}
+.fc-bottom-nav {display:flex;justify-content:space-between;align-items:center;gap:8px;margin:20px 0 4px;padding-top:14px;border-top:1px solid #e2e8f0;background:#fff;padding-bottom:4px}
 body[data-theme="dark"] .fc-bottom-nav {background:#1e293b;border-color:#334155}
 .fc-bottom-nav .nav-group {display:flex;gap:8px}
-.fc-bottom-nav--colado{border-top:0;margin-top:4px;padding-top:0}
+.fc-bottom-nav--colado{border-top:0;margin-top:10px;padding-top:0}
 .fc-bottom-nav .fc-btn{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fc-bottom-nav{border-top:0}
 .fc-card--toggle{cursor:pointer}
 .fc-card--toggle .fc-toggle{display:inline-block;transition:transform .15s ease;color:#64748b}
 .fc-card--toggle.aberto .fc-toggle{transform:rotate(180deg)}
 .fc-icon-btn{border:1px solid #cbd5e1;background:#fff;border-radius:8px;min-width:34px;min-height:34px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
 .fc-icon-btn:hover{background:#f1f5f9}
+.fc-actions-row .fc-btn{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fc-pill-type {background:#dbeafe;color:#1e40af}
 #print-area {display:none}
 /* ---- dark dos blocos novos ---- */
@@ -705,7 +707,7 @@ body[data-theme="dark"] .fc-map-legenda {background:rgba(30,41,59,.94);border-co
 .tooltip-premium small{display:block;font-weight:600;font-size:11px;color:#475569}
 .fc-footer{color:#94a3b8;font-size:13px;text-align:center;padding:10px;display:block;width:100%}
 #consulta-telefones-view .telefones-container{flex-wrap:wrap}
-#consulta-telefones-view .telefones-container .fc-footer{flex:1 0 100%}
+#consulta-telefones-view .telefones-container .fc-footer{flex:1 0 100%;text-align:left;display:flex;align-items:center;padding:6px 0 18px 8px}
 @media print{
   @page{size:A4 portrait;margin:15mm 12mm}
   .sidebar,.topbar,#consulta-mapa,input,select,button,footer,.modal,#map-msg,.fc-print-footer,.fc-copy-btn{display:none!important}
