@@ -17,6 +17,7 @@
     noId: "",
     mapa: null,
     geojson: null,
+    comarcaSel: "",
     resizeObserver: null,
     carregando: false,
     inicializado: false,
@@ -1383,18 +1384,14 @@
 
   function destacarComarca(codigo) {
     if (!estado.mapa || !estado.geojson) return;
-    if (!codigo) {
-      estado.geojson.eachLayer(function (layer) { layer.setStyle(estiloComarca(layer.feature)); });
-      return;
-    }
+    estado.comarcaSel = String(codigo || "").replace(/\D/g, "");
+    var alvo = estado.comarcaSel;
     estado.geojson.eachLayer(function (layer) {
       var cod = codigoComarca(layer.feature);
-      var alvo = String(codigo).replace(/\D/g, "");
-      var ativo = cod === alvo;
-      layer.setStyle(Object.assign({}, estiloComarca(layer.feature), {
-        weight: ativo ? 3 : estiloComarca(layer.feature).weight,
-        fillOpacity: ativo ? .58 : estiloComarca(layer.feature).fillOpacity
-      }));
+      var ativo = !!alvo && cod === alvo;
+      layer.setStyle(ativo
+        ? { color: "#0f172a", weight: 2.4, fillColor: "#00adb5", fillOpacity: .8 }
+        : estiloComarca(layer.feature));
     });
   }
 
@@ -1443,6 +1440,14 @@
                   if (m) abrirComarca(m.id);
                 });
               }
+              layer.on("mouseover", function () {
+                if ((estado.comarcaSel || "") !== codigo) {
+                  layer.setStyle({ color: "#0f172a", weight: 2.2, fillColor: "#00adb5", fillOpacity: .78 });
+                }
+              });
+              layer.on("mouseout", function () {
+                destacarComarca(estado.comarcaSel || "");
+              });
             }
           }).addTo(estado.mapa);
           adicionarLegendaMapa();
@@ -1466,12 +1471,12 @@
     try {
       if (estado.geojson) {
         estado.geojson.eachLayer(function (layer) {
-          layer.setStyle(estiloComarca(layer.feature));
           var codigo = codigoComarca(layer.feature);
           var p = (layer.feature && layer.feature.properties) || {};
           var nome = String(p.name || p.NOME || p.NM_MUN || "Comarca");
           layer.bindTooltip(rotuloMapaComarca(codigo, nome), { sticky: true });
         });
+        destacarComarca(estado.comarcaSel || "");
       }
       estado.mapa.invalidateSize();
     } catch (e) {}
