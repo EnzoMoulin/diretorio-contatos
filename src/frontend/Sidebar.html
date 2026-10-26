@@ -33,11 +33,6 @@ Arquivo: Sidebar.html
         <span>Telefones Úteis</span>
       </button>
 
-      <button type="button" id="menu-formulario" class="menu-item hidden" onclick="mostrarView('formulario-acesso-view')">
-        <span class="icon" aria-hidden="true">✎</span>
-        <span>Formulário de Acesso</span>
-      </button>
-
       <button type="button" id="menu-solicitacoes" class="menu-item hidden" onclick="mostrarView('solicitacoes-view')">
         <span class="icon" aria-hidden="true">◎</span>
         <span>Solicitações de Acesso</span>
@@ -69,11 +64,16 @@ Arquivo: Sidebar.html
 
   <div class="sidebar-footer">
     <div id="sidebar-user" class="sidebar-user"><?= ehContextoAdmin ? 'Sem acesso administrativo' : 'Consulta Pública' ?></div>
-    <div id="sidebar-access-hint" class="sidebar-access-hint hidden">Solicite acesso administrativo na aba Formulário de Acesso.</div>
+    <div id="sidebar-access-hint" class="sidebar-access-hint hidden">Solicite acesso administrativo abaixo.</div>
 
     <button type="button" id="btn-status-acesso" class="sidebar-status-btn <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="entrarAreaAdministrativa()">
       <span id="icone-status-acesso" aria-hidden="true">🔑</span>
       <span id="texto-status-acesso"><?= ehContextoAdmin ? 'Entrar na área administrativa' : 'Acesso Administrativo' ?></span>
+    </button>
+
+    <button type="button" id="btn-solicitar-acesso" class="sidebar-status-btn hidden" onclick="mostrarView('formulario-acesso-view')">
+      <span aria-hidden="true">📝</span>
+      <span>Solicitar acesso</span>
     </button>
   </div>
 </div>

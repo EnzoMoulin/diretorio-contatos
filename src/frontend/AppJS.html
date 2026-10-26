@@ -481,6 +481,13 @@ function atualizarInterfaceUsuario() {
     ));
   }
 
+  const btnSolicitarAcesso = document.getElementById("btn-solicitar-acesso");
+  if (btnSolicitarAcesso) {
+    btnSolicitarAcesso.classList.toggle("hidden", !(
+      window.EH_CONTEXTO_ADMIN === true && usuario.podeSolicitarAcesso === true
+    ));
+  }
+
   const btnNovo =
     document.getElementById(
       "btn-novo-telefone"
