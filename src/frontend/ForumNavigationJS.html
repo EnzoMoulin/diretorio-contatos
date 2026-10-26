@@ -126,6 +126,117 @@
     return itens.filter(Boolean).join(" • ");
   }
 
+  /* ---- Busca global (contato, setor, unidade, valor) ---- */
+  function normBusca(s) {
+    return String(s == null ? "" : s).toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+  var indiceBusca = null;
+  function construirIndiceBusca() {
+    var indice = [];
+    ((estado.dados && estado.dados.comarcas) || []).forEach(function (m) {
+      (m.foruns || []).forEach(function (f) {
+        (f.contatos || []).forEach(function (c) {
+          indice.push({ contato: c, comarcaId: m.id, forumId: f.id, noId: "",
+            caminho: m.nome + " › " + f.nome + " › Contatos gerais" });
+        });
+        (function percorrer(nos, trilha) {
+          (nos || []).forEach(function (no) {
+            var rota = trilha.concat([no.nome || fmtTipoNo(no.tipo)]);
+            (no.contatos || []).forEach(function (c) {
+              indice.push({ contato: c, comarcaId: m.id, forumId: f.id, noId: no.id,
+                caminho: m.nome + " › " + f.nome + " › " + rota.join(" › ") });
+            });
+            percorrer(no.filhos || [], rota);
+          });
+        })((f.nos || []), []);
+      });
+    });
+    return indice;
+  }
+  function buscarContatos(termo) {
+    if (indiceBusca === null) indiceBusca = construirIndiceBusca();
+    var t = normBusca(termo);
+    if (t.length < 2) return [];
+    var saida = [];
+    for (var i = 0; i < indiceBusca.length && saida.length < 8; i++) {
+      var item = indiceBusca[i], c = item.contato;
+      var texto = normBusca([c.descricao, c.tipo, c.valor, c.observacao, item.caminho].join(" "));
+      if (texto.indexOf(t) !== -1) saida.push(item);
+    }
+    return saida;
+  }
+  function destacarContato(id) {
+    try {
+      var el = document.querySelector('[data-contato="' + String(id).replace(/"/g, "") + '"]');
+      if (!el) return;
+      if (el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" });
+      el.classList.remove("fc-contato--achado");
+      void el.offsetWidth;
+      el.classList.add("fc-contato--achado");
+    } catch (e) {}
+  }
+  function expandirGeraisSePreciso() {
+    try {
+      var toggles = document.querySelectorAll("[data-gerais-toggle]");
+      for (var i = 0; i < toggles.length; i++) {
+        var body = toggles[i].nextElementSibling;
+        if (body && body.hasAttribute("hidden")) toggles[i].click();
+      }
+    } catch (e) {}
+  }
+  function irParaResultado(item) {
+    if (!item) return;
+    estado.comarcaId = item.comarcaId;
+    estado.forumId = "";
+    estado.noId = "";
+    marcarMenu("menu-telefones");
+    var m = comarcaAtual();
+    if (!m) return;
+    if (estado.mapa && estado.geojson && m.codigoIbge) destacarComarca(m.codigoIbge);
+    if (ehOrgao(m)) { renderOrgao(); }
+    else if (item.forumId) {
+      estado.forumId = item.forumId;
+      if (item.noId) abrirNo(item.noId);
+      else { renderForum(); expandirGeraisSePreciso(); }
+    } else renderForuns();
+    destacarContato(item.contato.id);
+  }
+  function vincularBuscaGlobal() {
+    var campo = document.getElementById("fc-busca"), caixa = document.getElementById("fc-busca-resultados");
+    if (!campo || !caixa || campo.getAttribute("data-busca-ok")) return;
+    campo.setAttribute("data-busca-ok", "1");
+    function fechar() { caixa.setAttribute("hidden", ""); caixa.innerHTML = ""; }
+    campo.addEventListener("input", function () {
+      var resultados = buscarContatos(campo.value);
+      if (!resultados.length) { fechar(); return; }
+      caixa.innerHTML = resultados.map(function (item, i) {
+        var c = item.contato;
+        return '<button type="button" class="fc-busca-item" data-busca-i="' + i + '">' +
+          "<strong>" + esc(c.descricao || fmtTipoContato(c.tipo)) + "</strong>" +
+          "<small>" + esc(fmtTipoContato(c.tipo) + (c.valor ? " · " + c.valor : "")) + "</small>" +
+          "<small>" + esc(item.caminho) + "</small></button>";
+      }).join("");
+      caixa.removeAttribute("hidden");
+      var botoes = caixa.querySelectorAll("[data-busca-i]");
+      for (var i = 0; i < botoes.length; i++) {
+        (function (btn, item) {
+          btn.onclick = function () { fechar(); campo.value = ""; irParaResultado(item); };
+        })(botoes[i], resultados[+botoes[i].getAttribute("data-busca-i")]);
+      }
+    });
+    campo.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { fechar(); campo.blur(); }
+      else if (e.key === "Enter") {
+        var r = buscarContatos(campo.value);
+        if (r.length) { fechar(); campo.value = ""; irParaResultado(r[0]); }
+      }
+    });
+    document.addEventListener("click", function (e) {
+      if (e.target !== campo && !caixa.contains(e.target)) fechar();
+    });
+  }
+
   function encontrarComarca(id) {
     return (estado.dados.comarcas || []).find(function (m) { return m.id === id; }) || null;
   }
@@ -324,7 +435,7 @@
       .fc-btn:hover{background:#f8fafc}.fc-btn--primary{background:#1d4ed8;border-color:#1d4ed8;color:#fff}.fc-btn--primary:hover{background:#1e40af}
       .fc-btn--danger{border-color:#fecaca;color:#b91c1c;background:#fff}.fc-btn--danger:hover{background:#fef2f2}.fc-btn:disabled{opacity:.55;cursor:not-allowed}
       .fc-search{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #cbd5e1;border-radius:10px;margin:8px 0 10px;font-size:14px}.fc-select{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;margin-bottom:12px}
-      .fc-section{margin-top:18px}.fc-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.fc-section h3{font-size:15px;margin:0;color:#0f172a}
+      .fc-section{margin-top:18px}.fc-section--comarcas{margin-top:10px}.fc-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.fc-section h3{font-size:15px;margin:0;color:#0f172a}
       .fc-card{border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-top:10px;background:#fff;transition:.15s}
       .fc-card[data-nav]{cursor:pointer}.fc-card[data-nav]:hover{box-shadow:0 8px 22px rgba(15,23,42,.08);transform:translateY(-1px)}
       .fc-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.fc-card h4{margin:0 0 6px;font-size:15px;color:#0f172a}.fc-card p{margin:3px 0;color:#475569;font-size:13px;line-height:1.45}
@@ -500,7 +611,7 @@
       var observacaoHtml = observacao
         ? '<p class="fc-contato-observacao' + (/contato provis[oó]rio/i.test(observacao) ? ' fc-contato-observacao--provisoria' : '') + '">' + esc(observacao) + "</p>"
         : "";
-      return '<article class="fc-contato">' +
+      return '<article class="fc-contato" data-contato="' + esc(c.id) + '">' +
         '<div class="fc-contato-main"><span class="fc-contato-tipo">' + esc(tipo) + "</span>" + descricaoHtml + observacaoHtml + "</div>" +
         '<div class="fc-contato-side">' + valorHtml + acoes + "</div></article>";
     }).join("") + "</div>";
@@ -1232,10 +1343,20 @@
     return String(p.CD_MUN || p.codmun || p.id || p.code || "").replace(/\D/g, "");
   }
 
-  function comarcaPorCodigo(codigo) {
+  function normMapa(s) {
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  }
+
+  function comarcaPorCodigo(codigo, nome) {
     var lista = (estado.dados && estado.dados.comarcas) || [];
     for (var i = 0; i < lista.length; i++) {
       if (String(lista[i].codigoIbge || "").replace(/\D/g, "") === codigo) return lista[i];
+    }
+    var alvo = normMapa(nome);
+    if (alvo && alvo !== "comarca") {
+      for (var j = 0; j < lista.length; j++) {
+        if (normMapa(lista[j].nome) === alvo) return lista[j];
+      }
     }
     return null;
   }
@@ -1246,7 +1367,7 @@
   }
 
   function rotuloMapaComarca(codigo, nome) {
-    var m = comarcaPorCodigo(codigo);
+    var m = comarcaPorCodigo(codigo, nome);
     if (!m || Number(m.qtdContatos || 0) === 0) return esc(nome) + "<br><small>Sem contatos cadastrados</small>";
     var nf = Number(m.qtdForuns || (m.foruns || []).length || 0);
     var nc = Number(m.qtdContatos || 0);
@@ -1372,6 +1493,7 @@
 
   function iniciarNavegacaoForum(forcar) {
     injectStyle();
+    try { vincularBuscaGlobal(); } catch (e) {}
     if (estado.inicializado && !forcar) {
       restaurarNavegacao();
       atualizarMapaIntegrado();

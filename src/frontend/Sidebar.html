@@ -29,13 +29,8 @@ Arquivo: Sidebar.html
       </button>
 
       <button type="button" id="menu-uteis" class="menu-item" data-view="uteis" onclick="navegarParaUteis()">
-        <span class="icon icon-txt" aria-hidden="true">📇</span>
+        <span class="icon icon-white" aria-hidden="true">☎</span>
         <span>Telefones Úteis</span>
-      </button>
-
-      <button type="button" id="menu-login" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="entrarAreaAdministrativa()">
-        <span class="icon" aria-hidden="true">🔐</span>
-        <span>Entrar na área administrativa</span>
       </button>
 
       <button type="button" id="menu-formulario" class="menu-item hidden" onclick="mostrarView('formulario-acesso-view')">
@@ -68,11 +63,6 @@ Arquivo: Sidebar.html
       <button type="button" id="menu-configuracoes" class="menu-item" data-view="config" onclick="mostrarView('configuracoes-view')">
         <span class="icon icon-txt" aria-hidden="true">⚙</span>
         <span>Configurações</span>
-      </button>
-
-      <button type="button" id="menu-manual" class="menu-item" data-view="manual" onclick="mostrarView('manual-view')">
-        <span class="icon icon-txt" aria-hidden="true">?</span>
-        <span>Manual do Usuário</span>
       </button>
     </nav>
   </div>

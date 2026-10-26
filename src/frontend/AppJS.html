@@ -192,9 +192,15 @@ function atualizarInterfaceUsuario() {
     document.getElementById("user-info");
 
   if (userInfo) {
-    userInfo.textContent = logado
-      ? nome
-      : "Visitante";
+    var emailSessaoUi = String(
+      (typeof window.SESSAO_EMAIL !== "undefined" && window.SESSAO_EMAIL) || ""
+    ).trim();
+    var rotuloUsuario = "Visitante";
+    if (logado) rotuloUsuario = nome;
+    else if (window.EH_CONTEXTO_ADMIN === true && emailSessaoUi) {
+      rotuloUsuario = emailSessaoUi.split("@")[0];
+    }
+    userInfo.textContent = rotuloUsuario;
     const perfilClicavel = window.EH_CONTEXTO_ADMIN === true && logado;
     userInfo.disabled = !perfilClicavel;
     userInfo.title = perfilClicavel ? "Ver meus dados e acessos" : "";

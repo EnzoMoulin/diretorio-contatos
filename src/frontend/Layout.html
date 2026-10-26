@@ -140,6 +140,11 @@ Arquivo: Layout.html
           </div>
         </div>
 
+        <!-- Manual do Usuário -->
+        <div style="grid-column:1/-1">
+          <?!= include("Manual"); ?>
+        </div>
+
         <!-- Conexão -->
         <div class="config-card config-card-wide">
           <div class="config-card-header">
@@ -295,10 +300,6 @@ Arquivo: Layout.html
           } catch(e) {}
         })();
       </script>
-    </section>
-
-    <section id="manual-view" class="view hidden">
-      <?!= include("Manual"); ?>
     </section>
 
     <section id="historico-view" class="view hidden">
