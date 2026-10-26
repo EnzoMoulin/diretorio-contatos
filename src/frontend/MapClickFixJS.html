@@ -5,18 +5,9 @@
   function normalizarNome(valor) {
     return String(valor == null ? "" : valor)
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[̀-ͯ]/g, "")
       .replace(/[^a-zA-Z0-9]/g, "")
       .toUpperCase();
-  }
-
-  function escHtml(valor) {
-    return String(valor == null ? "" : valor)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
   }
 
   function nomeFeature(feature) {
@@ -83,27 +74,6 @@
     return true;
   }
 
-  function camadaPossuiContatos(layer) {
-    var opcoes = layer && layer.options || {};
-    var borda = String(opcoes.color || "").toLowerCase();
-    var preenchimento = String(opcoes.fillColor || "").toLowerCase();
-    return borda === "#2563eb" || preenchimento === "#60a5fa";
-  }
-
-  function atualizarTooltipComarca(layer, nome) {
-    if (!layer || typeof layer.getTooltip !== "function") return;
-    var tooltip = layer.getTooltip();
-    if (!tooltip || typeof tooltip.setContent !== "function") return;
-
-    var possui = camadaPossuiContatos(layer);
-    tooltip.setContent(
-      escHtml(nome) +
-      (possui
-        ? "<br><small>Possui contatos cadastrados</small>"
-        : "<br><small>Sem contatos cadastrados</small>")
-    );
-  }
-
   function instalarCliqueDeterministicoMapa() {
     if (!window.L || typeof window.L.geoJSON !== "function") return false;
     if (window.L.geoJSON.__demoMapClickFixV3) return true;
@@ -123,19 +93,11 @@
           var nome = nomeFeature(feature);
           if (!nome) return;
 
-          // O tooltip original é montado antes de a hierarquia terminar de carregar.
-          // A camada, porém, é reestilizada quando os dados chegam. Recalculamos o
-          // conteúdo no hover usando o estilo atual para não manter o status inicial.
-          layer.on("mouseover", function () {
-            atualizarTooltipComarca(layer, nome);
-          });
-          layer.on("tooltipopen", function () {
-            atualizarTooltipComarca(layer, nome);
-          });
-
           // O handler original depende do estado existente no instante em que o
           // GeoJSON é criado. O clique é sempre registrado e resolve a Comarca
           // pelo nome, que permanece estável entre o GeoJSON e a tabela COMARCAS.
+          // (O conteúdo do tooltip é gerenciado pelo ForumNavigationJS, que já
+          // inclui a contagem de Fóruns e contatos — não sobrescrever aqui.)
           layer.off("click");
           layer.on("click", function (evento) {
             try {
