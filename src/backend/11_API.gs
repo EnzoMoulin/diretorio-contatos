@@ -1026,7 +1026,55 @@ function enviarFormularioAcesso(dados) {
   if (autoId && CONFIG.SIMULACAO && CONFIG.SIMULACAO.APROVACAO_AUTOMATICA) {
     return processarSolicitacaoAPI(autoId, "APROVADO", undefined, { automatica: true });
   }
+  try {
+    const gss = emailsGestoresSistema();
+    if (gss.length) {
+      enviarEmailAcesso(gss,
+        "Nova solicitação de acesso — Diretório de Contatos",
+        "Nova solicitação de " + nome + " (" + usuario.email + ").\n" +
+        "Nível: " + (nivel || "—") + " · " + escoposValidados.length + " escopo(s).\n" +
+        "Motivo: " + (motivo || "—") + "\n\n" +
+        "Analise em Solicitações de Acesso: " + urlAreaPrivada());
+    }
+  } catch (eMailNova) {}
   return respostaSucesso({ id: autoId, status: "PENDENTE" });
+}
+
+function urlAreaPrivada() {
+  return "https://script.google.com/macros/s/AKfycbx9-Bs4ImbasQdIMV3pJwSBu_oS8CTgyrGeh8XpkOlQ-QAUak5tcLp1pY81TAFSqPwK_Q/exec";
+}
+
+function emailsGestoresSistema() {
+  try {
+    const sheet = DB.usuarios();
+    const mapa = DB.map(sheet);
+    if (mapa.EMAIL === undefined || mapa.NIVEL === undefined) return [];
+    const out = [];
+    DB.read(sheet).forEach(function(linha) {
+      if (Number(linha[mapa.NIVEL - 1]) === CONFIG.NIVEIS.GESTOR_SISTEMA &&
+          paraBoolean(linha[mapa.ATIVO - 1])) {
+        const em = normalizarEmail(linha[mapa.EMAIL - 1]);
+        if (em && out.indexOf(em) < 0) out.push(em);
+      }
+    });
+    return out;
+  } catch (eEmails) {
+    return [];
+  }
+}
+
+function enviarEmailAcesso(destinatarios, assunto, corpo) {
+  try {
+    if (CONFIG.NOTIFICACAO_EMAIL && CONFIG.NOTIFICACAO_EMAIL.ATIVA === false) return false;
+    const lista = (Array.isArray(destinatarios) ? destinatarios : [destinatarios])
+      .map(normalizarEmail).filter(Boolean);
+    if (!lista.length) return false;
+    MailApp.sendEmail({ to: lista.join(","), subject: assunto, body: corpo });
+    return true;
+  } catch (eMail) {
+    try { registrarInfoAPI("EMAIL_ACESSO", "falha de envio: " + (eMail && eMail.message)); } catch (e2) {}
+    return false;
+  }
 }
 
 function solicitarAcesso(nome, nivel, justificativa, noIds) {
@@ -1211,6 +1259,20 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados, opcoes) {
       sheetSolic.getRange(solicitacao.linha, indices.DATA_APROVACAO + 1)
         .setValue(new Date());
     }
+    try {
+      if (status === "APROVADO") {
+        const detalheAuto = automatica ? " automaticamente (demonstração — simulação)." : " pelo Gestor do Sistema.";
+        enviarEmailAcesso(solicitacao.email,
+          "Acesso liberado — Diretório de Contatos",
+          "Olá " + solicitacao.nome + ",\n\nSeu acesso foi liberado" + detalheAuto +
+          "\n\nAcesse a área privada com sua conta Google: " + urlAreaPrivada());
+      } else {
+        enviarEmailAcesso(solicitacao.email,
+          "Solicitação de acesso — Diretório de Contatos",
+          "Olá " + solicitacao.nome + ",\n\nSua solicitação de acesso não foi aprovada. " +
+          "Se precisar, fale com o Gestor do Sistema.");
+      }
+    } catch (eMailDecisao) {}
     SpreadsheetApp.flush();
     registrarInfoAPI("PROCESSAR_SOLICITACAO", solicitacao.email + " -> " + status);
     return respostaSucesso({ id: solicitacao.id, status: status });

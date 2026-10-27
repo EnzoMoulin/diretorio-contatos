@@ -33,6 +33,11 @@ const CONFIG = {
     APROVACAO_AUTOMATICA: true
   },
 
+  NOTIFICACAO_EMAIL: {
+    // E-mails reais via MailApp (intranet). false = só aviso dentro do sistema.
+    ATIVA: true
+  },
+
   PUBLICACAO: {
     PROPRIEDADE_PLANILHA_PUBLICA: "PLANILHA_PUBLICA_ID",
     PROPRIEDADE_FONTE_MIGRACAO: "PLANILHA_FONTE_MIGRACAO_ID",
