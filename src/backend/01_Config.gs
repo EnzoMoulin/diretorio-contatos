@@ -18,7 +18,7 @@ const CONFIG = {
   },
 
   AUTH: {
-    DOMINIO_INSTITUCIONAL: "empresa-exemplo.com.br",
+    DOMINIO_INSTITUCIONAL: "tjes.jus.br",
     PROPRIEDADE_MODO: "APP_MODE",
     MODO_PUBLICO: "PUBLIC",
     MODO_PRIVADO: "PRIVATE",

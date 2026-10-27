@@ -157,7 +157,7 @@ function iniciarSistema() {
   if (window.EH_CONTEXTO_ADMIN === true && !logoutFoiSolicitado()) {
     tentarLoginAutomatico(true);
   } else if (window.EH_CONTEXTO_ADMIN === true && logoutFoiSolicitado()) {
-    try { mostrarToast("Modo Consulta mantido após o último logout. Use Entrar na área administrativa para validar novamente.", "info"); } catch (erro) {}
+    try { mostrarToast("Modo Consulta mantido após o último logout. Use Acesso administrativo para validar novamente.", "info"); } catch (erro) {}
   }
 
   setTimeout(function() {
@@ -365,9 +365,17 @@ function atualizarInterfaceUsuario() {
           cor: "#991b1b",
           acao: function() { mostrarToast("Procure o Gestor do Sistema.", "warning"); }
         });
+      } else if (!logado && usuario.podeSolicitarAcesso === true) {
+        configurarBotaoAcesso(btnAcesso, textoAcesso, {
+          texto: "📝 Solicitar acesso",
+          fundo: "#2563eb",
+          borda: "#2563eb",
+          cor: "#ffffff",
+          acao: function() { mostrarView("formulario-acesso-view"); }
+        });
       } else {
         configurarBotaoAcesso(btnAcesso, textoAcesso, {
-          texto: "Entrar na área administrativa",
+          texto: "Acesso administrativo",
           fundo: "#dbeafe",
           borda: "#93c5fd",
           cor: "#1e40af",

@@ -116,7 +116,15 @@ class AuthService {
     const linhas = DB.read(sheet).filter(item =>
       normalizarEmail(item[mapa.EMAIL - 1]) === emailNormalizado
     );
-    if (!linhas.length) return base;
+    if (!linhas.length) {
+      // Intranet: e-mail institucional entra sozinho como visitante (só consulta;
+      // escopos e gestão continuam por solicitação aprovada). Falha aqui nunca
+      // pode travar o acesso — cai no comportamento anterior (não cadastrado).
+      if (emailInstitucional(emailNormalizado)) {
+        try { this.registrarVisitanteInstitucional(sheet, emailNormalizado); } catch (eRegistro) {}
+      }
+      return base;
+    }
 
     // Em bases migradas pode existir uma linha antiga/inativa duplicada. A linha
     // ativa com nível válido deve prevalecer, sem tornar a ordem física da aba
@@ -135,14 +143,18 @@ class AuthService {
     const nivelValido = nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO || nivel === CONFIG.NIVEIS.GESTOR_SISTEMA;
 
     if (!ativo || !nivelValido) {
+      // Visitante autocadastrado (NIVEL 0/VAZIO + ATIVO): identificado, só consulta,
+      // e pode solicitar escopos. Nível inválido de outro tipo continua sem pedir
+      // (regra anterior) — o autocadastro sempre grava NIVEL 0.
+      const visitanteAuto = ativo && nivel === 0;
       return Object.assign(base, {
         id: id,
         nome: nome,
         nivel: nivelValido ? nivel : null,
         cadastrado: true,
-        ativo: false,
-        podeSolicitarAcesso: false,
-        estadoAcesso: !ativo ? "CONTA_DESATIVADA" : "NIVEL_INVALIDO"
+        ativo: !!visitanteAuto,
+        podeSolicitarAcesso: !!visitanteAuto,
+        estadoAcesso: !ativo ? "CONTA_DESATIVADA" : (!visitanteAuto ? "NIVEL_INVALIDO" : "VISITANTE")
       });
     }
 
@@ -168,6 +180,19 @@ class AuthService {
       acessos: escopo.acessos,
       localidades: Array.from(new Set(escopo.nos.map(item => item.comarca).filter(Boolean)))
     };
+  }
+
+  registrarVisitanteInstitucional(sheet, emailNormalizado) {
+    const mapa = DB.map(sheet);
+    const totalColunas = sheet.getLastColumn();
+    if (!totalColunas || mapa.EMAIL === undefined) return;
+    const nova = new Array(totalColunas).fill("");
+    if (mapa.ID !== undefined) nova[mapa.ID - 1] = new IdService().novoUsuario(sheet);
+    if (mapa.NOME !== undefined) nova[mapa.NOME - 1] = emailNormalizado.split("@")[0];
+    if (mapa.EMAIL !== undefined) nova[mapa.EMAIL - 1] = emailNormalizado;
+    if (mapa.NIVEL !== undefined) nova[mapa.NIVEL - 1] = 0;
+    if (mapa.ATIVO !== undefined) nova[mapa.ATIVO - 1] = "SIM";
+    sheet.appendRow(nova);
   }
 
   obterEscopoNos(usuarioId) {

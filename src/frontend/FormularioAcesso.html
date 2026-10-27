@@ -4,6 +4,9 @@
 </style>
 
 <div class="fa-wrap">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button type="button" class="btn btn-secondary" onclick="navegarParaTelefones()">← Voltar à consulta</button>
+  </div>
   <div class="fa-card">
     <div class="fa-head">
       <h2>Solicitar Acesso Administrativo</h2>
@@ -34,7 +37,7 @@
           <div id="acesso-unidades" class="fa-unidades" aria-live="polite">Carregando Fóruns e Unidades...</div>
         </div>
         <div class="fa-field fa-full">
-          <label for="acesso-justificativa">Justificativa</label>
+          <label for="acesso-justificativa">Motivo (opcional)</label>
           <textarea id="acesso-justificativa" rows="4" maxlength="2000"></textarea>
         </div>
       </div>

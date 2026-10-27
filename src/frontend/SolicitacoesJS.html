@@ -29,7 +29,7 @@ function abrirModalSolicitacao(sol){
   solicitacaoEmDetalhe=sol;
   escoposAprovacaoEdicao=(sol.escopos||[]).map(function(e){return {tipo:e.tipo,id:e.id};});
   var alvo=document.getElementById("detalhes-solicitacao");alvo.textContent="";
-  [["Nome",sol.nome],["E-mail",sol.email],["Nível de acesso",sol.nivelTexto],["Justificativa",sol.justificativa||"Não informada"],["Status",sol.status]].forEach(function(item){var bloco=document.createElement("div");bloco.style.marginBottom="14px";var titulo=document.createElement("strong");titulo.textContent=item[0];var valor=document.createElement("div");valor.textContent=item[1];valor.style.marginTop="4px";valor.style.whiteSpace="pre-wrap";bloco.appendChild(titulo);bloco.appendChild(valor);alvo.appendChild(bloco);});
+  [["Nome",sol.nome],["E-mail",sol.email],["Nível de acesso",sol.nivelTexto],["Motivo",sol.justificativa||"Não informado"],["Status",sol.status]].forEach(function(item){var bloco=document.createElement("div");bloco.style.marginBottom="14px";var titulo=document.createElement("strong");titulo.textContent=item[0];var valor=document.createElement("div");valor.textContent=item[1];valor.style.marginTop="4px";valor.style.whiteSpace="pre-wrap";bloco.appendChild(titulo);bloco.appendChild(valor);alvo.appendChild(bloco);});
   var blocoEsc=document.createElement("div");blocoEsc.style.marginBottom="14px";
   var tituloEsc=document.createElement("strong");tituloEsc.textContent="Escopos (ajuste antes de aprovar, se preciso)";blocoEsc.appendChild(tituloEsc);
   var listaEsc=document.createElement("div");listaEsc.id="escopos-aprovacao-lista";listaEsc.style.marginTop="6px";blocoEsc.appendChild(listaEsc);
