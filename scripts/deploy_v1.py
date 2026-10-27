@@ -36,6 +36,22 @@ for pn, pid, access, depid in projs:
     api('PUT', 'https://script.googleapis.com/v1/projects/' + pid + '/content',
         {'files': [manifest] + local +
          [{'name': k['name'], 'type': k['type'], 'source': k.get('source', '')} for k in keep]})
+    # Versões são imutáveis (sem API de apagar): antes de fotografar, confirma
+    # que todos os arquivos gravaram (evita snapshot parcial de corrida)
+    import hashlib as _hl, time as _t
+    def _fp(files):
+        return _hl.md5(json.dumps(sorted([(f['name'], f.get('source', '')) for f in files
+                                          if f['name'] != 'appsscript']),
+                                   ensure_ascii=False).encode('utf-8')).hexdigest()
+    _alvo = _fp(local + [{'name': k['name'], 'type': k['type'], 'source': k.get('source', '')} for k in keep])
+    for _tent in range(20):
+        try:
+            _rem = api('GET', 'https://script.googleapis.com/v1/projects/' + pid + '/content')
+            if _fp(_rem.get('files', [])) == _alvo:
+                break
+        except Exception:
+            pass
+        _t.sleep(3)
     ver = api('POST', 'https://script.googleapis.com/v1/projects/' + pid + '/versions', {'description': DESC})
     if depid is None:
         deps = api('GET', 'https://script.googleapis.com/v1/projects/' + pid + '/deployments')
