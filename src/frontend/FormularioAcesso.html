@@ -92,15 +92,29 @@ function atualizarIdentidadeFormularioAcesso(){
   } else if(nivel) nivel.value = "1";
 }
 
+var _catalogoAcessoTentativas = 0;
 function carregarUnidadesFormularioAcesso(){
   var holder = document.getElementById("acesso-unidades");
   if(!holder || !API || typeof API.listarEscoposParaAcesso !== "function") return;
+  if(Array.isArray(escoposDisponiveisAcesso) && escoposDisponiveisAcesso.length){
+    try { prepararSeletorLocalidadesAcesso(); } catch (eRe) {}
+    return;
+  }
   API.listarEscoposParaAcesso(function(resp){
+    _catalogoAcessoTentativas = 0;
     escoposDisponiveisAcesso = resp && resp.sucesso === true && Array.isArray(resp.dados) ? resp.dados : [];
     holder.textContent = "";
     if(!escoposDisponiveisAcesso.length){ holder.textContent = (resp && resp.erro) || "Nenhum escopo disponível."; return; }
     prepararSeletorLocalidadesAcesso();
-  }, function(erro){ holder.textContent = (erro && erro.message) || "Falha ao carregar escopos."; });
+  }, function(erro){
+    if(_catalogoAcessoTentativas < 1){
+      _catalogoAcessoTentativas++;
+      setTimeout(carregarUnidadesFormularioAcesso, 2000);
+      return;
+    }
+    _catalogoAcessoTentativas = 0;
+    holder.textContent = (erro && erro.message) || "Falha ao carregar escopos.";
+  });
 }
 
 function prepararSeletorLocalidadesAcesso(){

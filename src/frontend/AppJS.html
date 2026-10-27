@@ -365,14 +365,6 @@ function atualizarInterfaceUsuario() {
           cor: "#991b1b",
           acao: function() { mostrarToast("Procure o Gestor do Sistema.", "warning"); }
         });
-      } else if (!logado && usuario.podeSolicitarAcesso === true) {
-        configurarBotaoAcesso(btnAcesso, textoAcesso, {
-          texto: "📝 Solicitar acesso",
-          fundo: "#2563eb",
-          borda: "#2563eb",
-          cor: "#ffffff",
-          acao: function() { mostrarView("formulario-acesso-view"); }
-        });
       } else {
         configurarBotaoAcesso(btnAcesso, textoAcesso, {
           texto: "Acesso administrativo",
@@ -1073,11 +1065,11 @@ function tratarCliqueAcesso() {
  */
 
 function abrirFormularioAcesso(modo) {
-  var logado = false;
+  var identificado = false;
   try {
-    logado = (typeof usuarioAtual !== "undefined") && !!usuarioAtual && usuarioAtual.logado === true;
-  } catch (eLogado) {}
-  if (!logado) {
+    identificado = (typeof usuarioAtual !== "undefined") && !!usuarioAtual && usuarioAtual.identificado === true;
+  } catch (eIdent) {}
+  if (!identificado) {
     try { entrarAreaAdministrativa(); } catch (eEntrar) {}
     try { mostrarToast("Valide sua conta Google e clique novamente em Solicitar.", "info"); } catch (eToast) {}
     return;
