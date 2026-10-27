@@ -13,7 +13,7 @@ Arquivo: Sidebar.html
     </div>
 
     <nav class="sidebar-menu" aria-label="Navegação principal">
-      <div class="sidebar-section">Consulta</div>
+      <div class="sidebar-section <?= ehContextoAdmin ? '' : 'hidden' ?>" id="secao-consulta">Consulta</div>
       <button type="button" id="menu-telefones" class="menu-item active" data-view="consulta" onclick="navegarParaTelefones()">
         <span class="icon icon-white" aria-hidden="true">📞</span>
         <span>Comarcas</span>

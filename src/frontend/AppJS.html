@@ -500,6 +500,11 @@ function atualizarInterfaceUsuario() {
     secaoAdmin.classList.toggle("hidden", window.EH_CONTEXTO_ADMIN !== true || ehVisitante);
   }
 
+  const secaoConsulta = document.getElementById("secao-consulta");
+  if (secaoConsulta) {
+    secaoConsulta.classList.toggle("hidden", window.EH_CONTEXTO_ADMIN !== true || ehVisitante);
+  }
+
   const menuFormularioLogin = document.getElementById("menu-formulario");
   if (menuFormularioLogin) {
     menuFormularioLogin.classList.toggle("hidden", !(
