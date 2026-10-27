@@ -29,11 +29,6 @@ Arquivo: Sidebar.html
         <span>Telefones Úteis</span>
       </button>
 
-      <button type="button" id="menu-configuracoes" class="menu-item" data-view="config" onclick="mostrarView('configuracoes-view')">
-        <span class="icon icon-txt" aria-hidden="true">⚙</span>
-        <span>Configurações</span>
-      </button>
-
       <div class="sidebar-section <?= ehContextoAdmin ? '' : 'hidden' ?>" id="secao-admin">Administração</div>
       <button type="button" id="menu-dashboard" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('dashboard-view')">
         <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="4" rx="1.5"></rect><rect x="14" y="11" width="7" height="10" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
@@ -60,6 +55,11 @@ Arquivo: Sidebar.html
       <button type="button" id="menu-alteracoes" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('registro-alteracoes-view')">
         <span class="icon" aria-hidden="true">≡</span>
         <span>Registro de Alterações</span>
+      </button>
+
+      <button type="button" id="menu-configuracoes" class="menu-item" data-view="config" onclick="mostrarView('configuracoes-view')">
+        <span class="icon icon-txt" aria-hidden="true">⚙</span>
+        <span>Configurações</span>
       </button>
     </nav>
   </div>
