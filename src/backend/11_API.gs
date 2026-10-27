@@ -1041,7 +1041,7 @@ function enviarFormularioAcesso(dados) {
 }
 
 function urlAreaPrivada() {
-  return "https://script.google.com/macros/s/AKfycbx9-Bs4ImbasQdIMV3pJwSBu_oS8CTgyrGeh8XpkOlQ-QAUak5tcLp1pY81TAFSqPwK_Q/exec";
+  return "https://script.google.com/macros/s/AKfycbzZgR_Y5PZvBGKnIAqK3_KXqJzM1Er--CS0PcOc197YQxIbDV_ZOsF6wQFD6EEEEYSF/exec";
 }
 
 function emailsGestoresSistema() {

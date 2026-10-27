@@ -23,9 +23,9 @@ for f in sorted(glob.glob('src/frontend/*.html')):
     local.append({'name': os.path.basename(f)[:-5], 'type': 'HTML',
                   'source': open(f, encoding='utf-8').read()})
 
-projs = [('pub', '10f0eMEr2It2cwYUaM2hUHq78_0ubE9WP_4T9I91UXY_jUUnTFUTaCY7Z', 'ANYONE_ANONYMOUS',
-          'AKfycbxZ5Gab4wpc9BC205Hvjngi_xfRz9JZA9ZsWDltwH6im4Fe39wc623wZ-iXtdIQXU4Q'),
-         ('priv', '1en6psSTq8WFnL5oXPPumGbP9DbaLeRD4qVAFLw6MkGQBXdwwDDaLOQm-', 'ANYONE', None)]
+projs = [('pub', '1IazOZuEZDdTeHV5xO-Du5IYQYGfCwXm5a8DPFUh7CJYDOGs_dPPs1h27', 'ANYONE_ANONYMOUS',
+          'AKfycbx5d3bKgdwrC7dgwdwBFx_1UNtJrpoG-obsttDtVaq25hiP7ToQvUNDnI6Hwey2k90qJA'),
+         ('priv', '1taoTp_tpM1MaQTWGRHLo3en4QJq2ptAutx5oNjVotoJyVOxLmktrlhHe', 'ANYONE', 'AKfycbzZgR_Y5PZvBGKnIAqK3_KXqJzM1Er--CS0PcOc197YQxIbDV_ZOsF6wQFD6EEEEYSF')]
 for pn, pid, access, depid in projs:
     rem = api('GET', 'https://script.googleapis.com/v1/projects/' + pid + '/content')
     keep = [f for f in rem['files'] if f['name'] in ('24_MascararCopiaPessoal',)]

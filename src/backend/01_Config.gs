@@ -12,8 +12,8 @@ const CONFIG = {
   },
 
   WEB_APP: {
-    URL_PUBLICA: "https://script.google.com/macros/s/AKfycbxZ5Gab4wpc9BC205Hvjngi_xfRz9JZA9ZsWDltwH6im4Fe39wc623wZ-iXtdIQXU4Q/exec",
-    URL_ADMIN: "https://script.google.com/macros/s/AKfycbx9-Bs4ImbasQdIMV3pJwSBu_oS8CTgyrGeh8XpkOlQ-QAUak5tcLp1pY81TAFSqPwK_Q/exec",
+    URL_PUBLICA: "https://script.google.com/macros/s/AKfycbx5d3bKgdwrC7dgwdwBFx_1UNtJrpoG-obsttDtVaq25hiP7ToQvUNDnI6Hwey2k90qJA/exec",
+    URL_ADMIN: "https://script.google.com/macros/s/AKfycbzZgR_Y5PZvBGKnIAqK3_KXqJzM1Er--CS0PcOc197YQxIbDV_ZOsF6wQFD6EEEEYSF/exec",
     PERMITIR_IFRAME: false
   },
 
