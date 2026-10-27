@@ -103,7 +103,7 @@ class AuthService {
     const emailNormalizado = normalizarEmail(email);
     const base = AuthService.usuarioConsulta("NAO_CADASTRADO", emailNormalizado);
     base.identificado = true;
-    base.podeSolicitarAcesso = AuthService.emailPermitidoNoPrivado(emailNormalizado);
+    base.podeSolicitarAcesso = true;
 
     const sheet = DB.usuarios();
     const mapa = DB.map(sheet);

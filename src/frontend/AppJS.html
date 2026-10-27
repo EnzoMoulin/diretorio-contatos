@@ -139,6 +139,8 @@ function entrarAreaAdministrativa() {
       mostrarToast("Acesso administrativo liberado.", "success");
     } else if (resposta.dados.podeSolicitarAcesso) {
       mostrarView("formulario-acesso-view");
+    } else {
+      mostrarToast("Entre com uma conta Google para continuar.", "info");
     }
   }, function(erro) {
     if (botao) botao.disabled = false;
