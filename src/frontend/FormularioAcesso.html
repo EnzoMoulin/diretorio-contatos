@@ -10,7 +10,7 @@
   <div class="fa-card">
     <div class="fa-head">
       <h2>Solicitar Acesso Administrativo</h2>
-      <p id="acesso-identidade-info">O e-mail vem da conta Google identificada nesta URL privada. A solicitação ficará pendente até análise de um Gestor do Sistema.</p>
+      <p id="acesso-identidade-info">Informe seu nome completo. O e-mail vem da conta Google identificada. <strong>Nesta demonstração, a liberação é automática (simulação);</strong> no projeto real, a solicitação fica pendente até análise de um Administrador.</p>
     </div>
     <div class="fa-body">
       <div class="fa-grid">
@@ -19,7 +19,7 @@
           <input id="acesso-nome" maxlength="150" autocomplete="name">
         </div>
         <div id="grupo-acesso-email" class="fa-field">
-          <label for="acesso-email">Conta Google identificada</label>
+          <label for="acesso-email">E-mail</label>
           <input id="acesso-email" readonly aria-readonly="true">
         </div>
         <div class="fa-field fa-full" id="grupo-acesso-nivel">
@@ -27,7 +27,7 @@
           <select id="acesso-nivel" onchange="alternarUnidadesSolicitacao()">
             <option value="">Não solicitar alteração de nível</option>
             <option value="1">1 — Gestor de Conteúdo</option>
-            <option value="2">2 — Gestor do Sistema</option>
+            <option value="2">2 — Administrador</option>
           </select>
         </div>
         <div id="grupo-acesso-unidades" class="fa-field fa-full">
@@ -70,8 +70,8 @@ function ajustarCamposIdentidadeFormularioAcesso(){
   if(grupoEmail){grupoEmail.style.display=ocultar?"none":"";grupoEmail.setAttribute("aria-hidden",ocultar?"true":"false");}
   if(aviso){
     aviso.textContent=ocultar
-      ? "Seu nome e e-mail cadastrados serão usados automaticamente. A solicitação ficará pendente até análise de um Gestor do Sistema."
-      : "Informe seu nome. O e-mail vem da conta Google identificada nesta URL privada. A solicitação ficará pendente até análise de um Gestor do Sistema.";
+      ? "Seu nome e e-mail cadastrados serão usados automaticamente. Nesta demonstração, a liberação é automática (simulação); no projeto real, a solicitação fica pendente até análise de um Administrador."
+      : "Informe seu nome completo. O e-mail vem da conta Google identificada. Nesta demonstração, a liberação é automática (simulação); no projeto real, a solicitação fica pendente até análise de um Administrador.";
   }
 }
 
@@ -80,7 +80,7 @@ function atualizarIdentidadeFormularioAcesso(){
   var nome = document.getElementById("acesso-nome");
   var usuario = typeof usuarioAtual !== "undefined" ? usuarioAtual : {};
   if(email) email.value = String(usuario.email || window.SESSAO_EMAIL || "");
-  if(nome && !nome.value && usuario.nome && usuario.nome !== "Visitante") nome.value = usuario.nome;
+  if(nome && !nome.value && usuario.cadastrado === true && usuario.nome && usuario.nome !== "Visitante") nome.value = usuario.nome;
   if(usuarioPossuiAcessoAdministrativoFormulario(usuario)){
     if(nome) nome.value=String(usuario.nome||"").trim();
     if(email) email.value=String(usuario.email||"").trim();

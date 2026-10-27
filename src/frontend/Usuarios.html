@@ -8,7 +8,7 @@
   </div>
   <div class="panel" style="margin-bottom:16px;padding:12px 16px;font-size:13px;color:#475569">
     <strong>Gestor de Conteúdo:</strong> acesso por Fórum, Unidade ou Setor.
-    <strong>Gestor do Sistema:</strong> acesso completo ao sistema.
+    <strong>Administrador:</strong> acesso completo ao sistema.
   </div>
   <div class="panel" style="margin-bottom:16px;padding:12px 16px">
     <strong>Quem tem acesso a…</strong>
@@ -34,7 +34,7 @@
       <div class="form-grid">
         <div class="form-group full"><label>Nome *</label><input id="usuario-nome" maxlength="150"></div>
         <div class="form-group full"><label>E-mail *</label><input id="usuario-email" type="email"></div>
-        <div class="form-group"><label>Nível de Acesso *</label><select id="usuario-nivel" onchange="alternarEscoposUsuario()"><option value="1">Gestor de Conteúdo</option><option value="2">Gestor do Sistema</option></select></div>
+        <div class="form-group"><label>Nível de Acesso *</label><select id="usuario-nivel" onchange="alternarEscoposUsuario()"><option value="1">Gestor de Conteúdo</option><option value="2">Administrador</option></select></div>
         <div class="form-group" style="display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:8px;min-height:42px;margin:0;cursor:pointer"><input id="usuario-ativo" type="checkbox" checked style="width:auto"> Conta ativa</label></div>
       </div>
       <div id="usuario-erro" class="modal-alert hidden"></div>

@@ -75,6 +75,20 @@ Arquivo: index.html
       </div>
     </div>
 
+    <div id="modal-sem-acesso" class="modal confirm-dialog" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="titulo-sem-acesso">
+      <div class="panel confirm-dialog__panel" style="overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);padding:25px 30px;color:#fff;text-align:center;margin:-24px -24px 0;">
+          <h3 id="titulo-sem-acesso" style="margin:0 0 6px;font-size:18px;">Acesso administrativo</h3>
+          <p style="margin:0;font-size:13px;line-height:1.5;opacity:.92;">Você não possui acesso administrativo.</p>
+          <p style="margin:4px 0 0;font-size:13px;line-height:1.5;opacity:.92;">Solicite abaixo para liberar.</p>
+        </div>
+        <div style="padding:22px 6px 0;text-align:center;">
+          <button type="button" class="btn btn-primary" style="padding:11px 34px;" onclick="solicitarAcessoViaModal()">📝 Solicitar acesso</button>
+          <div><button type="button" class="btn btn-secondary" style="margin-top:10px;" onclick="fecharModalSemAcesso()">Fechar</button></div>
+        </div>
+      </div>
+    </div>
+
     <div id="modal-perfil-usuario" class="modal profile-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="titulo-perfil-usuario">
       <div class="panel profile-dialog__panel">
         <div class="profile-dialog__header">

@@ -938,7 +938,7 @@ function enviarFormularioAcesso(dados) {
     if (usuario.cadastrado && !ehAmpliacaoGestorConteudo && !ehVisitanteCadastrado) {
       throw new Error(usuario.ativo
         ? "Este perfil já possui acesso global ou não pode solicitar ampliação."
-        : "Esta conta está desativada. Procure o Gestor do Sistema.");
+        : "Esta conta está desativada. Procure o Administrador.");
     }
 
     const entrada = ehObjeto(dados) ? dados : {};
@@ -964,7 +964,7 @@ function enviarFormularioAcesso(dados) {
       throw new Error("Selecione ao menos um Município, Fórum, Unidade ou Setor para o Gestor de Conteúdo.");
     }
     if (nivel === CONFIG.NIVEIS.GESTOR_SISTEMA && escopos.length) {
-      throw new Error("O Gestor do Sistema possui escopo global e não recebe vínculos adicionais.");
+      throw new Error("O Administrador possui escopo global e não recebe vínculos adicionais.");
     }
     if (justificativa.length > CONFIG.LIMITES.TAMANHO_MAXIMO_OBSERVACAO) {
       throw new Error("A justificativa é muito longa.");
@@ -1185,7 +1185,7 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados, opcoes) {
     if (solicitacao.status !== "PENDENTE") throw new Error("Esta solicitação já foi processada.");
     if (solicitacao.nivel && solicitacao.nivel !== 1 && solicitacao.nivel !== 2) throw new Error("Nível solicitado inválido.");
     if (solicitacao.nivel === 2 && solicitacao.escopos.length > 0) {
-      throw new Error("Solicitação de Gestor do Sistema não deve possuir escopos adicionais.");
+      throw new Error("Solicitação de Administrador não deve possuir escopos adicionais.");
     }
     if (!emailValidoAPI(solicitacao.email)) {
       throw new Error("A solicitação não possui um e-mail válido.");
@@ -1261,7 +1261,7 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados, opcoes) {
     }
     try {
       if (status === "APROVADO") {
-        const detalheAuto = automatica ? " automaticamente (demonstração — simulação)." : " pelo Gestor do Sistema.";
+        const detalheAuto = automatica ? " automaticamente (demonstração — simulação)." : " pelo Administrador.";
         enviarEmailAcesso(solicitacao.email,
           "Acesso liberado — Diretório de Contatos",
           "Olá " + solicitacao.nome + ",\n\nSeu acesso foi liberado" + detalheAuto +
@@ -1270,7 +1270,7 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados, opcoes) {
         enviarEmailAcesso(solicitacao.email,
           "Solicitação de acesso — Diretório de Contatos",
           "Olá " + solicitacao.nome + ",\n\nSua solicitação de acesso não foi aprovada. " +
-          "Se precisar, fale com o Gestor do Sistema.");
+          "Se precisar, fale com o Administrador.");
       }
     } catch (eMailDecisao) {}
     SpreadsheetApp.flush();
@@ -2324,7 +2324,7 @@ function notificarUsuarioSobreDecisao(emailUsuario, aprovado, perfil, referencia
     const tipo = aprovado ? "SOLICITACAO_APROVADA" : "SOLICITACAO_REJEITADA";
     const msg = aprovado
       ? "Sua solicita\u00e7\u00e3o de acesso como " + perfil + " foi aprovada. Voc\u00ea j\u00e1 pode acessar o sistema."
-      : "Sua solicita\u00e7\u00e3o de acesso como " + perfil + " foi rejeitada. Entre em contato com o Gestor do Sistema para mais detalhes.";
+      : "Sua solicita\u00e7\u00e3o de acesso como " + perfil + " foi rejeitada. Entre em contato com o Administrador para mais detalhes.";
     return criarNotificacao(emailUsuario, tipo, msg, referenciaID);
   } catch (e) {
     registrarErroAPI("NOTIFICAR_DECISAO_USUARIO", e);
@@ -2618,7 +2618,7 @@ function atualizarUsuario(email, dados) {
     }
     if (nivelAtual === 2 && ativoAtual && (nivel !== 2 || !ativo) &&
         contarGestoresSistemaAtivos(emailAlvo) === 0) {
-      throw new Error("Não é possível remover o último Gestor do Sistema ativo.");
+      throw new Error("Não é possível remover o último Administrador ativo.");
     }
 
     sheet.getRange(indice + 2, mapa.NOME).setValue(nome);
@@ -2732,7 +2732,7 @@ function excluirUsuario(email) {
     if (Number(dados[indice][mapa.NIVEL - 1]) === 2 &&
         paraBoolean(dados[indice][mapa.ATIVO - 1]) &&
         contarGestoresSistemaAtivos(emailAlvo) === 0) {
-      throw new Error("Não é possível excluir o último Gestor do Sistema ativo.");
+      throw new Error("Não é possível excluir o último Administrador ativo.");
     }
 
     substituirAcessosUnidades(textoSeguro(dados[indice][mapa.ID - 1]), []);

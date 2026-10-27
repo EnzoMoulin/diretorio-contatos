@@ -52,7 +52,7 @@ function renderizarUsuarios(lista) {
     var tr = document.createElement("tr"); tr.tabIndex = 0; tr.style.cursor = "pointer"; tr.title = "Clique para gerenciar este usuário";
     function celula(texto) { var td = document.createElement("td"); td.textContent = texto || "-"; tr.appendChild(td); }
     celula(usuario.nome); celula(usuario.email);
-    celula(usuario.nivel === 1 ? "Gestor de Conteúdo" : "Gestor do Sistema");
+    celula(usuario.nivel === 1 ? "Gestor de Conteúdo" : "Administrador");
     celula(usuario.ativo === true ? "Sim" : "Não");
     tr.onclick = function() { abrirModalEditarUsuario(usuario); };
     tr.onkeydown = function(evento) { if (evento.key === "Enter" || evento.key === " ") { evento.preventDefault(); abrirModalEditarUsuario(usuario); } };

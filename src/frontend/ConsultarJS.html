@@ -1240,7 +1240,7 @@ function renderizarDetalhes(
           podeEditarDetalhe = allowD.indexOf(ckD)!==-1;
         }
       }
-      // Gestor do Sistema sempre pode editar (podeEditarComarca retorna true via null), mas garante
+      // Administrador sempre pode editar (podeEditarComarca retorna true via null), mas garante
       if(perfilDetalheNorm==="GESTOR_SISTEMA" && typeof podeEditarComarca==="function"){
         try{ podeEditarDetalhe = podeEditarComarca(comarca); }catch(e2){ podeEditarDetalhe = true; }
         if(!podeEditarDetalhe) podeEditarDetalhe = true;

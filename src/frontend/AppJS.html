@@ -98,7 +98,7 @@ function aplicarUsuarioServidor(dados, mostrarAlertas) {
   try { carregarUnidadesFormularioAcesso(); } catch (erro) {}
 
   if (mostrarAlertas && dados.estadoAcesso === "CONTA_DESATIVADA") {
-    mostrarToast("Sua conta administrativa está desativada. Procure o Gestor do Sistema.", "warning");
+    mostrarToast("Sua conta administrativa está desativada. Procure o Administrador.", "warning");
   } else if (mostrarAlertas && dados.estadoAcesso === "DOMINIO_NAO_AUTORIZADO") {
     mostrarToast("A conta Google atual não pertence ao domínio autorizado.", "warning");
   }
@@ -120,6 +120,25 @@ function tentarLoginAutomatico(mostrarAlertas) {
   }, function(erro) {
     if (mostrarAlertas) mostrarToast(mensagemErroFrontend(erro, "Falha ao validar a conta Google."), "error");
   });
+}
+
+function abrirModalSemAcesso() {
+  var modal = document.getElementById("modal-sem-acesso");
+  if (!modal) return;
+  modal.style.display = "flex";
+  modal.onclick = function(evento) {
+    if (evento.target === modal) fecharModalSemAcesso();
+  };
+}
+
+function fecharModalSemAcesso() {
+  var modal = document.getElementById("modal-sem-acesso");
+  if (modal) modal.style.display = "none";
+}
+
+function solicitarAcessoViaModal() {
+  fecharModalSemAcesso();
+  abrirFormularioAcesso("cadastro");
 }
 
 function entrarAreaAdministrativa() {
@@ -282,7 +301,7 @@ function atualizarInterfaceUsuario() {
       var badgeTexto = window.EH_CONTEXTO_ADMIN === true ? "consulta" : "acesso público";
       var badgeClasse = "config-conta-badge--visitante";
       if (logado && perfil === "GESTOR_SISTEMA") {
-        badgeTexto = "Gestor do Sistema";
+        badgeTexto = "Administrador";
         badgeClasse = "config-conta-badge--sistema";
       } else if (logado && perfil === "GESTOR_CONTEUDO") {
         badgeTexto = "Gestor de Conte\u00fado";
@@ -310,7 +329,7 @@ function atualizarInterfaceUsuario() {
         chipAll.textContent = "Escopo global";
         comarcasList.appendChild(chipAll);
         comarcasWrap.classList.remove("hidden");
-        if (escopoHint) escopoHint.textContent = "Gestor do Sistema — acesso e edição ilimitadas.";
+        if (escopoHint) escopoHint.textContent = "Administrador — acesso e edição ilimitadas.";
       } else if (logado && perfil === "GESTOR_CONTEUDO" && unidadesUsuario.length) {
         unidadesUsuario.forEach(function(unidade){
           var chip = document.createElement("span");
@@ -365,7 +384,7 @@ function atualizarInterfaceUsuario() {
           fundo: "#fee2e2",
           borda: "#dc2626",
           cor: "#991b1b",
-          acao: function() { mostrarToast("Procure o Gestor do Sistema.", "warning"); }
+          acao: function() { mostrarToast("Procure o Administrador.", "warning"); }
         });
       } else {
         configurarBotaoAcesso(btnAcesso, textoAcesso, {
@@ -373,7 +392,7 @@ function atualizarInterfaceUsuario() {
           fundo: "#dbeafe",
           borda: "#93c5fd",
           cor: "#1e40af",
-          acao: entrarAreaAdministrativa
+          acao: abrirModalSemAcesso
         });
       }
     }
@@ -529,7 +548,7 @@ function atualizarInterfaceUsuario() {
         escopoInfo.style.display = "none";
       } else if (logado && perfil === "GESTOR_SISTEMA") {
         subtitulo.textContent = "Gerenciamento de contatos do Poder Judiciário do Estado do Espírito Santo";
-        escopoInfo.textContent = "Gestor do Sistema — escopo global.";
+        escopoInfo.textContent = "Administrador — escopo global.";
         escopoInfo.style.display = "block";
       } else {
         subtitulo.textContent = "Gerenciamento de contatos do Poder Judiciário do Estado do Espírito Santo";
@@ -552,7 +571,7 @@ function atualizarInterfaceUsuario() {
     }
     var btnTelefones = document.getElementById("btn-imprimir-telefones");
     if (btnTelefones) {
-      // Apenas Gestor do Sistema vê o Imprimir da tabela; Gestor Conteúdo usa o botão da consulta
+      // Apenas Administrador vê o Imprimir da tabela; Gestor Conteúdo usa o botão da consulta
       btnTelefones.style.display = (ehGestorSistema && isTelefones) ? "" : "none";
     }
     var btnNovoTelefone = document.getElementById("btn-novo-telefone");
@@ -627,7 +646,7 @@ function configurarBotaoAcesso(
 function formatarPerfil(perfil) {
   switch (perfil) {
     case "GESTOR_SISTEMA":
-      return "Gestor do Sistema";
+      return "Administrador";
 
     case "GESTOR_CONTEUDO":
       return "Gestor de Conteúdo";

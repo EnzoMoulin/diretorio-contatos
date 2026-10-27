@@ -448,7 +448,7 @@ function garantirEstruturaAcessosUnidades(sheet) {
 }
 
 /**
- * Garante o primeiro gestor do sistema.
+ * Garante o primeiro administrador.
  */
 function garantirGestorInicial(
   spreadsheet
@@ -465,7 +465,7 @@ function garantirGestorInicial(
   const emailAtual = AuthService.obterEmailAtivo();
   if (!AuthService.emailPermitidoNoPrivado(emailAtual)) {
     throw new Error(
-      "Nenhum Gestor do Sistema ativo. Configure APP_MODE=PRIVATE e execute a instalação com uma conta institucional ou de teste permitida."
+      "Nenhum Administrador ativo. Configure APP_MODE=PRIVATE e execute a instalação com uma conta institucional ou de teste permitida."
     );
   }
 

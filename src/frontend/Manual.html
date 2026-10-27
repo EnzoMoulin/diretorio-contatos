@@ -179,7 +179,7 @@ Arquivo: Manual.html
   <!-- HERO -->
   <div class="panel manual-hero">
     <h2>Bem-vindo ao Diretório Institucional de Contatos - PJES</h2>
-    <p>Consulta pública rápida, gestão com trilha de auditoria e permissões por localidade. Este manual cobre todos os fluxos — <strong>Visitante</strong>, <strong>Gestor de Conteúdo</strong> e <strong>Gestor do Sistema</strong> — com telas, passos numerados e dicas de campo.</p>
+    <p>Consulta pública rápida, gestão com trilha de auditoria e permissões por localidade. Este manual cobre todos os fluxos — <strong>Visitante</strong>, <strong>Gestor de Conteúdo</strong> e <strong>Administrador</strong> — com telas, passos numerados e dicas de campo.</p>
     <div class="manual-hero-meta">
       <span>⚡ Consulta sem login</span>
       <span>🔒 Acesso por cargo (conta Google @empresa-exemplo.com.br)</span>
@@ -223,7 +223,7 @@ Arquivo: Manual.html
     </div>
     <div class="manual-role-card" style="border-color:#1e293b">
       <span class="role-ic">🛡️</span>
-      <h4>Gestor do Sistema</h4>
+      <h4>Administrador</h4>
       <p><strong>NIVEL 2 — GESTOR_SISTEMA</strong><br>Acesso administrativo global: contatos, solicitações, usuários e logs, sem depender de vínculos por Unidade.</p>
       <div style="margin-top:10px"><span class="manual-badge badge-sistema">🛡️ Acesso total</span></div>
     </div>
@@ -280,9 +280,9 @@ Arquivo: Manual.html
     </div>
     <ol class="manual-steps">
       <li><span class="manual-step-num">1</span><div><strong>Abra “Solicitar acesso” ou “Solicitar locais”</strong><p>Na barra lateral: <code>📝 Solicitar acesso</code> para o primeiro acesso (só identidade) ou <code>📍 Solicitar locais</code> para pedir localidades (quem já tem cadastro). É preciso estar logado com o Google — se não estiver, o sistema pede para validar primeiro.</p></div></li>
-      <li><span class="manual-step-num">2</span><div><strong>Preencha Nome, Nível e Unidades</strong><p><code>Nome completo</code> é obrigatório. O e-mail vem da conta Google e não pode ser alterado. No modo de locais, escolha <code>Nível 1</code> e selecione as Unidades desejadas (para visitante, o nível 1 já vem sugerido).</p></div></li>
+      <li><span class="manual-step-num">2</span><div><strong>Preencha Nome, Nível e Unidades</strong><p><code>Nome completo</code> é obrigatório. O e-mail vem da conta Google e não pode ser alterado. No modo de locais, escolha <code>Nível 1</code> e selecione as Unidades desejadas (para visitante, o nível 1 já vem sugerido). Para testar o fluxo de administrador, escolha <code>Nível 2 — Administrador</code> (sem unidades).</p></div></li>
       <li><span class="manual-step-num">3</span><div><strong>Informe o motivo (opcional)</strong><p>Se quiser, explique função/cargo e necessidade. Ex.: <em>“Servidor da localidade de Vitória, responsável pela atualização dos ramais da vara cível.”</em></p></div></li>
-      <li><span class="manual-step-num">4</span><div><strong>Envie e aguarde aprovação</strong><p>Clique em <span class="manual-kbd">Enviar solicitação</span>. Status inicial <code>PENDENTE</code>. O Gestor do Sistema aprova/rejeita em <em>Solicitações de Acesso</em>. <strong>Nesta demonstração a aprovação é automática e marcada como “SIMULAÇÃO AUTOMÁTICA”.</strong></p></div></li>
+      <li><span class="manual-step-num">4</span><div><strong>Envie e aguarde aprovação</strong><p>Clique em <span class="manual-kbd">Enviar solicitação</span>. Status inicial <code>PENDENTE</code>. O Administrador aprova/rejeita em <em>Solicitações de Acesso</em>. <strong>Nesta demonstração a aprovação é automática e marcada como “SIMULAÇÃO AUTOMÁTICA”.</strong></p></div></li>
     </ol>
     <div class="manual-warn"><span class="mi">⚠️</span><div><strong>Conta não identificada?</strong> Confirme que abriu a implantação privada com a conta Google correta. O sistema nunca aceita um e-mail digitado como prova de identidade.</div></div>
     <div class="manual-info"><span class="mi">ℹ️</span><div><strong>Onde cai o pedido:</strong> a solicitação é gravada em <code>SOLICITACOES_ACESSO</code> com nível numérico, IDs das Unidades, status <code>PENDENTE</code>, data e aprovador.</div></div>
@@ -321,11 +321,11 @@ Arquivo: Manual.html
       <div class="badge-group"><span class="manual-badge badge-conteudo">✏️ Conteúdo</span><span class="manual-badge badge-sistema">🛡️ Sistema</span></div>
     </div>
     <ol class="manual-steps">
-      <li><span class="manual-step-num">1</span><div><strong>Perfil:</strong><p><code>NIVEL=1</code> é Gestor de Conteúdo; <code>NIVEL=2</code> é Gestor do Sistema.</p></div></li>
+      <li><span class="manual-step-num">1</span><div><strong>Perfil:</strong><p><code>NIVEL=1</code> é Gestor de Conteúdo; <code>NIVEL=2</code> é Administrador.</p></div></li>
       <li><span class="manual-step-num">2</span><div><strong>Regra de ouro:</strong><p>Nível 1 depende de linhas ativas com o mesmo <code>USUARIO_ID</code> e o <code>UNIDADE_ORGANIZACIONAL_ID</code> autorizado. Sem vínculo, não há edição.</p></div></li>
       <li><span class="manual-step-num">3</span><div><strong>Validação no servidor:</strong><p>A API resolve Setor → Unidade e rejeita criação, edição ou exclusão fora do vínculo ativo.</p></div></li>
     </ol>
-    <div class="manual-info"><span class="mi">ℹ️</span><div>O Gestor do Sistema possui escopo global e não precisa de linhas em <code>ACESSOS_UNIDADES</code>.</div></div>
+    <div class="manual-info"><span class="mi">ℹ️</span><div>O Administrador possui escopo global e não precisa de linhas em <code>ACESSOS_UNIDADES</code>.</div></div>
   </section>
 
   <!-- 06 SOLICITAÇÕES -->
@@ -338,7 +338,7 @@ Arquivo: Manual.html
       <div class="badge-group"><span class="manual-badge badge-sistema">🛡️ Sistema</span></div>
     </div>
     <ol class="manual-steps">
-      <li><span class="manual-step-num">1</span><div><strong>Abra “Solicitações de Acesso”</strong><p>Visível apenas para Gestor do Sistema. Clique em <code>👥 Solicitações de Acesso</code> na barra lateral.</p></div></li>
+      <li><span class="manual-step-num">1</span><div><strong>Abra “Solicitações de Acesso”</strong><p>Visível apenas para Administrador. Clique em <code>👥 Solicitações de Acesso</code> na barra lateral.</p></div></li>
       <li><span class="manual-step-num">2</span><div><strong>Analise a linha</strong><p>Confira e-mail, nome, nível e Unidades solicitadas. Nível 1 exige ao menos uma Unidade; nível 2 é global.</p></div></li>
       <li><span class="manual-step-num">3</span><div><strong>Aprove ou rejeite</strong><p>Ao aprovar, o sistema cria ou atualiza <code>USUARIOS</code> e grava os vínculos necessários em <code>ACESSOS_UNIDADES</code>.</p></div></li>
       <li><span class="manual-step-num">4</span><div><strong>Atualize a lista</strong><p>O painel recarrega sozinho após a ação. Use <span class="manual-kbd">🔄 Atualizar</span> para recarregar manualmente.</p></div></li>
@@ -351,14 +351,14 @@ Arquivo: Manual.html
     <div class="manual-section-head">
       <div>
         <h3>🧑‍💼 07 — Gerenciar usuários</h3>
-        <p>Painel exclusivo do Gestor do Sistema. Altera nível, ativa/desativa e define escopo por Unidade.</p>
+        <p>Painel exclusivo do Administrador. Altera nível, ativa/desativa e define escopo por Unidade.</p>
       </div>
       <div class="badge-group"><span class="manual-badge badge-sistema">🛡️ Sistema</span></div>
     </div>
     <ol class="manual-steps">
       <li><span class="manual-step-num">1</span><div><strong>Abra “Usuários”</strong><p>A tabela carrega E-mail, Nome, Nível, Unidades, Ativo e Ações.</p></div></li>
-      <li><span class="manual-step-num">2</span><div><strong>Edite inline</strong><p>Mude o <code>Nível</code> entre <code>1 — Gestor de Conteúdo</code> e <code>2 — Gestor do Sistema</code>, ajuste <code>Ativo</code> e selecione as Unidades quando o nível for 1. O nível 2 é sempre global.</p></div></li>
-      <li><span class="manual-step-num">3</span><div><strong>Salve</strong><p>Clique em <span class="manual-kbd">Salvar</span> na linha. O backend valida: não é possível rebaixar o <strong>último Gestor do Sistema ativo</strong> nem editar a própria conta por este painel.</p></div></li>
+      <li><span class="manual-step-num">2</span><div><strong>Edite inline</strong><p>Mude o <code>Nível</code> entre <code>1 — Gestor de Conteúdo</code> e <code>2 — Administrador</code>, ajuste <code>Ativo</code> e selecione as Unidades quando o nível for 1. O nível 2 é sempre global.</p></div></li>
+      <li><span class="manual-step-num">3</span><div><strong>Salve</strong><p>Clique em <span class="manual-kbd">Salvar</span> na linha. O backend valida: não é possível rebaixar o <strong>último Administrador ativo</strong> nem editar a própria conta por este painel.</p></div></li>
       <li><span class="manual-step-num">4</span><div><strong>Desative sem apagar</strong><p>Use <code>ATIVO=NÃO</code> para bloquear o acesso administrativo. A conta continua cadastrada e recebe o aviso de conta desativada ao tentar entrar.</p></div></li>
     </ol>
     <div class="manual-warn"><span class="mi">⚠️</span><div><strong>Trava de segurança:</strong> o sistema impede remover o último <code>GESTOR_SISTEMA</code> ativo. Mantenha ao menos dois gestores para evitar lockout.</div></div>
@@ -435,7 +435,7 @@ Arquivo: Manual.html
       <div class="panel">
         <strong>🏛️ Nome da localidade importa</strong>
         <p style="margin:8px 0 0;color:#475569;font-size:13px;line-height:1.6">Digite exatamente como está no mapa (ex.: “Cachoeiro de Itapemirim”, não “Cachoeiro”). A validação compara nomes normalizados — acentos são ignorados, mas erros de grafia bloqueiam o salvamento.</p>
-        <div class="manual-warn" style="margin-top:10px"><span class="mi">⚠️</span><div>Localidade nova? Avise o Gestor do Sistema para garantir que ela exista na base antes de cadastrar.</div></div>
+        <div class="manual-warn" style="margin-top:10px"><span class="mi">⚠️</span><div>Localidade nova? Avise o Administrador para garantir que ela exista na base antes de cadastrar.</div></div>
       </div>
     </div>
     <div class="manual-cols">
@@ -461,7 +461,7 @@ Arquivo: Manual.html
     </div>
     <div class="manual-faq">
       <details><summary>🔑 Por que continuo como Visitante mesmo logado com Google?</summary><p>O acesso administrativo só existe na URL privada. Nela, sua conta precisa estar em <code>USUARIOS</code> com <code>NIVEL=1</code> ou <code>NIVEL=2</code> e <code>ATIVO=SIM</code>. Se ainda não estiver cadastrada, use o Formulário de Acesso exibido pelo sistema.</p></details>
-      <details><summary>🔒 Não consigo editar uma Unidade. Por quê?</summary><p>O nível 1 só edita Unidades com vínculo ativo em <code>ACESSOS_UNIDADES</code>. Peça ao Gestor do Sistema para revisar o vínculo.</p></details>
+      <details><summary>🔒 Não consigo editar uma Unidade. Por quê?</summary><p>O nível 1 só edita Unidades com vínculo ativo em <code>ACESSOS_UNIDADES</code>. Peça ao Administrador para revisar o vínculo.</p></details>
       <details><summary>📝 Enviei o formulário, e agora?</summary><p>Seu pedido fica <code>PENDENTE</code> em <code>SOLICITACOES_ACESSO</code>. Após aprovação, o sistema atualiza <code>USUARIOS</code> e os vínculos de Unidade.</p></details>
       <details><summary>🗺️ O mapa sumiu depois de voltar do navegador?</summary><p>O sistema recupera o estado no evento <code>pageshow</code> (bfcache). Clique em <em>Telefones</em> novamente ou use <em>Ver mapa</em> nos detalhes. Se persistir, recarregue a página.</p></details>
       <details><summary>🌙 O modo escuro não pegou / voltou ao claro?</summary><p>A preferência é salva em <code>localStorage</code> por navegador. Cada navegador/dispositivo guarda separado. Alterne novamente em <em>Configurações → Aparência</em>.</p></details>
@@ -477,7 +477,7 @@ Arquivo: Manual.html
 
   <div class="panel" style="text-align:center;padding:18px;color:#64748b;font-size:12px;line-height:1.6">
     <strong style="color:#0f172a">Diretório Institucional de Contatos - PJES</strong> · Google Apps Script Web App<br>
-    Dúvidas técnicas: verifique a aba <code>LOG</code> na planilha e a versão na sidebar (<code>v3.4</code>). Para suporte, contate o Gestor do Sistema da sua localidade.
+    Dúvidas técnicas: verifique a aba <code>LOG</code> na planilha e a versão na sidebar (<code>v3.4</code>). Para suporte, contate o Administrador da sua localidade.
   </div>
 
 </div>

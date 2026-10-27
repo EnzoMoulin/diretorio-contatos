@@ -724,7 +724,7 @@ function handleSolicitarLocalidadeClick(localidade, botao){
       if(res && res.sucesso===true){
         try{ sessionStorage.setItem(chaveSolicitacaoLocalidadeGC(localidade), String(Date.now())); }catch(e){}
         if(botao){ botao.textContent="✕ Cancelar"; botao.style.background="#fee2e2"; botao.style.borderColor="#fca5a5"; botao.style.color="#991b1b"; botao.title="Clique para cancelar a solicitação"; botao.disabled=false; }
-        if(typeof mostrarToast==="function") mostrarToast("Solicitação enviada ao Gestor do Sistema. Você será avisado por e-mail quando o acesso for liberado.", "success");
+        if(typeof mostrarToast==="function") mostrarToast("Solicitação enviada ao Administrador. Você será avisado por e-mail quando o acesso for liberado.", "success");
       } else {
         if(botao){ botao.disabled=false; botao.textContent="🔓 Solicitar acesso"; }
         if(typeof mostrarToast==="function") mostrarToast((res&&res.erro)||"Erro ao enviar a solicitação.", "error");
