@@ -27,6 +27,12 @@ const CONFIG = {
     PROPRIEDADE_OPERADORES_INSTALACAO: "OPERADORES_INSTALACAO"
   },
 
+  SIMULACAO: {
+    // Demonstração: com APROVACAO_AUTOMATICA true, todo pedido é aprovado na
+    // hora e marcado como "SIMULAÇÃO AUTOMÁTICA". Produção: false (só manual).
+    APROVACAO_AUTOMATICA: true
+  },
+
   PUBLICACAO: {
     PROPRIEDADE_PLANILHA_PUBLICA: "PLANILHA_PUBLICA_ID",
     PROPRIEDADE_FONTE_MIGRACAO: "PLANILHA_FONTE_MIGRACAO_ID",

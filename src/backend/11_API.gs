@@ -740,8 +740,8 @@ function listarEscoposParaAcesso() {
   try {
     AuthService.exigirContextoPrivado();
     const usuario = new AuthService().usuarioAtual();
-    if (!usuario.identificado || !AuthService.emailPermitidoNoPrivado(usuario.email)) {
-      throw new Error("Não foi possível identificar uma conta autorizada nesta URL privada.");
+    if (!usuario.identificado) {
+      throw new Error("Entre com uma conta Google para ver as localidades.");
     }
     return respostaSucesso(montarCatalogoEscoposAcesso().itens);
   } catch (erro) {
@@ -814,8 +814,8 @@ function listarUnidadesParaAcesso() {
   try {
     AuthService.exigirContextoPrivado();
     const usuario = new AuthService().usuarioAtual();
-    if (!usuario.identificado || !AuthService.emailPermitidoNoPrivado(usuario.email)) {
-      throw new Error("Não foi possível identificar uma conta autorizada nesta URL privada.");
+    if (!usuario.identificado) {
+      throw new Error("Entre com uma conta Google para ver as localidades.");
     }
 
     const shUnidades = DB.unidadesOrganizacionais();
@@ -922,17 +922,20 @@ function contarSolicitacoesPendentes() {
 function enviarFormularioAcesso(dados) {
   const lock = LockService.getScriptLock();
   let bloqueado = false;
+  let autoId = "";
   try {
     lock.waitLock(30000);
     bloqueado = true;
     AuthService.exigirContextoPrivado();
     const usuario = new AuthService().usuarioAtual();
-    if (!usuario.identificado || !AuthService.emailPermitidoNoPrivado(usuario.email)) {
-      throw new Error("Não foi possível identificar uma conta institucional ou de teste autorizada.");
+    if (!usuario.identificado) {
+      throw new Error("Entre com uma conta Google para solicitar acesso.");
     }
     const ehAmpliacaoGestorConteudo = usuario.logado === true &&
       usuario.ativo === true && usuario.perfil === CONFIG.PERFIS.GESTOR_CONTEUDO;
-    if (usuario.cadastrado && !ehAmpliacaoGestorConteudo) {
+    const ehVisitanteCadastrado = usuario.cadastrado === true &&
+      usuario.logado === false && usuario.estadoAcesso === "VISITANTE";
+    if (usuario.cadastrado && !ehAmpliacaoGestorConteudo && !ehVisitanteCadastrado) {
       throw new Error(usuario.ativo
         ? "Este perfil já possui acesso global ou não pode solicitar ampliação."
         : "Esta conta está desativada. Procure o Gestor do Sistema.");
@@ -955,12 +958,8 @@ function enviarFormularioAcesso(dados) {
     if (nivel && nivel !== CONFIG.NIVEIS.GESTOR_CONTEUDO && nivel !== CONFIG.NIVEIS.GESTOR_SISTEMA) {
       throw new Error("Perfil desejado inválido. Use nível 1 ou 2.");
     }
-    if (!usuario.cadastrado && !nivel) {
-      throw new Error("Informe o nível de acesso desejado.");
-    }
-    if (!nivel && escopos.length === 0) {
-      throw new Error("Selecione uma alteração de nível, localidades adicionais ou ambos.");
-    }
+    // Sem nível e sem escopos = pedido de primeiro acesso (só cadastro).
+    // Com escopos = pedido de localidades. Nível 1 exige ao menos um escopo.
     if (!usuario.cadastrado && nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO && escopos.length === 0) {
       throw new Error("Selecione ao menos um Município, Fórum, Unidade ou Setor para o Gestor de Conteúdo.");
     }
@@ -1015,13 +1014,19 @@ function enviarFormularioAcesso(dados) {
     sheet.appendRow(linha);
     SpreadsheetApp.flush();
     registrarInfoAPI("SOLICITAR_ACESSO", usuario.email + " -> nível " + nivel + " / " + escoposValidados.length + " escopo(s)");
-    return respostaSucesso({ id: id, status: "PENDENTE" });
+    autoId = id;
   } catch (erro) {
     registrarErroAPI("FORMULARIO_ACESSO", erro);
     return respostaErro(erro);
   } finally {
     if (bloqueado) lock.releaseLock();
   }
+  // Simulação (demonstração): aprovação automática imediata e marcada.
+  // Produção: SIMULACAO.APROVACAO_AUTOMATICA = false e a aprovação é manual.
+  if (autoId && CONFIG.SIMULACAO && CONFIG.SIMULACAO.APROVACAO_AUTOMATICA) {
+    return processarSolicitacaoAPI(autoId, "APROVADO", undefined, { automatica: true });
+  }
+  return respostaSucesso({ id: autoId, status: "PENDENTE" });
 }
 
 function solicitarAcesso(nome, nivel, justificativa, noIds) {
@@ -1112,14 +1117,17 @@ function adicionarAcessosUnidades(usuarioId, escopos) {
   if (linhasAtualizadas.length) sheet.getRange(2, 1, linhasAtualizadas.length, sheet.getLastColumn()).setValues(linhasAtualizadas);
 }
 
-function processarSolicitacaoAPI(id, novoStatus, escoposAjustados) {
+function processarSolicitacaoAPI(id, novoStatus, escoposAjustados, opcoes) {
+  const automatica = !!(opcoes && opcoes.automatica);
   const lock = LockService.getScriptLock();
   let bloqueado = false;
   try {
     lock.waitLock(30000);
     bloqueado = true;
     const auth = new AuthService();
-    auth.exigirPerfil(CONFIG.PERFIS.GESTOR_SISTEMA);
+    if (!automatica) {
+      auth.exigirPerfil(CONFIG.PERFIS.GESTOR_SISTEMA);
+    }
     const status = String(novoStatus || "").trim().toUpperCase();
     if (!["APROVADO", "REJEITADO"].includes(status)) throw new Error("Status inválido.");
 
@@ -1131,9 +1139,8 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados) {
     if (solicitacao.nivel === 2 && solicitacao.escopos.length > 0) {
       throw new Error("Solicitação de Gestor do Sistema não deve possuir escopos adicionais.");
     }
-    if (!emailValidoAPI(solicitacao.email) ||
-        !AuthService.emailPermitidoNoPrivado(solicitacao.email)) {
-      throw new Error("A solicitação não possui um e-mail institucional ou de teste permitido.");
+    if (!emailValidoAPI(solicitacao.email)) {
+      throw new Error("A solicitação não possui um e-mail válido.");
     }
 
     if (status === "APROVADO") {
@@ -1151,11 +1158,10 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados) {
         return normalizarEmail(linha[mapaU.EMAIL - 1]) === solicitacao.email;
       });
       const nivelAnterior = indice >= 0 ? Number(dadosU[indice][mapaU.NIVEL - 1]) : 0;
-      const nivelFinal = solicitacao.nivel || nivelAnterior;
-      if (nivelFinal !== CONFIG.NIVEIS.GESTOR_CONTEUDO && nivelFinal !== CONFIG.NIVEIS.GESTOR_SISTEMA) {
-        throw new Error("A solicitação não define um nível de acesso válido.");
-      }
-      if (indice < 0 && nivelFinal === CONFIG.NIVEIS.GESTOR_CONTEUDO && solicitacao.escopos.length === 0) {
+      const nivelFinal = solicitacao.nivel ||
+        (solicitacao.escopos.length > 0 ? CONFIG.NIVEIS.GESTOR_CONTEUDO : nivelAnterior);
+      const ehVisitante = !(nivelFinal === CONFIG.NIVEIS.GESTOR_CONTEUDO || nivelFinal === CONFIG.NIVEIS.GESTOR_SISTEMA);
+      if (!ehVisitante && indice < 0 && nivelFinal === CONFIG.NIVEIS.GESTOR_CONTEUDO && solicitacao.escopos.length === 0) {
         throw new Error("Novo Gestor de Conteúdo deve possuir ao menos uma localidade.");
       }
       let usuarioId = indice >= 0
@@ -1172,7 +1178,9 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados) {
       if (indice >= 0) sheetUsuarios.getRange(indice + 2, 1, 1, nova.length).setValues([nova]);
       else sheetUsuarios.appendRow(nova);
 
-      if (indice >= 0 && nivelAnterior === CONFIG.NIVEIS.GESTOR_CONTEUDO &&
+      if (ehVisitante) {
+        // Visitante: só o cadastro, sem vínculos de escopo.
+      } else if (indice >= 0 && nivelAnterior === CONFIG.NIVEIS.GESTOR_CONTEUDO &&
           nivelFinal === CONFIG.NIVEIS.GESTOR_CONTEUDO) {
         adicionarAcessosUnidades(usuarioId, solicitacao.escopos);
       } else {
@@ -1197,7 +1205,7 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados) {
     }
     if (indices.APROVADOR !== undefined) {
       sheetSolic.getRange(solicitacao.linha, indices.APROVADOR + 1)
-        .setValue(auth.usuarioAtual().email);
+        .setValue(automatica ? "SIMULAÇÃO AUTOMÁTICA" : auth.usuarioAtual().email);
     }
     if (indices.DATA_APROVACAO !== undefined) {
       sheetSolic.getRange(solicitacao.linha, indices.DATA_APROVACAO + 1)

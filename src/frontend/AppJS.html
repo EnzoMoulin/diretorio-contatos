@@ -492,7 +492,17 @@ function atualizarInterfaceUsuario() {
   const btnSolicitarAcesso = document.getElementById("btn-solicitar-acesso");
   if (btnSolicitarAcesso) {
     btnSolicitarAcesso.classList.toggle("hidden", !(
-      window.EH_CONTEXTO_ADMIN === true && usuario.podeSolicitarAcesso === true
+      window.EH_CONTEXTO_ADMIN === true && !usuario.cadastrado && usuario.podeSolicitarAcesso === true
+    ));
+  }
+
+  const podePedirLocais = usuario.cadastrado === true &&
+    (usuario.estadoAcesso === "VISITANTE" ||
+      (usuario.perfil === "GESTOR_CONTEUDO" && usuario.logado === true));
+  const btnSolicitarLocais = document.getElementById("btn-solicitar-locais");
+  if (btnSolicitarLocais) {
+    btnSolicitarLocais.classList.toggle("hidden", !(
+      window.EH_CONTEXTO_ADMIN === true && podePedirLocais
     ));
   }
 
@@ -1061,6 +1071,39 @@ function tratarCliqueAcesso() {
  * NAVEGAÇÃO
  * ----------------------------------------------------------
  */
+
+function abrirFormularioAcesso(modo) {
+  var logado = false;
+  try {
+    logado = (typeof usuarioAtual !== "undefined") && !!usuarioAtual && usuarioAtual.logado === true;
+  } catch (eLogado) {}
+  if (!logado) {
+    try { entrarAreaAdministrativa(); } catch (eEntrar) {}
+    try { mostrarToast("Valide sua conta Google e clique novamente em Solicitar.", "info"); } catch (eToast) {}
+    return;
+  }
+  window.MODO_FORMULARIO_ACESSO = (modo === "locais") ? "locais" : "cadastro";
+  var soCadastro = window.MODO_FORMULARIO_ACESSO === "cadastro";
+  var grupoNivel = document.getElementById("grupo-acesso-nivel");
+  if (grupoNivel) grupoNivel.style.display = soCadastro ? "none" : "";
+  var grupoUnidades = document.getElementById("grupo-acesso-unidades");
+  if (grupoUnidades) grupoUnidades.style.display = soCadastro ? "none" : "";
+  if (soCadastro) {
+    try {
+      escoposAcessoSelecionados.clear();
+      var selNivel = document.getElementById("acesso-nivel");
+      if (selNivel) selNivel.value = "";
+    } catch (eModo) {}
+  } else {
+    try {
+      var ehVisit = (typeof usuarioAtual !== "undefined") && !!usuarioAtual &&
+        usuarioAtual.estadoAcesso === "VISITANTE";
+      var selLocais = document.getElementById("acesso-nivel");
+      if (selLocais && ehVisit && !selLocais.value) selLocais.value = "1";
+    } catch (eNivel) {}
+  }
+  mostrarView("formulario-acesso-view");
+}
 
 function mostrarView(viewId, menuId) {
   // --- Bloqueio por perfil ---

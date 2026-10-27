@@ -71,9 +71,14 @@ Arquivo: Sidebar.html
       <span id="texto-status-acesso"><?= ehContextoAdmin ? 'Acesso administrativo' : 'Acesso Administrativo' ?></span>
     </button>
 
-    <button type="button" id="btn-solicitar-acesso" class="sidebar-status-btn hidden" onclick="mostrarView('formulario-acesso-view')">
+    <button type="button" id="btn-solicitar-acesso" class="sidebar-status-btn hidden" onclick="abrirFormularioAcesso('cadastro')">
       <span aria-hidden="true">📝</span>
       <span>Solicitar acesso</span>
+    </button>
+
+    <button type="button" id="btn-solicitar-locais" class="sidebar-status-btn hidden" onclick="abrirFormularioAcesso('locais')">
+      <span aria-hidden="true">📍</span>
+      <span>Solicitar locais</span>
     </button>
   </div>
 </div>
