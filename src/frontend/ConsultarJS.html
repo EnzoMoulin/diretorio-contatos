@@ -1317,7 +1317,7 @@ function renderizarDetalhes(
         }
         html += '</div>';
       } else {
-        html += '<div class="gc-bloco" style="border:1px dashed #cbd5e1;border-radius:10px;padding:10px 14px;background:#f8fafc;"><div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">\uD83D\uDCCD Endereço</div><div style="font-size:13px;color:#94a3b8;">-</div></div>';
+        html += '<div class="gc-bloco" style="border:1px dashed #cbd5e1;border-radius:10px;padding:10px 14px;background:#f8fafc;"><div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">\uD83D\uDCCD Endereço</div><div style="font-size:13px;color:#64748b;">-</div></div>';
       }
       // Telefone
       if(contatos.telefones && contatos.telefones.length){
@@ -1384,10 +1384,10 @@ function renderizarDetalhes(
         }
         html += '</div>';
       } else {
-        html += '<div class="gc-bloco" style="border:1px dashed #cbd5e1;border-radius:10px;padding:10px 14px;background:#f8fafc;"><div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">\u2709\uFE0F E-mail</div><div style="font-size:13px;color:#94a3b8;">-</div></div>';
+        html += '<div class="gc-bloco" style="border:1px dashed #cbd5e1;border-radius:10px;padding:10px 14px;background:#f8fafc;"><div style="font-size:11px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">\u2709\uFE0F E-mail</div><div style="font-size:13px;color:#64748b;">-</div></div>';
       }
       if((!contatos.telefones||!contatos.telefones.length) && (!contatos.ramais||!contatos.ramais.length) && (!contatos.whatsapps||!contatos.whatsapps.length) && (!contatos.emails||!contatos.emails.length) && (!contatos.enderecos||!contatos.enderecos.length)){
-        html += '<div style="padding:12px 14px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;color:#94a3b8;font-size:13px;">Nenhum contato cadastrado.</div>';
+        html += '<div style="padding:12px 14px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;color:#64748b;font-size:13px;">Nenhum contato cadastrado.</div>';
       }
       html += '</div>';
     } else {

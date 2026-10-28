@@ -58,7 +58,7 @@
     }).slice(0, 15).map(function (nome) {
       return '<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #e2e8f0"><span>' +
         nome + '</span><strong>' + Number(dados[nome] || 0) + '</strong></div>';
-    }).join("") || '<p style="color:#94a3b8;margin:0;">Nenhum contato cadastrado.</p>';
+    }).join("") || '<p style="color:#64748b;margin:0;">Nenhum contato cadastrado.</p>';
   }
 
   window.atualizarDashboardPublico = function (telefonesRaw) {
