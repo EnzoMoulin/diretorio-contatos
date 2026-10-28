@@ -230,6 +230,16 @@ function atualizarInterfaceUsuario() {
   const sidebarUser =
     document.getElementById("sidebar-user");
 
+  function prefixoPessoa(el, texto) {
+    el.innerHTML = "";
+    var icone = document.createElement("span");
+    icone.setAttribute("aria-hidden", "true");
+    icone.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    el.appendChild(icone);
+    el.appendChild(document.createTextNode(texto));
+  }
+
   const sidebarAccessHint =
     document.getElementById("sidebar-access-hint");
 
@@ -241,16 +251,20 @@ function atualizarInterfaceUsuario() {
     if (window.EH_CONTEXTO_ADMIN !== true) {
       sidebarUser.textContent = "Consulta Pública";
     } else if (logado) {
-      sidebarUser.textContent =
-        "👤 " +
+      prefixoPessoa(
+        sidebarUser,
+        " " +
         email +
         "\nPerfil: " +
-        formatarPerfil(perfil);
+        formatarPerfil(perfil)
+      );
     } else if (emailSessao) {
-      sidebarUser.textContent =
-        "👤 " +
+      prefixoPessoa(
+        sidebarUser,
+        " " +
         emailSessao +
-        "\nSem acesso administrativo";
+        "\nSem acesso administrativo"
+      );
     } else {
       sidebarUser.textContent =
         "Sem acesso administrativo";
