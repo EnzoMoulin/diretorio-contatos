@@ -157,26 +157,9 @@ button{touch-action:manipulation}
 }
 .sidebar-footer .sidebar-status-btn{margin-top:8px}
 .sidebar-status-btn:hover{filter:brightness(.985);transform:translateY(-1px)}
-.sidebar-user{
-  margin-top:8px;
-  color:#94a3b8;
-  text-align:center;
-  font-size:14px;
-  line-height:1.5;
-  white-space:pre-line;
-  overflow-wrap:anywhere;
-}
-.sidebar--admin #sidebar-user{
-  font-size:12px!important;
-  line-height:1.5;
-}
-.sidebar-access-hint{
-  margin-top:7px;
-  color:#cbd5e1;
-  text-align:center;
-  font-size:12px;
-  line-height:1.4;
-}
+.sidebar-user{margin-top:8px;color:#94a3b8;text-align:center;font-size:14px;line-height:1.5}
+.sidebar-mail{font-size:11.5px;word-break:break-all;margin-top:10px;margin-bottom:-6px}
+.sidebar-access-hint{margin-top:8px;color:#94a3b8;text-align:center;font-size:12px}
 
 /* Topbar */
 .topbar{
@@ -402,8 +385,8 @@ input:focus,select:focus,textarea:focus,
   background:rgba(255,255,255,.98)!important;
 }
 .fc-map{
-  border-color:#dbe4ee!important;
-  border-radius:13px!important;
+  border-color:#cbd5e1!important;
+  border-radius:12px!important;
   box-shadow:none!important;
 }
 .fc-title{font-size:19px!important}
@@ -415,12 +398,8 @@ input:focus,select:focus,textarea:focus,
 .fc-card{
   border-color:#e2e8f0!important;
   border-radius:12px!important;
-  box-shadow:0 1px 2px rgba(15,23,42,.025)!important;
 }
-.fc-card[data-nav]:hover{border-color:#bfdbfe!important;box-shadow:0 8px 20px rgba(15,23,42,.07)!important}
 .fc-btn,.fc-icon-btn{border-radius:9px!important}
-.fc-contato{border-color:#e2e8f0!important;background:#f8fafc!important}
-.fc-empty{background:#f8fafc!important}
 .fc-dialog-backdrop{backdrop-filter:blur(5px)}
 .fc-dialog{border:1px solid rgba(255,255,255,.2);box-shadow:var(--ui-shadow-lg)!important}
 
@@ -754,12 +733,11 @@ input[type=search]{border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px;
 .sidebar-status-btn:hover{filter:brightness(.985);transform:translateY(-1px)}
 .sidebar-status-btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
 .sidebar-status-btn.danger{background:#fee2e2;border-color:#dc2626;color:#991b1b}
-.sidebar-user{margin-top:10px;color:#94a3b8;text-align:center;font-size:12px;line-height:1.5}
-.sidebar-header span{font-size:12px}
-.sidebar-user{font-size:12px}
-.sidebar-public .sidebar-user{font-size:14px}
+.sidebar-user{margin-top:8px;color:#94a3b8;text-align:center;font-size:14px;line-height:1.5}
+.sidebar-header span{font-size:14px}
+.sidebar-public .sidebar-header span{font-size:12px}
+.sidebar-public .sidebar-user{margin:14px 0 0}
 .sidebar-footer{padding:10px 12px}
-.sidebar-user{margin:14px 0 0}
 /* ===== paridade pub/priv: métricas travadas (vale para os dois contextos) ===== */
 .sidebar .sidebar-header,.sidebar--admin .sidebar-header,.sidebar-public .sidebar-header{padding:22px 18px 18px!important}
 .sidebar .sidebar-brand-copy strong,.sidebar--admin .sidebar-brand-copy strong,.sidebar-public .sidebar-brand-copy strong{font-size:20px!important}
