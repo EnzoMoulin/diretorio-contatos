@@ -203,6 +203,16 @@
     } else renderForuns();
     destacarContato(item.contato.id);
   }
+  function realcarBusca(termo, texto){
+    var base = esc(texto), b = esc(String(termo || "").trim());
+    if(!b) return base;
+    var lower = base.toLowerCase(), alvo = b.toLowerCase(), out = "", i = 0, j;
+    while((j = lower.indexOf(alvo, i)) !== -1){
+      out += base.slice(i, j) + "<mark>" + base.slice(j, j + b.length) + "</mark>";
+      i = j + b.length;
+    }
+    return out + base.slice(i);
+  }
   function vincularBuscaGlobal() {
     var campo = document.getElementById("fc-busca"), caixa = document.getElementById("fc-busca-resultados");
     if (!campo || !caixa || campo.getAttribute("data-busca-ok")) return;
@@ -214,9 +224,9 @@
       caixa.innerHTML = resultados.map(function (item, i) {
         var c = item.contato;
         return '<button type="button" class="fc-busca-item" data-busca-i="' + i + '">' +
-          "<strong>" + esc(c.descricao || fmtTipoContato(c.tipo)) + "</strong>" +
-          "<small>" + esc(fmtTipoContato(c.tipo) + (c.valor ? " · " + c.valor : "")) + "</small>" +
-          "<small>" + esc(item.caminho) + "</small></button>";
+          "<strong>" + realcarBusca(campo.value, c.descricao || fmtTipoContato(c.tipo)) + "</strong>" +
+          "<small>" + realcarBusca(campo.value, fmtTipoContato(c.tipo) + (c.valor ? " · " + c.valor : "")) + "</small>" +
+          "<small>" + realcarBusca(campo.value, item.caminho) + "</small></button>";
       }).join("");
       caixa.removeAttribute("hidden");
       var botoes = caixa.querySelectorAll("[data-busca-i]");

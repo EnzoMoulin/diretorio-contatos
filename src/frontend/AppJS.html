@@ -1389,4 +1389,19 @@ window.addEventListener("afterprint", function(){
   var m = document.getElementById("print-meta");
   if(m) m.remove();
 });
+
+document.addEventListener("keydown", function(e){
+  if(e.key !== "Escape") return;
+  var cx = document.getElementById("fc-busca-resultados");
+  if(cx && !cx.hasAttribute("hidden")){ cx.setAttribute("hidden", ""); cx.innerHTML = ""; }
+  var x = document.querySelector(".leaflet-popup-close-button");
+  if(x){ x.click(); }
+  var ae = document.activeElement;
+  if(ae && (ae.id === "fc-busca" || ae.id === "campo-pesquisa")) ae.blur();
+  document.querySelectorAll(".modal").forEach(function(m){
+    if(m.classList.contains("hidden") || m.style.display === "none" || m.offsetParent === null) return;
+    if(m.id === "modal-sem-acesso" && typeof fecharModalSemAcesso === "function") fecharModalSemAcesso();
+    else m.classList.add("hidden");
+  });
+});
 </script>
