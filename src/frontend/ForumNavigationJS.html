@@ -482,7 +482,12 @@
     if (estado.carregando) return;
     estado.carregando = true;
     if (opcoes.mostrarCarregando !== false && host()) {
-      host().innerHTML = '<div class="fc-empty">Carregando contatos...</div>';
+      host().innerHTML =
+        '<div aria-hidden="true">' +
+        '<div class="fc-skel-card"><div class="fc-skel-line w60"></div><div class="fc-skel-line w80"></div><div class="fc-skel-line w40"></div></div>' +
+        '<div class="fc-skel-card"><div class="fc-skel-line w80"></div><div class="fc-skel-line w40"></div><div class="fc-skel-line w60"></div></div>' +
+        '<div class="fc-skel-card"><div class="fc-skel-line w40"></div><div class="fc-skel-line w60"></div><div class="fc-skel-line w80"></div></div>' +
+        '</div>';
     }
     chamadaHierarquia(opcoes.termo || "", function (dados) {
       estado.carregando = false;

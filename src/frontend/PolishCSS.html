@@ -126,6 +126,7 @@ button{touch-action:manipulation}
   font-size:17px;
 }
 .menu-item .icon svg{width:16px;height:16px;flex:none}
+button:focus-visible,a:focus-visible,.menu-item:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
 .sidebar-status-btn svg{width:16px;height:16px;flex:none}
 .fc-btn svg,.fc-icon-btn svg,.btn-ghost svg{width:15px;height:15px;flex:none}
 .menu-item:hover{
@@ -401,6 +402,13 @@ input:focus,select:focus,textarea:focus,
   border-radius:12px!important;
 }
 .fc-btn,.fc-icon-btn{border-radius:9px!important}
+.fc-skel-card{border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff}
+.fc-skel-line{height:12px;border-radius:6px;margin:8px 0;background:linear-gradient(90deg,#e8edf3 25%,#f5f7fb 50%,#e8edf3 75%);background-size:200% 100%;animation:fc-shimmer 1.1s linear infinite}
+.fc-skel-line.w40{width:40%}.fc-skel-line.w60{width:60%}.fc-skel-line.w80{width:80%}
+@keyframes fc-shimmer{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.fc-skel-line{animation:none}}
+.dark-mode .fc-skel-card{background:#0f172a!important;border-color:#334155!important}
+.dark-mode .fc-skel-line{background:linear-gradient(90deg,#1e293b 25%,#273449 50%,#1e293b 75%);background-size:200% 100%}
 .fc-dialog-backdrop{backdrop-filter:blur(5px)}
 .fc-dialog{border:1px solid rgba(255,255,255,.2);box-shadow:var(--ui-shadow-lg)!important}
 
