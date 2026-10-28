@@ -233,9 +233,6 @@ function atualizarInterfaceUsuario() {
   const sidebarAccessHint =
     document.getElementById("sidebar-access-hint");
 
-  const sidebarUserMail =
-    document.getElementById("sidebar-user-mail");
-
   if (sidebarUser) {
     var emailSessao = String(
       (typeof window.SESSAO_EMAIL !== "undefined" && window.SESSAO_EMAIL) || ""
@@ -243,22 +240,20 @@ function atualizarInterfaceUsuario() {
 
     if (window.EH_CONTEXTO_ADMIN !== true) {
       sidebarUser.textContent = "Consulta Pública";
-      if (sidebarUserMail) sidebarUserMail.classList.add("hidden");
     } else if (logado) {
-      if (sidebarUserMail) {
-        sidebarUserMail.textContent = "👤 " + email;
-        sidebarUserMail.classList.remove("hidden");
-      }
-      sidebarUser.textContent = "Perfil: " + formatarPerfil(perfil);
+      sidebarUser.textContent =
+        "👤 " +
+        email +
+        "\nPerfil: " +
+        formatarPerfil(perfil);
     } else if (emailSessao) {
-      if (sidebarUserMail) {
-        sidebarUserMail.textContent = "👤 " + emailSessao;
-        sidebarUserMail.classList.remove("hidden");
-      }
-      sidebarUser.textContent = "Sem acesso administrativo";
+      sidebarUser.textContent =
+        "👤 " +
+        emailSessao +
+        "\nSem acesso administrativo";
     } else {
-      if (sidebarUserMail) sidebarUserMail.classList.add("hidden");
-      sidebarUser.textContent = "Sem acesso administrativo";
+      sidebarUser.textContent =
+        "Sem acesso administrativo";
     }
   }
 
