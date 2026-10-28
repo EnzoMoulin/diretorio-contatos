@@ -127,6 +127,14 @@ button{touch-action:manipulation}
 }
 .menu-item .icon svg{width:16px;height:16px;flex:none}
 button:focus-visible,a:focus-visible,.menu-item:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+/* Barras de rolagem finas */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8;border:2px solid transparent;background-clip:content-box}
+.sidebar-menu{scrollbar-width:thin;scrollbar-color:#475569 transparent}
+.sidebar-menu::-webkit-scrollbar-thumb{background:#475569;border:2px solid transparent;background-clip:content-box}
+html{scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
 .sidebar-status-btn svg{width:16px;height:16px;flex:none}
 .fc-btn svg,.fc-icon-btn svg,.btn-ghost svg{width:15px;height:15px;flex:none}
 .btn svg{width:15px;height:15px;flex:none;vertical-align:-2px}

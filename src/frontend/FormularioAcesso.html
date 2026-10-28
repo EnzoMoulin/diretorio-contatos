@@ -19,7 +19,7 @@
           <input id="acesso-nome" maxlength="150" autocomplete="name">
         </div>
         <div id="grupo-acesso-email" class="fa-field">
-          <label for="acesso-email">E-mail</label>
+          <label for="acesso-email">E-mail *</label>
           <input id="acesso-email" readonly aria-readonly="true">
         </div>
         <div class="fa-field fa-full" id="grupo-acesso-nivel">
@@ -155,6 +155,8 @@ function enviarFormularioAcesso(){
   var nivel = Number(document.getElementById("acesso-nivel")?.value || 0);
   var escopos = Array.from(escoposAcessoSelecionados).map(function(chave){var partes=chave.split(":");return {tipo:partes[0],id:partes.slice(1).join(":")};});
   var justificativa = String(document.getElementById("acesso-justificativa")?.value || "").trim();
+  var emailObrigatorio = String(document.getElementById("acesso-email")?.value || "").trim();
+  if(!emailObrigatorio || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailObrigatorio)){ mensagemFormularioAcesso("E-mail da conta Google não identificado. Entre com sua conta Google e tente de novo.", false); return; }
   if(nome.length < 3){ mensagemFormularioAcesso(usarIdentidadeCadastrada?"Não foi possível identificar o nome cadastrado.":"Informe seu nome completo.", false); return; }
   if(!nivel && !escopos.length){ mensagemFormularioAcesso("Solicite uma alteração de nível, comarcas adicionais ou ambos.", false); return; }
   if(usuario.cadastrado !== true && nivel === 1 && !escopos.length){ mensagemFormularioAcesso("Selecione ao menos uma comarca, Fórum, Unidade ou Setor para o Gestor de Conteúdo.", false); return; }

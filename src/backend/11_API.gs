@@ -955,6 +955,10 @@ function enviarFormularioAcesso(dados) {
     if (nome.length < 3 || nome.length > CONFIG.LIMITES.TAMANHO_MAXIMO_NOME) {
       throw new Error("Informe um nome válido.");
     }
+    const emailSessao = textoSeguro(usuario.email);
+    if (!emailSessao || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailSessao)) {
+      throw new Error("E-mail da sessão não identificado. Entre com sua conta Google.");
+    }
     if (nivel && nivel !== CONFIG.NIVEIS.GESTOR_CONTEUDO && nivel !== CONFIG.NIVEIS.GESTOR_SISTEMA) {
       throw new Error("Perfil desejado inválido. Use nível 1 ou 2.");
     }
