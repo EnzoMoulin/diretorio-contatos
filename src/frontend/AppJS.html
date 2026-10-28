@@ -366,32 +366,24 @@ function atualizarInterfaceUsuario() {
     btnAcesso.classList.toggle("btn-sair", logado);
     if (window.EH_CONTEXTO_ADMIN !== true) {
       btnAcesso.classList.add("hidden");
-      btnAcesso.style.display = "none";
     } else {
       btnAcesso.classList.remove("hidden");
-      btnAcesso.style.display = "flex";
       if (logado) {
         configurarBotaoAcesso(btnAcesso, textoAcesso, {
           texto: "SAIR",
-          fundo: "#fee2e2",
-          borda: "#dc2626",
-          cor: "#991b1b",
+          classe: "danger",
           acao: tratarCliqueAcesso
         });
       } else if (usuario.estadoAcesso === "CONTA_DESATIVADA") {
         configurarBotaoAcesso(btnAcesso, textoAcesso, {
           texto: "Conta administrativa desativada",
-          fundo: "#fee2e2",
-          borda: "#dc2626",
-          cor: "#991b1b",
+          classe: "danger",
           acao: function() { mostrarToast("Procure o Administrador.", "warning"); }
         });
       } else {
         configurarBotaoAcesso(btnAcesso, textoAcesso, {
           texto: "Acesso administrativo",
-          fundo: "#2563eb",
-          borda: "#2563eb",
-          cor: "#ffffff",
+          classe: "primary",
           acao: abrirModalSemAcesso
         });
       }
@@ -637,14 +629,8 @@ function configurarBotaoAcesso(
   texto,
   config
 ) {
-  botao.style.background =
-    config.fundo;
-
-  botao.style.borderColor =
-    config.borda;
-
-  botao.style.color =
-    config.cor;
+  botao.classList.remove("primary", "danger");
+  if (config.classe) botao.classList.add(config.classe);
 
   texto.textContent =
     config.texto;
