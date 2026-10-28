@@ -425,6 +425,16 @@ input:focus,select:focus,textarea:focus,
 @keyframes fc-troca{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.fc-skel-line{animation:none}[id$="-view"]:not(.hidden){animation:none}}
 .fc-empty::before{content:"";display:block;width:46px;height:46px;margin:2px auto 10px;opacity:.6;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='21' y1='21' x2='16.5' y2='16.5'/%3E%3C/svg%3E") center/contain no-repeat}
+@media (prefers-reduced-motion:no-preference){
+.fc-panel .fc-card,.fc-comarcas-grid .fc-card{animation:fc-entra .3s ease backwards}
+.fc-panel .fc-card:nth-child(2),.fc-comarcas-grid .fc-card:nth-child(2){animation-delay:.03s}
+.fc-panel .fc-card:nth-child(3),.fc-comarcas-grid .fc-card:nth-child(3){animation-delay:.06s}
+.fc-panel .fc-card:nth-child(4),.fc-comarcas-grid .fc-card:nth-child(4){animation-delay:.09s}
+.fc-panel .fc-card:nth-child(5),.fc-comarcas-grid .fc-card:nth-child(5){animation-delay:.12s}
+.fc-panel .fc-card:nth-child(6),.fc-comarcas-grid .fc-card:nth-child(6){animation-delay:.15s}
+.fc-panel .fc-card:nth-child(n+7),.fc-comarcas-grid .fc-card:nth-child(n+7){animation-delay:.18s}
+@keyframes fc-entra{from{opacity:0;transform:translateY(6px)}}
+}
 .print-meta{display:none}
 .dark-mode .fc-skel-card{background:#0f172a!important;border-color:#334155!important}
 .dark-mode .fc-skel-line{background:linear-gradient(90deg,#1e293b 25%,#273449 50%,#1e293b 75%);background-size:200% 100%}
