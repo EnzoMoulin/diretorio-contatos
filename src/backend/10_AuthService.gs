@@ -91,10 +91,10 @@ class AuthService {
       return AuthService.usuarioConsulta("IDENTIDADE_NAO_DISPONIVEL", "");
     }
 
-    if (!AuthService.emailPermitidoNoPrivado(emailAtivo)) {
-      return AuthService.usuarioConsulta("DOMINIO_NAO_AUTORIZADO", emailAtivo);
-    }
-
+    // Portão aberto: qualquer conta Google identificada entra como visitante e
+    // pode solicitar acesso; a decisão acontece na aprovação (manual ou
+    // automática simulada). O domínio institucional continua exigido apenas
+    // em instalação/publicação (emailPermitidoNoPrivado).
     return this.buscarUsuario(emailAtivo);
   }
 
