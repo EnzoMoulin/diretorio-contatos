@@ -392,19 +392,19 @@ input:focus,select:focus,textarea:focus,
 
 /* Consulta / diretório */
 .telefones-container{height:100%;min-height:0}
-.consulta-layout{gap:14px}
+.consulta-layout{gap:clamp(16px,2vw,24px)}
 .consulta-detalhes{border-radius:16px}
 #consulta-mapa{border-radius:14px}
 #consulta-mapa{
   padding:8px;
   border-color:#dbe4ee;
-  box-shadow:var(--ui-shadow-md);
+  box-shadow:0 6px 18px rgba(15,23,42,.11);
   background:#fff;
 }
 .fc-panel{
   border-color:#dbe4ee!important;
   border-radius:16px!important;
-  box-shadow:var(--ui-shadow-md)!important;
+  box-shadow:0 6px 18px rgba(15,23,42,.11)!important;
   background:rgba(255,255,255,.98)!important;
 }
 .fc-map{
@@ -712,10 +712,13 @@ body[data-theme="dark"] .fc-map-legenda {background:rgba(30,41,59,.94);border-co
 #consulta-telefones-view .telefones-container{flex-wrap:wrap}
 #consulta-telefones-view .telefones-container .fc-footer{flex:0 0 100%;align-self:flex-start;text-align:left;display:flex;align-items:center;padding:14px 0 36px 8px}
 #consulta-telefones-view .consulta-layout{max-height:calc(100vh - 105px)}
-#consulta-telefones-view #consulta-detalhes .fc-busca--painel{max-width:none;margin:2px 2px 10px;flex:none}
+#consulta-telefones-view #consulta-detalhes .fc-busca--painel{max-width:none;margin:0 0 5px;flex:none}
+#consulta-telefones-view #consulta-detalhes .fc-busca-input{margin:0}
+#consulta-telefones-view #consulta-detalhes .fc-head .fc-title{font-size:21px}
 #consulta-telefones-view #consulta-detalhes .fc-panel{flex:1 1 auto;min-height:0}
 .fc-busca{position:relative;flex:1 1 auto;max-width:340px;margin:0 8px}
-.fc-busca-input{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;background:#f8fafc;color:#0f172a}
+.fc-busca-input{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #cbd5e1;border-radius:10px;margin:8px 0 10px;font-size:14px;background:#f8fafc;background-clip:padding-box;color:#0f172a}
+.fc-busca-input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
 .fc-busca-resultados{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 32px rgba(15,23,42,.18);z-index:60;max-height:320px;overflow-y:auto}
 .fc-busca-item{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid #f1f5f9;padding:9px 12px;cursor:pointer}
 .fc-busca-item:last-child{border-bottom:0}
