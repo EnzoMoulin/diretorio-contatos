@@ -15,50 +15,50 @@ Arquivo: Sidebar.html
     <nav class="sidebar-menu" aria-label="Navegação principal">
       <div class="sidebar-section <?= ehContextoAdmin ? '' : 'hidden' ?>" id="secao-consulta">Consulta</div>
       <button type="button" id="menu-telefones" class="menu-item active" data-view="consulta" onclick="navegarParaTelefones()">
-        <span class="icon icon-white" aria-hidden="true">📞</span>
+        <span class="icon icon-white" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
         <span>Comarcas</span>
       </button>
 
       <button type="button" id="menu-tjes" class="menu-item" data-view="tjes" onclick="navegarParaTJES()">
-        <span class="icon icon-txt" aria-hidden="true">🏛</span>
+        <span class="icon icon-txt" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg></span>
         <span>TJES</span>
       </button>
 
       <button type="button" id="menu-uteis" class="menu-item" data-view="uteis" onclick="navegarParaUteis()">
-        <span class="icon icon-white" aria-hidden="true">☎</span>
+        <span class="icon icon-white" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="10" y1="6" x2="15" y2="6"/></svg></span>
         <span>Telefones Úteis</span>
       </button>
 
       <div class="sidebar-section <?= ehContextoAdmin ? '' : 'hidden' ?>" id="secao-admin">Administração</div>
       <button type="button" id="menu-dashboard" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('dashboard-view')">
-        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="4" rx="1.5"></rect><rect x="14" y="11" width="7" height="10" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg></span>
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
         <span>Dashboard</span>
       </button>
 
       <button type="button" id="menu-solicitacoes" class="menu-item hidden" onclick="mostrarView('solicitacoes-view')">
-        <span class="icon" aria-hidden="true">◎</span>
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>
         <span>Solicitações de Acesso</span>
         <span id="badge-solicitacoes" class="badge hidden">0</span>
       </button>
 
       <button type="button" id="menu-notificacoes" class="menu-item hidden" onclick="mostrarView('notificacoes-view')">
-        <span class="icon" aria-hidden="true">🔔</span>
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
         <span>Notificações</span>
         <span id="badge-notificacoes" class="badge hidden">0</span>
       </button>
 
       <button type="button" id="menu-usuarios" class="menu-item hidden" onclick="mostrarView('usuarios-view')">
-        <span class="icon" aria-hidden="true">♙</span>
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
         <span>Usuários</span>
       </button>
 
       <button type="button" id="menu-alteracoes" class="menu-item <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="mostrarView('registro-alteracoes-view')">
-        <span class="icon" aria-hidden="true">≡</span>
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
         <span>Registro de Alterações</span>
       </button>
 
       <button type="button" id="menu-configuracoes" class="menu-item" data-view="config" onclick="mostrarView('configuracoes-view')">
-        <span class="icon icon-txt" aria-hidden="true">⚙</span>
+        <span class="icon icon-txt" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
         <span>Configurações</span>
       </button>
     </nav>
@@ -69,17 +69,17 @@ Arquivo: Sidebar.html
     <div id="sidebar-access-hint" class="sidebar-access-hint hidden">Solicite acesso administrativo abaixo.</div>
 
     <button type="button" id="btn-status-acesso" class="sidebar-status-btn <?= ehContextoAdmin ? '' : 'hidden' ?>" onclick="entrarAreaAdministrativa()">
-      <span id="icone-status-acesso" aria-hidden="true">🔑</span>
+      <span id="icone-status-acesso" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="16" r="4"/><path d="M10.8 13.2 21 3"/><path d="M15 5l3 3"/></svg></span>
       <span id="texto-status-acesso"><?= ehContextoAdmin ? 'Acesso administrativo' : 'Acesso Administrativo' ?></span>
     </button>
 
     <button type="button" id="btn-solicitar-acesso" class="sidebar-status-btn hidden" onclick="abrirFormularioAcesso('cadastro')">
-      <span aria-hidden="true">📝</span>
+      <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
       <span>Solicitar acesso</span>
     </button>
 
     <button type="button" id="btn-solicitar-locais" class="sidebar-status-btn hidden" onclick="abrirFormularioAcesso('locais')">
-      <span aria-hidden="true">📍</span>
+      <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
       <span>Solicitar locais</span>
     </button>
   </div>
