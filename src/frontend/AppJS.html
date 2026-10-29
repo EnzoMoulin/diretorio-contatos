@@ -887,6 +887,10 @@ document.addEventListener("click", function (e) {
     var linkId = lk.getAttribute("data-link-id");
     if (!linkId) return;
     var url = String(window.location.href).split("?")[0] + "?contato=" + encodeURIComponent(linkId);
+    if (navigator.share) {
+      navigator.share({ title: "Contato — Diretório PJES", url: url }).catch(function () {});
+      return;
+    }
     if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
       navigator.clipboard.writeText(url).then(function () {
         if (typeof mostrarToast === "function") mostrarToast("Link copiado.", "success");
