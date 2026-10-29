@@ -48,6 +48,14 @@ segundos: [EnzoMoulin/diretorio-contatos-v2](https://github.com/EnzoMoulin/diret
 ## Screenshots / vídeo
 `docs/` reservado — prints e vídeo curto (só tela + legendas, sem voz/webcam).
 
+## Experiência de uso (detalhes)
+Mesmos cuidados da v2 (onde a plataforma permite):
+- **Favoritos** (aba + estrela, com contador): salvos no navegador, em A–Z, com filtro, impressão, CSV, `.vcf` único e limpeza com confirmação
+- **Baixar contato (.vcf)**, **link direto** (`?contato=id`, com compartilhar nativo no celular) e **exportar CSV** do que está na tela
+- **Busca de verdade**: `/` foca, setas navegam, Enter abre, Esc fecha; termo grifado e combobox acessível
+- **Mobile**: sidebar vira gaveta até 900px (o v1 já tinha o mecanismo)
+- **Acessibilidade medida**: contraste WCAG AA, foco visível, skip-link, `reduced-motion`, impressão limpa com data/hora
+
 ## O que foi sanitizado em relação ao original institucional
 - Nomes, e-mails, telefones e IDs reais removidos (base 100% fictícia)
 - Domínio institucional e IDs de script/planilha removidos (placeholders)
