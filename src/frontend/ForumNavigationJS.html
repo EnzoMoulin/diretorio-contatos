@@ -499,6 +499,8 @@
       .fc-section{margin-top:18px}.fc-section--comarcas{margin-top:10px}.fc-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.fc-section h3{font-size:15px;margin:0;color:#0f172a}
       .fc-card{border:1px solid #e2e8f0;border-radius:12px;padding:14px;margin-top:10px;background:#fff;transition:.15s}
       .fc-card[data-nav]{cursor:pointer}.fc-card--toggle{cursor:pointer}.fc-card[data-nav]:hover{box-shadow:0 8px 22px rgba(15,23,42,.08);transform:translateY(-1px)}
+      .fc-card--toggle .fc-card-head{align-items:center}.fc-card--toggle .fc-meta{margin-top:0;align-items:center}
+      .fc-toggle{display:inline-flex;align-items:center;color:#475569}.fc-toggle svg{width:16px;height:16px;transition:transform .15s ease}.fc-card--toggle.aberto .fc-toggle svg{transform:rotate(180deg)}
       .fc-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.fc-card h4{margin:0 0 6px;font-size:15px;color:#0f172a}.fc-card p{margin:3px 0;color:#475569;font-size:13px;line-height:1.45}
       .fc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.fc-pill{font-size:11px;background:#f1f5f9;color:#334155;border-radius:999px;padding:4px 8px}.fc-pill--ok{background:#dcfce7;color:#166534}.fc-pill--locked{background:#fff7ed;color:#9a3412}.fc-pill-type{background:#dbeafe;color:#1e40af}
       .fc-back{border:0;background:transparent;color:#1d4ed8;font-weight:700;padding:0;margin-bottom:12px;cursor:pointer}
@@ -693,7 +695,7 @@
       '<div class="fc-card-head"><div><h4>Contatos Gerais</h4></div>' +
       '<div class="fc-meta">' + badgeQuantidade(lista.length, "Contato", "Contatos") +
       (comPrint ? '<button type="button" class="fc-icon-btn" data-gerais-print title="Imprimir / Salvar PDF dos Contatos Gerais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>' : "") +
-      '<span class="fc-toggle" aria-hidden="true">▾</span></div></div></div>' +
+      '<span class="fc-toggle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></span></div></div></div>' +
       '<div data-gerais-body hidden>' + (lista.length ? contatosCards(lista, contexto) : '<div class="fc-empty">Sem contatos gerais.</div>') + "</div></div>";
   }
 
@@ -741,6 +743,9 @@
     });
 
     document.querySelectorAll("[data-gerais-toggle]").forEach(function (card) {
+      var corpo0 = card.nextElementSibling;
+      var pr0 = card.querySelector("[data-gerais-print]");
+      if (pr0 && corpo0) pr0.classList.toggle("hidden", corpo0.hasAttribute("hidden"));
       card.onclick = function (e) {
         if (e && e.target && e.target.closest && e.target.closest("[data-gerais-print]")) return;
         var body = card.nextElementSibling;
@@ -749,6 +754,8 @@
         if (abrir) body.removeAttribute("hidden");
         else body.setAttribute("hidden", "");
         card.classList.toggle("aberto", abrir);
+        var pr = card.querySelector("[data-gerais-print]");
+        if (pr) pr.classList.toggle("hidden", !abrir);
       };
     });
 
