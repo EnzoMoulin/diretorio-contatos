@@ -1081,7 +1081,7 @@
       (m.cep ? ' • CEP ' + esc(m.cep) : '') + '</div></div>' +
       acoesLocalidade("COMARCA", m, pode) +
       cardContatosGerais(m.contatos || [], contexto, true) +
-      '<div class="fc-section"><div class="fc-section-title"><h3>Unidades e Setores</h3></div>' +
+      '<div class="fc-section"><div class="fc-section-title"><h3>Unidades</h3></div>' +
       ((m.nos || []).length ? (m.nos || []).map(cardNo).join("") : '<div class="fc-empty">Nenhuma Unidade cadastrada.</div>') +
       '</div>' + barraNavegacaoInferior("Comarcas", true);
 
@@ -1141,7 +1141,7 @@
       acoesLocalidade("FORUM", f, pode) +
       (pode ? "" : botaoSolicitar("FORUM", f.id)) +
       cardContatosGerais(f.contatos || [], contexto, true) +
-      '<div class="fc-section"><div class="fc-section-title"><h3>Unidades e Setores</h3></div>' +
+      '<div class="fc-section"><div class="fc-section-title"><h3>Unidades</h3></div>' +
       ((f.nos || []).length ? (f.nos || []).map(cardNo).join("") : '<div class="fc-empty">Nenhuma Unidade cadastrada.</div>') +
       "</div>" + barraNavegacaoInferior("Fóruns", true);
 
