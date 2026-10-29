@@ -797,7 +797,7 @@ function alternarFavorito(d) {
   var f = lerFavsApp();
   var era = !!f[d.key];
   if (era) delete f[d.key];
-  else f[d.key] = { nome: d.nome, tipo: d.tipo, valor: d.valor };
+  else f[d.key] = { key: d.key, nome: d.nome, tipo: d.tipo, valor: d.valor };
   salvarFavsApp(f);
   sincronizarFavsApp();
   if (typeof mostrarToast === "function") mostrarToast(era ? "Removido dos favoritos." : "Adicionado aos favoritos.", "success");
@@ -835,6 +835,20 @@ document.addEventListener("click", function (e) {
       nome: vb.getAttribute("data-vcf-nome"), tipo: vb.getAttribute("data-vcf-tipo"),
       valor: vb.getAttribute("data-vcf-valor")
     });
+    return;
+  }
+  var lk = t && t.closest ? t.closest(".fc-link-btn") : null;
+  if (lk) {
+    var linkId = lk.getAttribute("data-link-id");
+    if (!linkId) return;
+    var url = String(window.location.href).split("?")[0] + "?contato=" + encodeURIComponent(linkId);
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(url).then(function () {
+        if (typeof mostrarToast === "function") mostrarToast("Link copiado.", "success");
+      }, function () {
+        if (typeof mostrarToast === "function") mostrarToast(url, "info");
+      });
+    } else if (typeof mostrarToast === "function") mostrarToast(url, "info");
   }
 });
 function navegarParaTabelaTelefones(){
