@@ -41,6 +41,19 @@ sempre no servidor, payloads mínimos e JSON-serializáveis.
    - `carregarDadosExemplo()` — insere a base fictícia
 4. Publique como app da Web e teste a consulta + o login demo.
 
+## Como publicar (mudanças de código)
+`DEPLOY_DESC="o que mudou" python3 scripts/deploy_v1.py` — sobe `src/` para os
+dois projetos (público e privado) via API e imprime as novas versões.
+A vitrine do Apps Script demora horas para servir o novo código: confira com
+`Ctrl+Shift+R`.
+
+## Backup
+- **Planilhas**: rotina local toda segunda às 3h (`~/.hermes/scripts/backup_planilhas.sh`,
+agendada; mantém 4 semanas em `~/Emprego/Backups/planilhas/`). Nada a fazer à mão.
+- **Dentro da plataforma**: `backupPlanilha(SEGREDO)` testa a cópia na hora;
+`instalarBackupDiario(SEGREDO)` agenda todo dia às 3h (mantém 7 cópias na pasta
+da planilha). Rode uma vez no editor do Apps Script.
+
 ## Demo executável (Python, 1 comando)
 Versão portátil do mesmo domínio, zero dependências, pronta para avaliar em
 segundos: [EnzoMoulin/diretorio-contatos-v2](https://github.com/EnzoMoulin/diretorio-contatos-v2).
