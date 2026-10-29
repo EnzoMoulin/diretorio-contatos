@@ -780,6 +780,9 @@ function navegarParaFavoritos() {
   mostrarView("consulta-telefones-view", "menu-favoritos");
   try { if (typeof window.renderFavoritos === "function") setTimeout(window.renderFavoritos, 80); } catch (e) {}
 }
+document.addEventListener("DOMContentLoaded", function () {
+  try { sincronizarFavsApp(); } catch (e) {}
+});
 var FAV_KEY_APP = "dc-favs";
 function lerFavsApp() { try { return JSON.parse(localStorage.getItem(FAV_KEY_APP)) || {}; } catch (e) { return {}; } }
 function salvarFavsApp(f) { try { localStorage.setItem(FAV_KEY_APP, JSON.stringify(f)); } catch (e) {} }
@@ -788,6 +791,9 @@ function sincronizarFavsApp() {
   document.querySelectorAll("[data-fav-key]").forEach(function (b) {
     b.setAttribute("aria-pressed", f[b.getAttribute("data-fav-key")] ? "true" : "false");
   });
+  var n = Object.keys(f).length;
+  var badge = document.getElementById("fav-count");
+  if (badge) { badge.textContent = n; badge.classList.toggle("hidden", n === 0); }
   var menuFav = document.getElementById("menu-favoritos");
   if (menuFav && menuFav.classList.contains("active") && typeof window.renderFavoritos === "function") {
     try { window.renderFavoritos(); } catch (e) {}
