@@ -775,6 +775,68 @@ function navegarParaUteis() {
   mostrarView("consulta-telefones-view", "menu-uteis");
   try { if (typeof window.fcUteis === "function") setTimeout(window.fcUteis, 80); } catch (e) {}
 }
+function navegarParaFavoritos() {
+  marcarMenuAtivo("menu-favoritos");
+  mostrarView("consulta-telefones-view", "menu-favoritos");
+  try { if (typeof window.renderFavoritos === "function") setTimeout(window.renderFavoritos, 80); } catch (e) {}
+}
+var FAV_KEY_APP = "dc-favs";
+function lerFavsApp() { try { return JSON.parse(localStorage.getItem(FAV_KEY_APP)) || {}; } catch (e) { return {}; } }
+function salvarFavsApp(f) { try { localStorage.setItem(FAV_KEY_APP, JSON.stringify(f)); } catch (e) {} }
+function sincronizarFavsApp() {
+  var f = lerFavsApp();
+  document.querySelectorAll("[data-fav-key]").forEach(function (b) {
+    b.setAttribute("aria-pressed", f[b.getAttribute("data-fav-key")] ? "true" : "false");
+  });
+  var menuFav = document.getElementById("menu-favoritos");
+  if (menuFav && menuFav.classList.contains("active") && typeof window.renderFavoritos === "function") {
+    try { window.renderFavoritos(); } catch (e) {}
+  }
+}
+function alternarFavorito(d) {
+  var f = lerFavsApp();
+  var era = !!f[d.key];
+  if (era) delete f[d.key];
+  else f[d.key] = { nome: d.nome, tipo: d.tipo, valor: d.valor };
+  salvarFavsApp(f);
+  sincronizarFavsApp();
+  if (typeof mostrarToast === "function") mostrarToast(era ? "Removido dos favoritos." : "Adicionado aos favoritos.", "success");
+}
+function baixarVcf(d) {
+  var nome = String(d.nome || "contato").replace(/[\r\n]+/g, " ").trim() || "contato";
+  var valor = String(d.valor || "").replace(/[\r\n]+/g, " ").trim();
+  if (!valor) return;
+  var linhas = ["BEGIN:VCARD", "VERSION:3.0", "FN:" + nome];
+  if (/e-?mail/i.test(d.tipo || "")) linhas.push("EMAIL:" + valor);
+  else linhas.push("TEL;TYPE=WORK,VOICE:" + valor);
+  linhas.push("END:VCARD");
+  var blob = new Blob([linhas.join("\r\n")], { type: "text/vcard" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nome.replace(/[\\/:*?"<>|]+/g, "").slice(0, 60) + ".vcf";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  if (typeof mostrarToast === "function") mostrarToast("Contato baixado.", "success");
+}
+document.addEventListener("click", function (e) {
+  var t = e.target;
+  var fb = t && t.closest ? t.closest(".fc-fav-btn") : null;
+  if (fb) {
+    alternarFavorito({
+      key: fb.getAttribute("data-fav-key"), nome: fb.getAttribute("data-fav-nome"),
+      tipo: fb.getAttribute("data-fav-tipo"), valor: fb.getAttribute("data-fav-valor")
+    });
+    return;
+  }
+  var vb = t && t.closest ? t.closest(".fc-vcf-btn") : null;
+  if (vb) {
+    baixarVcf({
+      nome: vb.getAttribute("data-vcf-nome"), tipo: vb.getAttribute("data-vcf-tipo"),
+      valor: vb.getAttribute("data-vcf-valor")
+    });
+  }
+});
 function navegarParaTabelaTelefones(){
   // v3.33 helper: GS ainda pode ver tabela se quiser (acesso direto, sem hijack)
   try{ window.__gsTabelaLiberada = true; }catch(e){}
