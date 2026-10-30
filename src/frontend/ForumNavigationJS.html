@@ -586,6 +586,7 @@
   }
 
   function botaoSolicitar(tipo, id) {
+    if (window.EH_CONTEXTO_ADMIN !== true) return "";
     var possui = tipo === "FORUM" ? possuiAcessoForumExplicito(id) : possuiAcessoNo(id);
     if (possui) return "";
     if (ehGC()) {
