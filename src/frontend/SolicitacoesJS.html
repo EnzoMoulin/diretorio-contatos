@@ -1,5 +1,13 @@
 <script>
 function carregarSolicitacoes(){
+  var filtro=document.getElementById("filtro-solicitacoes");
+  if(filtro&&!filtro.dataset.ligado){filtro.dataset.ligado="1";filtro.oninput=aplicarFiltroSolicitacoes;}
+  var selTodas=document.getElementById("sel-todas-solicitacoes");
+  if(selTodas&&!selTodas.dataset.ligada){selTodas.dataset.ligada="1";selTodas.onchange=function(){
+    var marcar=selTodas.checked;
+    document.querySelectorAll("#corpo-tabela-solicitacoes input[type=checkbox]").forEach(function(chk){chk.checked=marcar;});
+    atualizarBotaoLote();
+  };}
   API.listarSolicitacoes(function(resp){
     if(!resp||resp.sucesso!==true){mostrarToast((resp&&resp.erro)||"Erro ao carregar solicitações.","error");return;}
     renderizarSolicitacoes(resp.dados||[]);
@@ -9,13 +17,49 @@ var solicitacaoEmDetalhe=null;
 var escoposAprovacaoEdicao=[];
 var catalogoAprovacao=[];
 function celulaSolicitacao(valor){var td=document.createElement("td");td.textContent=valor===null||valor===undefined||String(valor).trim()===""?"-":String(valor);return td;}
+var listaSolicitacoesAtual=[];
+function normalizarBusca(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
 function renderizarSolicitacoes(lista){
+  listaSolicitacoesAtual = Array.isArray(lista) ? lista.slice() : [];
+  aplicarFiltroSolicitacoes();
+}
+function aplicarFiltroSolicitacoes(){
+  var termo = normalizarBusca(document.getElementById("filtro-solicitacoes") ? document.getElementById("filtro-solicitacoes").value : "");
+  var lista = listaSolicitacoesAtual.filter(function(sol){
+    if(!termo) return true;
+    return normalizarBusca(sol.nome).indexOf(termo) >= 0 || normalizarBusca(sol.email).indexOf(termo) >= 0;
+  });
   var tbody=document.getElementById("corpo-tabela-solicitacoes");if(!tbody)return;tbody.textContent="";
-  if(!lista.length){var tr0=document.createElement("tr"),td0=document.createElement("td");td0.colSpan=4;td0.textContent="Nenhuma solicitação pendente.";td0.style.textAlign="center";tr0.appendChild(td0);tbody.appendChild(tr0);return;}
+  if(!lista.length){var tr0=document.createElement("tr"),td0=document.createElement("td");td0.colSpan=5;td0.textContent=termo?"Nenhuma solicitação para este filtro.":"Nenhuma solicitação pendente.";td0.style.textAlign="center";tr0.appendChild(td0);tbody.appendChild(tr0);}
   lista.forEach(function(sol){
     var tr=document.createElement("tr");tr.tabIndex=0;tr.style.cursor="pointer";tr.title="Clique para ver e decidir esta solicitação";
+    var tdSel=document.createElement("td");var chk=document.createElement("input");chk.type="checkbox";chk.style.width="auto";chk.setAttribute("aria-label","Selecionar "+(sol.nome||"solicitação"));chk.dataset.id=sol.id;
+    chk.onclick=function(evento){evento.stopPropagation();atualizarBotaoLote();};
+    tdSel.appendChild(chk);tr.appendChild(tdSel);
     tr.appendChild(celulaSolicitacao(sol.nome));tr.appendChild(celulaSolicitacao(sol.email));tr.appendChild(celulaSolicitacao(sol.nivelTexto));tr.appendChild(celulaSolicitacao(sol.status));
     tr.onclick=function(){abrirModalSolicitacao(sol);};tr.onkeydown=function(evento){if(evento.key==="Enter"||evento.key===" "){evento.preventDefault();abrirModalSolicitacao(sol);}};tbody.appendChild(tr);
+  });
+  var selTodas=document.getElementById("sel-todas-solicitacoes");if(selTodas)selTodas.checked=false;
+  atualizarBotaoLote();
+}
+function idsSolicitacoesSelecionadas(){
+  var ids=[];document.querySelectorAll("#corpo-tabela-solicitacoes input[type=checkbox]:checked").forEach(function(chk){ids.push(chk.dataset.id);});return ids;
+}
+function atualizarBotaoLote(){
+  var btn=document.getElementById("btn-aprovar-lote");if(!btn)return;
+  var n=idsSolicitacoesSelecionadas().length;
+  btn.disabled=!n;btn.textContent=n?("Aprovar selecionados ("+n+")"):"Aprovar selecionados";
+}
+function aprovarLoteSolicitacoes(){
+  var ids=idsSolicitacoesSelecionadas();if(!ids.length)return;
+  confirmarAcaoSistema({titulo:"Aprovar em lote",mensagem:"Aprovar "+ids.length+" solicitação(ões) com os escopos pedidos?",textoConfirmar:"Aprovar tudo",perigo:false,icone:"✓"}).then(function(confirmado){
+    if(!confirmado)return;
+    var ok=0,falhas=0;
+    (function proxima(i){
+      if(i>=ids.length){mostrarToast("Lote concluído: "+ok+" aprovada(s)"+(falhas?(", "+falhas+" falha(s)"):"")+".",falhas?"error":"success");carregarSolicitacoes();return;}
+      var sol=null;listaSolicitacoesAtual.forEach(function(s){if(String(s.id)===String(ids[i]))sol=s;});
+      API.aprovarSolicitacao(ids[i],(sol&&sol.escopos)||[],function(){ok++;proxima(i+1);},function(){falhas++;proxima(i+1);});
+    })(0);
   });
 }
 function chaveEscopoAprovacao(escopo){return escopo.tipo+":"+escopo.id;}

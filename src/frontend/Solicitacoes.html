@@ -11,15 +11,23 @@ Arquivo: Solicitacoes.html
     <p>Gerencie os pedidos de acesso clicando em um Usuário e visualize suas localidades.</p>
   </div>
 
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+  <input id="filtro-solicitacoes" placeholder="Filtrar por nome ou e-mail…" aria-label="Filtrar solicitações"
+    style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;min-width:220px">
+  <button type="button" class="btn btn-primary" id="btn-aprovar-lote" onclick="aprovarLoteSolicitacoes()" disabled>
+    Aprovar selecionados
+  </button>
   <button type="button" class="btn btn-secondary" onclick="carregarSolicitacoes()">
     🔄 Atualizar
   </button>
+  </div>
 </div>
 
 <div class="table-panel">
   <table class="data-table" id="tabela-solicitacoes">
     <thead>
       <tr>
+        <th style="width:36px"><input type="checkbox" id="sel-todas-solicitacoes" aria-label="Selecionar todas" style="width:auto"></th>
         <th>Nome</th>
         <th>E-mail</th>
         <th>Nível de acesso</th>
@@ -29,7 +37,7 @@ Arquivo: Solicitacoes.html
 
     <tbody id="corpo-tabela-solicitacoes">
       <tr>
-        <td colspan="4" style="text-align: center; color: #64748b; padding: 20px;">
+        <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">
           Nenhuma solicitação encontrada.
         </td>
       </tr>

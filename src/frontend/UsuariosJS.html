@@ -8,6 +8,8 @@ function textoEscopoUsuario(escopo) {
 }
 
 function carregarUsuarios() {
+  var filtro=document.getElementById("filtro-usuarios");
+  if(filtro&&!filtro.dataset.ligado){filtro.dataset.ligado="1";filtro.oninput=aplicarFiltroUsuarios;}
   API.listarEscoposParaAcesso(function(respEscopos) {
     escoposUsuarios = respEscopos && respEscopos.sucesso === true ? (respEscopos.dados || []) : [];
     preencherSeletorReverso();
@@ -46,8 +48,18 @@ function consultarAcessoNo() {
 }
 
 function renderizarUsuarios(lista) {
+  listaUsuariosAtual = Array.isArray(lista) ? lista.slice() : [];
+  aplicarFiltroUsuarios();
+}
+function normalizarBuscaUsuarios(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+function aplicarFiltroUsuarios(){
+  var termo = normalizarBuscaUsuarios(document.getElementById("filtro-usuarios") ? document.getElementById("filtro-usuarios").value : "");
+  var lista = listaUsuariosAtual.filter(function(usuario){
+    if(!termo) return true;
+    return normalizarBuscaUsuarios(usuario.nome).indexOf(termo) >= 0 || normalizarBuscaUsuarios(usuario.email).indexOf(termo) >= 0;
+  });
   var tbody = document.getElementById("corpo-tabela-usuarios"); if (!tbody) return; tbody.textContent = "";
-  if (!lista.length) { var tr0 = document.createElement("tr"), td0 = document.createElement("td"); td0.colSpan = 4; td0.textContent = "Nenhum usuário cadastrado."; tr0.appendChild(td0); tbody.appendChild(tr0); return; }
+  if (!lista.length) { var tr0 = document.createElement("tr"), td0 = document.createElement("td"); td0.colSpan = 4; td0.textContent = normalizarBuscaUsuarios(document.getElementById("filtro-usuarios") ? document.getElementById("filtro-usuarios").value : "") ? "Nenhum usuário para este filtro." : "Nenhum usuário cadastrado."; tr0.appendChild(td0); tbody.appendChild(tr0); return; }
   lista.forEach(function(usuario) {
     var tr = document.createElement("tr"); tr.tabIndex = 0; tr.style.cursor = "pointer"; tr.title = "Clique para gerenciar este usuário";
     function celula(texto) { var td = document.createElement("td"); td.textContent = texto || "-"; tr.appendChild(td); }
@@ -60,6 +72,7 @@ function renderizarUsuarios(lista) {
   });
 }
 
+var listaUsuariosAtual=[];
 var escoposUsuarioSelecionados = new Set();
 var forumUsuarioAberto = "";
 var unidadeUsuarioAberta = "";
