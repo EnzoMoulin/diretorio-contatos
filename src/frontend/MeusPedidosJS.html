@@ -1,0 +1,42 @@
+<script>
+function statusPedidoClasse(status) {
+  var s = String(status || "").toUpperCase();
+  if (s === "APROVADO") return "fc-pill fc-pill--ok";
+  if (s === "REJEITADO") return "fc-pill fc-pill--locked";
+  return "fc-pill";
+}
+function carregarMeusPedidos() {
+  var tbody = document.getElementById("corpo-tabela-meus-pedidos");
+  API.listarMinhasSolicitacoes(function(resp) {
+    if (!tbody) return; tbody.textContent = "";
+    if (!resp || resp.sucesso !== true) {
+      var tr = document.createElement("tr"), td = document.createElement("td");
+      td.colSpan = 5; td.textContent = (resp && resp.erro) || "Falha ao carregar.";
+      td.style.textAlign = "center"; tr.appendChild(td); tbody.appendChild(tr); return;
+    }
+    var lista = resp.dados || [];
+    if (!lista.length) {
+      var tr0 = document.createElement("tr"), td0 = document.createElement("td");
+      td0.colSpan = 5; td0.textContent = "Você ainda não fez pedidos."; td0.style.textAlign = "center";
+      tr0.appendChild(td0); tbody.appendChild(tr0); return;
+    }
+    lista.forEach(function(p) {
+      var tr = document.createElement("tr");
+      function celula(texto) { var td = document.createElement("td"); td.textContent = texto || "-"; tr.appendChild(td); return td; }
+      celula(p.data);
+      var tdS = document.createElement("td");
+      var pill = document.createElement("span"); pill.className = statusPedidoClasse(p.status); pill.textContent = p.status || "-";
+      tdS.appendChild(pill); tr.appendChild(tdS);
+      celula(p.nivelTexto);
+      celula((p.escopos || []).map(function(e) { return e.tipo + ":" + e.id; }).join(", "));
+      celula(p.status === "REJEITADO" ? (p.motivoRejeicao || "-") : "-");
+      tbody.appendChild(tr);
+    });
+  }, function(erro) {
+    if (!tbody) return; tbody.textContent = "";
+    var tr = document.createElement("tr"), td = document.createElement("td");
+    td.colSpan = 5; td.textContent = (erro && erro.message) || "Falha de comunicação.";
+    td.style.textAlign = "center"; tr.appendChild(td); tbody.appendChild(tr);
+  });
+}
+</script>

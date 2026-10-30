@@ -763,7 +763,8 @@ function indicesSolicitacao(linhaCabecalho) {
     STATUS: ["STATUS"],
     DATA: ["DATA_SOLICITACAO", "DATA"],
     APROVADOR: ["APROVADOR"],
-    DATA_APROVACAO: ["DATA_APROVACAO"]
+    DATA_APROVACAO: ["DATA_APROVACAO"],
+    MOTIVO_REJEICAO: ["MOTIVO_REJEICAO"]
   };
   const indices = {};
   (Array.isArray(linhaCabecalho) ? linhaCabecalho : []).forEach(function(cabecalho, i) {
@@ -1273,6 +1274,13 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados, opcoes) {
       } else {
         const motivo = textoSeguro(opcoes && opcoes.motivoRejeicao).slice(0, 500);
         if (!motivo) throw new Error("Informe o motivo da rejeição.");
+        try {
+          garantirColunaMotivoRejeicao(sheetSolic);
+          var indicesMot = indicesSolicitacao(sheetSolic.getRange(1, 1, 1, sheetSolic.getLastColumn()).getDisplayValues()[0]);
+          if (indicesMot.MOTIVO_REJEICAO !== undefined) {
+            sheetSolic.getRange(solicitacao.linha, indicesMot.MOTIVO_REJEICAO + 1).setValue(motivo);
+          }
+        } catch (eColMot) {}
         enviarEmailAcesso(solicitacao.email,
           "Solicitação de acesso — Diretório de Contatos",
           "Olá " + solicitacao.nome + ",\n\nSua solicitação de acesso não foi aprovada.\nMotivo: " + motivo + "\n\nSe precisar, fale com o Administrador.");
@@ -1299,6 +1307,40 @@ function aprovarSolicitacao(id, escoposAjustados) {
 
 function rejeitarSolicitacao(id, motivo) {
   return processarSolicitacaoAPI(id, "REJEITADO", null, { motivoRejeicao: motivo });
+}
+
+/** Lista os próprios pedidos (identidade da sessão), com motivo de recusa. */
+function listarMinhasSolicitacoes() {
+  try {
+    AuthService.exigirContextoPrivado();
+    const usuario = new AuthService().usuarioAtual();
+    const emailSessao = normalizarEmail(usuario.email || obterEmailSessaoAPI() || "");
+    if (!emailSessao) throw new Error("E-mail da sessão não identificado.");
+    const sheet = DB.solicitacoesAcesso();
+    const dados = sheet.getDataRange().getValues();
+    const indices = indicesSolicitacao(dados[0] || []);
+    const lista = [];
+    for (let i = 1; i < dados.length; i++) {
+      if (normalizarEmail(dados[i][indices.EMAIL]) !== emailSessao) continue;
+      const nivel = nivelSolicitadoNumero(dados[i][indices.NIVEL]);
+      lista.push({
+        id: textoSeguro(dados[i][indices.ID]),
+        data: dados[i][indices.DATA] instanceof Date
+          ? Utilities.formatDate(dados[i][indices.DATA], Session.getScriptTimeZone(), "dd/MM/yyyy")
+          : textoSeguro(dados[i][indices.DATA]),
+        status: String(dados[i][indices.STATUS] || "").trim().toUpperCase(),
+        nivel: nivel,
+        nivelTexto: nivel === 2 ? "Administrador" : (nivel === 1 ? "Gestor de Conteúdo" : "Cadastro"),
+        escopos: (escoposDaSolicitacao(dados[i], indices) || []).map(function(e) { return { tipo: e.tipo, id: e.id }; }),
+        motivoRejeicao: indices.MOTIVO_REJEICAO !== undefined ? textoSeguro(dados[i][indices.MOTIVO_REJEICAO]) : ""
+      });
+    }
+    lista.reverse();
+    return respostaSucesso(lista);
+  } catch (erro) {
+    registrarErroAPI("LISTAR_MINHAS_SOLICITACOES", erro);
+    return respostaErro(erro);
+  }
 }
 
 /**

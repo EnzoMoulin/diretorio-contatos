@@ -10,7 +10,7 @@
   <div class="fa-card">
     <div class="fa-head">
       <h2>Solicitar Acesso Administrativo</h2>
-      <p id="acesso-identidade-info">Informe seu nome completo. O e-mail vem da conta Google identificada. <strong>Nesta demonstração, a liberação é automática (simulação);</strong> no projeto real, a solicitação fica pendente até análise de um Administrador.</p>
+      <p id="acesso-identidade-info">Informe seu nome completo. O e-mail vem da conta Google identificada. Identidade e locais num só pedido — sem marcar nada, vale só o cadastro. <strong>Nesta demonstração, a liberação é automática (simulação);</strong> no projeto real, a solicitação fica pendente até análise de um Administrador.</p>
     </div>
     <div class="fa-body">
       <div class="fa-grid">
@@ -158,7 +158,7 @@ function enviarFormularioAcesso(){
   var emailObrigatorio = String(document.getElementById("acesso-email")?.value || "").trim();
   if(!emailObrigatorio || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailObrigatorio)){ mensagemFormularioAcesso("E-mail da conta Google não identificado. Entre com sua conta Google e tente de novo.", false); return; }
   if(nome.length < 3){ mensagemFormularioAcesso(usarIdentidadeCadastrada?"Não foi possível identificar o nome cadastrado.":"Informe seu nome completo.", false); return; }
-  if(!nivel && !escopos.length){ mensagemFormularioAcesso("Solicite uma alteração de nível, comarcas adicionais ou ambos.", false); return; }
+  if(!nivel && !escopos.length && usuario.cadastrado === true){ mensagemFormularioAcesso("Solicite uma alteração de nível, localidades adicionais ou ambos.", false); return; }
   if(usuario.cadastrado !== true && nivel === 1 && !escopos.length){ mensagemFormularioAcesso("Selecione ao menos uma comarca, Fórum, Unidade ou Setor para o Gestor de Conteúdo.", false); return; }
   var botao = document.getElementById("btn-enviar-formulario-acesso"); if(botao) botao.disabled = true;
   API.enviarFormularioAcesso({nome:nome,nivel:nivel,escopos:escopos,justificativa:justificativa}, function(resp){

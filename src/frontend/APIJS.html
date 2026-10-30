@@ -103,6 +103,9 @@ const API = {
       criarRunnerAPI(sucessoOuErro, erro).rejeitarSolicitacao(id, motivoOuSucesso);
     }
   },
+  listarMinhasSolicitacoes(sucesso, erro) {
+    criarRunnerAPI(sucesso, erro).listarMinhasSolicitacoes();
+  },
 
   // Compatibilidade para componentes antigos de solicitação/permissão.
   solicitarPermissaoLocalidade(localidade, sucesso, erro) {

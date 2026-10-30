@@ -189,6 +189,7 @@ function criarAbaSolicitacoesAcesso(
     sheet
   );
   garantirColunaEscopoAcessos(sheet);
+  garantirColunaMotivoRejeicao(sheet);
 
   return sheet;
 }
@@ -201,6 +202,16 @@ function garantirColunaEscopoAcessos(sheet) {
   const posicao = indiceNo >= 0 ? indiceNo + 2 : headers.length + 1;
   sheet.insertColumns(posicao, 1);
   sheet.getRange(1, posicao).setValue("ESCOPO_ACESSOS");
+  return sheet;
+}
+
+/** Guarda o motivo da rejeição para exibição em "Meus pedidos". */
+function garantirColunaMotivoRejeicao(sheet) {
+  const headers = DB.headers(sheet);
+  if (headers.some(header => normalizarChave(header) === "MOTIVOREJEICAO")) return sheet;
+  const posicao = headers.length + 1;
+  sheet.insertColumns(posicao, 1);
+  sheet.getRange(1, posicao).setValue("MOTIVO_REJEICAO");
   return sheet;
 }
 

@@ -579,6 +579,12 @@ function atualizarInterfaceUsuario() {
     ));
   }
 
+  const menuMeusPedidos = document.getElementById("menu-meus-pedidos");
+  if (menuMeusPedidos) {
+    var mostrarMeus = window.EH_CONTEXTO_ADMIN === true && (logado || usuario.identificado === true);
+    menuMeusPedidos.classList.toggle("hidden", !mostrarMeus);
+  }
+
   const btnSolicitarAcesso = document.getElementById("btn-solicitar-acesso");
   if (btnSolicitarAcesso) {
     var mostrarSolicitar = window.EH_CONTEXTO_ADMIN !== true
@@ -1319,26 +1325,17 @@ function abrirFormularioAcesso(modo) {
     try { mostrarToast("Valide sua conta Google e clique novamente em Solicitar.", "info"); } catch (eToast) {}
     return;
   }
-  window.MODO_FORMULARIO_ACESSO = (modo === "locais") ? "locais" : "cadastro";
-  var soCadastro = window.MODO_FORMULARIO_ACESSO === "cadastro";
+  window.MODO_FORMULARIO_ACESSO = "pedido";
   var grupoNivel = document.getElementById("grupo-acesso-nivel");
-  if (grupoNivel) grupoNivel.style.display = soCadastro ? "none" : "";
+  if (grupoNivel) grupoNivel.style.display = "";
   var grupoUnidades = document.getElementById("grupo-acesso-unidades");
-  if (grupoUnidades) grupoUnidades.style.display = soCadastro ? "none" : "";
-  if (soCadastro) {
-    try {
-      escoposAcessoSelecionados.clear();
-      var selNivel = document.getElementById("acesso-nivel");
-      if (selNivel) selNivel.value = "";
-    } catch (eModo) {}
-  } else {
-    try {
-      var ehVisit = (typeof usuarioAtual !== "undefined") && !!usuarioAtual &&
-        usuarioAtual.estadoAcesso === "VISITANTE";
-      var selLocais = document.getElementById("acesso-nivel");
-      if (selLocais && ehVisit && !selLocais.value) selLocais.value = "1";
-    } catch (eNivel) {}
-  }
+  if (grupoUnidades) grupoUnidades.style.display = "";
+  try {
+    var ehVisit = (typeof usuarioAtual !== "undefined") && !!usuarioAtual &&
+      usuarioAtual.estadoAcesso === "VISITANTE";
+    var selLocais = document.getElementById("acesso-nivel");
+    if (selLocais && ehVisit && !selLocais.value) selLocais.value = "1";
+  } catch (eNivel) {}
   mostrarView("formulario-acesso-view");
 }
 
@@ -1491,6 +1488,15 @@ function mostrarView(viewId, menuId) {
       "function"
   ) {
     carregarUsuarios();
+  }
+
+  if (
+    viewId ===
+      "meus-pedidos-view" &&
+    typeof carregarMeusPedidos ===
+      "function"
+  ) {
+    carregarMeusPedidos();
   }
 }
 

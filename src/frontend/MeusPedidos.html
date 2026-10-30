@@ -1,0 +1,21 @@
+<div class="page-header">
+  <div>
+    <h2>Meus pedidos</h2>
+    <p>Acompanhe suas solicitações de acesso e o motivo em caso de rejeição.</p>
+  </div>
+  <button type="button" class="btn btn-secondary" onclick="carregarMeusPedidos()">🔄 Atualizar</button>
+</div>
+<div class="table-panel" style="overflow-x:auto">
+  <table class="data-table" id="tabela-meus-pedidos">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Status</th>
+        <th>Nível</th>
+        <th>Escopos</th>
+        <th>Motivo da rejeição</th>
+      </tr>
+    </thead>
+    <tbody id="corpo-tabela-meus-pedidos"><tr><td colspan="5" style="text-align:center;color:#64748b;padding:20px;">Carregando...</td></tr></tbody>
+  </table>
+</div>

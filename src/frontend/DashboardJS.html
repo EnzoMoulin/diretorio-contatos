@@ -569,6 +569,29 @@ function atualizarDashboardPublico(telefonesRaw) {
     document.getElementById("grafico-localidades"),
     porLocalidade
   );
+
+  try {
+    var sub = document.getElementById("dashboard-subtitulo");
+    var perfilDash = (typeof usuarioAtual !== "undefined" && usuarioAtual) ? String(usuarioAtual.perfil || "") : "";
+    var logadoDash = !!(typeof usuarioAtual !== "undefined" && usuarioAtual && usuarioAtual.logado === true);
+    if (sub) {
+      if (perfilDash === "GESTOR_SISTEMA" && logadoDash) sub.textContent = "Visão de Administrador: toda a base do PJES.";
+      else if (perfilDash === "GESTOR_CONTEUDO" && logadoDash) sub.textContent = "Recorte do seu escopo: " + telefones.length + " contatos visíveis para você.";
+      else sub.textContent = "Indicadores consolidados da estrutura de contatos do PJES.";
+    }
+    var cardPend = document.getElementById("card-pendentes");
+    if (cardPend) {
+      var ehGS = perfilDash === "GESTOR_SISTEMA" && logadoDash;
+      cardPend.classList.toggle("hidden", !ehGS);
+      if (ehGS && typeof API !== "undefined" && typeof API.contarSolicitacoesPendentes === "function") {
+        API.contarSolicitacoesPendentes(function(n) {
+          var t = 0;
+          try { t = (n && n.sucesso === true) ? ((n.dados && typeof n.dados === "object") ? (n.dados.total || 0) : (n.dados || n.total || 0)) : 0; } catch (eT) {}
+          atualizarTexto("total-pendentes", t);
+        }, function() { atualizarTexto("total-pendentes", "—"); });
+      }
+    }
+  } catch (eDashExtra) {}
 }
 
 function atualizarTexto(id, valor) {

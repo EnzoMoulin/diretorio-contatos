@@ -9,7 +9,7 @@ Arquivo: Dashboard.html
   <div class="page-header dashboard-header">
     <div>
       <h2>Visão geral</h2>
-      <p>Indicadores consolidados da estrutura de contatos do PJES.</p>
+      <p id="dashboard-subtitulo">Indicadores consolidados da estrutura de contatos do PJES.</p>
     </div>
     <div class="dashboard-header__actions">
       <button type="button" class="btn btn-secondary" onclick="imprimirDashboardView()" title="Imprimir / Salvar PDF da tela Dashboard">
@@ -70,6 +70,15 @@ Arquivo: Dashboard.html
         <div class="card-title">Tipos de contato</div>
         <div id="total-tipos" class="card-value" aria-live="polite">4</div>
         <div class="dashboard-card__meta">Telefone, Ramal, WhatsApp e E-mail</div>
+      </div>
+    </article>
+
+    <article class="card dashboard-card hidden" id="card-pendentes" style="cursor:pointer" onclick="mostrarView('solicitacoes-view')" title="Abrir solicitações de acesso">
+      <div class="dashboard-card__icon" aria-hidden="true">⏳</div>
+      <div class="dashboard-card__content">
+        <div class="card-title">Solicitações pendentes</div>
+        <div id="total-pendentes" class="card-value" aria-live="polite">0</div>
+        <div class="dashboard-card__meta">clique para analisar</div>
       </div>
     </article>
   </div>
