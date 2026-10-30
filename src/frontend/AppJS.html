@@ -153,6 +153,39 @@ function solicitarAcessoViaModal() {
   abrirFormularioAcesso("cadastro");
 }
 
+function solicitarLocalComPreselecao(tipo, id) {
+  var identificado = false;
+  try {
+    identificado = (typeof usuarioAtual !== "undefined") && !!usuarioAtual && usuarioAtual.identificado === true;
+  } catch (eIdent) {}
+  if (!identificado) { abrirModalSemAcesso(); return; }
+  abrirFormularioAcesso("locais");
+  var tentativas = 0;
+  (function aplicarPreselecao() {
+    try {
+      if (Array.isArray(escoposDisponiveisAcesso) && escoposDisponiveisAcesso.length) {
+        var alvo = null;
+        escoposDisponiveisAcesso.forEach(function (e) {
+          if (String(e.tipo) === String(tipo) && String(e.id) === String(id)) alvo = e;
+        });
+        if (alvo) {
+          var sel = document.getElementById("acesso-comarca");
+          if (sel) sel.value = alvo.comarca;
+          try { escoposAcessoSelecionados.add(alvo.tipo + ":" + alvo.id); } catch (eSet) {}
+          try {
+            if (alvo.tipo === "UNIDADE" || alvo.tipo === "SETOR") window.forumAcessoAberto = alvo.forumId;
+            if (alvo.tipo === "SETOR" && alvo.paiId) window.unidadeAcessoAberta = alvo.paiId;
+          } catch (eAberto) {}
+          try { renderizarSeletorLocalidadesAcesso(); } catch (eRender) {}
+          mostrarToast("Local pré-selecionado: confira e envie o pedido.", "success");
+          return;
+        }
+      }
+    } catch (eGeral) {}
+    if (++tentativas < 20) setTimeout(aplicarPreselecao, 400);
+  })();
+}
+
 function entrarAreaAdministrativa() {
   if (window.EH_CONTEXTO_ADMIN !== true) return;
   try { sessionStorage.removeItem(CHAVE_LOGOUT_ADMIN); } catch (erro) {}

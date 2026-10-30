@@ -586,14 +586,25 @@
   }
 
   function botaoSolicitar(tipo, id) {
-    if (!ehGC()) return "";
     var possui = tipo === "FORUM" ? possuiAcessoForumExplicito(id) : possuiAcessoNo(id);
     if (possui) return "";
-    return '<button type="button" class="fc-access" data-access-type="' + esc(tipo) +
+    if (ehGC()) {
+      return '<button type="button" class="fc-access" data-access-type="' + esc(tipo) +
+        '" data-access-id="' + esc(id) + '">Solicitar acesso</button>';
+    }
+    return '<button type="button" class="fc-access" data-access-form="' + esc(tipo) +
       '" data-access-id="' + esc(id) + '">Solicitar acesso</button>';
   }
 
   function vincularSolicitacoes() {
+    document.querySelectorAll("[data-access-form]").forEach(function (botao) {
+      if (botao.dataset.formLigado) return; botao.dataset.formLigado = "1";
+      botao.onclick = function (evento) {
+        evento.preventDefault();
+        evento.stopPropagation();
+        solicitarLocalComPreselecao(botao.getAttribute("data-access-form"), botao.getAttribute("data-access-id"));
+      };
+    });
     document.querySelectorAll("[data-access-type]").forEach(function (botao) {
       botao.onclick = function (evento) {
         evento.preventDefault();
@@ -1111,6 +1122,7 @@
 
   function cardNo(no) {
     var tipo = fmtTipoNo(no.tipo);
+    var tipoEscopo = String(no.tipo || "").toUpperCase() === "SETOR" ? "SETOR" : "UNIDADE";
     var pode = podeGerenciarNo(no);
     var acesso = possuiAcessoNo(no.id);
     var badgeAcesso = ehGC()
@@ -1121,7 +1133,7 @@
       '<div class="fc-meta"><span class="fc-pill fc-pill-type">' + esc(tipo) + "</span>" +
       badgeQuantidade(qtdSetores(no.filhos || []), "Setor", "Setores") +
       badgeQuantidade(no.qtdContatos, "Contato", "Contatos") + "</div>" +
-      (pode ? "" : botaoSolicitar("UNIDADE", no.id)) + "</div>";
+      (pode ? "" : botaoSolicitar(tipoEscopo, no.id)) + "</div>";
   }
 
   function renderForum() {
@@ -1185,6 +1197,7 @@
     var pai = encontrarPai(raiz.nos || [], no.id, null);
     var tipo = fmtTipoNo(no.tipo);
     var tipoTela = String(no.tipo || "").toUpperCase() === "SETOR" ? "Setor" : "Unidade";
+    var tipoEscopoNo = tipoTela === "Setor" ? "SETOR" : "UNIDADE";
     var pode = podeGerenciarNo(no);
     var contexto = { tipo: "UNIDADE", item: no, comarcaId: ehOrgao(m) ? m.id : "", forumId: f ? f.id : "", noId: no.id };
 
@@ -1198,7 +1211,7 @@
       (no.cepExibicao ? " • CEP " + esc(no.cepExibicao) : "") +
       (no.endereco ? "" : " <span class=\"fc-muted\">(" + (pai ? "herdado da Unidade" : (ehOrgao(m) ? "herdado do TJES" : "herdado do Fórum")) + ")</span>") + "</div></div>" +
       acoesLocalidade("UNIDADE", no, pode, tipoTela) +
-      (pode ? "" : botaoSolicitar("UNIDADE", no.id)) +
+      (pode ? "" : botaoSolicitar(tipoEscopoNo, no.id)) +
       '<div class="fc-section"><div class="fc-section-title"><h3>Contatos ' + (tipoTela === "Setor" ? "deste Setor" : "desta Unidade") + "</h3></div>" +
       contatosCards(no.contatos || [], contexto) + "</div>" +
       ((no.filhos || []).length
