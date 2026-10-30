@@ -49,6 +49,7 @@ Arquivo: Solicitacoes.html
   <div class="modal-content" style="width:min(620px,95vw)">
     <div class="modal-header"><h2>Detalhes da solicitação</h2><button type="button" class="modal-close" onclick="fecharModalSolicitacao()">×</button></div>
     <div class="modal-body" id="detalhes-solicitacao"></div>
+    <div style="padding:0 24px 4px"><label for="motivo-rejeicao" style="display:block;font-size:13px;color:#475569;margin-bottom:4px">Motivo da rejeição (obrigatório para rejeitar; aparece para o solicitante)</label><textarea id="motivo-rejeicao" rows="2" maxlength="500" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px" placeholder="Ex.: escopo errado — peça a unidade X"></textarea></div>
     <div class="modal-footer"><button type="button" class="btn" onclick="fecharModalSolicitacao()">Fechar</button><button id="btn-rejeitar-solicitacao" type="button" class="btn btn-danger" onclick="rejeitarSolicitacaoAtual()">Rejeitar</button><button id="btn-aprovar-solicitacao" type="button" class="btn btn-primary" onclick="aprovarSolicitacaoAtual()">Aprovar</button></div>
   </div>
 </div>

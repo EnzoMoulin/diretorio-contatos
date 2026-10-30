@@ -1271,10 +1271,15 @@ function processarSolicitacaoAPI(id, novoStatus, escoposAjustados, opcoes) {
           "Olá " + solicitacao.nome + ",\n\nSeu acesso foi liberado" + detalheAuto +
           "\n\nAcesse a área privada com sua conta Google: " + urlAreaPrivada());
       } else {
+        const motivo = textoSeguro(opcoes && opcoes.motivoRejeicao).slice(0, 500);
+        if (!motivo) throw new Error("Informe o motivo da rejeição.");
         enviarEmailAcesso(solicitacao.email,
           "Solicitação de acesso — Diretório de Contatos",
-          "Olá " + solicitacao.nome + ",\n\nSua solicitação de acesso não foi aprovada. " +
-          "Se precisar, fale com o Administrador.");
+          "Olá " + solicitacao.nome + ",\n\nSua solicitação de acesso não foi aprovada.\nMotivo: " + motivo + "\n\nSe precisar, fale com o Administrador.");
+        try {
+          criarNotificacao(solicitacao.email, "SOLICITACAO_REJEITADA",
+            "Sua solicitação de acesso não foi aprovada. Motivo: " + motivo, solicitacao.id);
+        } catch (eNotifRej) {}
       }
     } catch (eMailDecisao) {}
     SpreadsheetApp.flush();
@@ -1292,8 +1297,8 @@ function aprovarSolicitacao(id, escoposAjustados) {
   return processarSolicitacaoAPI(id, "APROVADO", escoposAjustados);
 }
 
-function rejeitarSolicitacao(id) {
-  return processarSolicitacaoAPI(id, "REJEITADO");
+function rejeitarSolicitacao(id, motivo) {
+  return processarSolicitacaoAPI(id, "REJEITADO", null, { motivoRejeicao: motivo });
 }
 
 /**
@@ -2436,19 +2441,34 @@ function listarUsuarios() {
       if (!acessosPorUsuario[acesso.usuarioId]) acessosPorUsuario[acesso.usuarioId] = [];
       acessosPorUsuario[acesso.usuarioId].push({ tipo: acesso.tipo, id: acesso.id });
     });
+    const ultimaAtividadePorEmail = {};
+    try {
+      const sheetHist = DB.getSpreadsheet().getSheetByName(CONFIG.SHEETS.HISTORICO);
+      if (sheetHist && sheetHist.getLastRow() > 1) {
+        const mapaH = DB.map(sheetHist);
+        DB.read(sheetHist).forEach(function(linha) {
+          const em = normalizarEmail(linha[mapaH.USUARIO - 1]);
+          const dt = linha[mapaH.DATA - 1];
+          const t = dt instanceof Date ? dt.getTime() : Date.parse(dt);
+          if (em && !isNaN(t) && (!ultimaAtividadePorEmail[em] || t > ultimaAtividadePorEmail[em])) ultimaAtividadePorEmail[em] = t;
+        });
+      }
+    } catch (eHist) {}
     const resultado = DB.read(sheet).map(function(linha) {
       const nivel = Number(linha[mapa.NIVEL - 1]);
       const id = textoSeguro(linha[mapa.ID - 1]);
+      const email = normalizarEmail(linha[mapa.EMAIL - 1]);
       const escopo = nivel === CONFIG.NIVEIS.GESTOR_CONTEUDO
         ? resolverEscopoAcessos(acessosPorUsuario[id] || [], catalogo)
         : { ids: [], nos: [], acessos: [] };
       return {
         id: id,
-        email: normalizarEmail(linha[mapa.EMAIL - 1]),
+        email: email,
         nome: textoSeguro(linha[mapa.NOME - 1]),
         nivel: nivel,
         perfil: CONFIG.NIVEIS.POR_NIVEL[String(nivel)] || "",
         ativo: paraBoolean(linha[mapa.ATIVO - 1]),
+        ultimaAtividade: ultimaAtividadePorEmail[email] || 0,
         noIds: escopo.ids,
         nos: escopo.nos,
         escopos: escopo.acessos

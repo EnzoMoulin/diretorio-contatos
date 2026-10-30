@@ -96,8 +96,12 @@ const API = {
       criarRunnerAPI(sucessoOuErro, erro).aprovarSolicitacao(id, escoposOuSucesso);
     }
   },
-  rejeitarSolicitacao(id, sucesso, erro) {
-    criarRunnerAPI(sucesso, erro).rejeitarSolicitacao(id);
+  rejeitarSolicitacao(id, motivoOuSucesso, sucessoOuErro, erro) {
+    if (typeof motivoOuSucesso === "function") {
+      criarRunnerAPI(motivoOuSucesso, sucessoOuErro).rejeitarSolicitacao(id);
+    } else {
+      criarRunnerAPI(sucessoOuErro, erro).rejeitarSolicitacao(id, motivoOuSucesso);
+    }
   },
 
   // Compatibilidade para componentes antigos de solicitação/permissão.

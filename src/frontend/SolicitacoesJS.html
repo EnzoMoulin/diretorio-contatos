@@ -113,12 +113,17 @@ function adicionarEscopoAprovacao(){
 function fecharModalSolicitacao(){document.getElementById("modal-solicitacao").classList.add("hidden");solicitacaoEmDetalhe=null;escoposAprovacaoEdicao=[];}
 function decidirSolicitacao(status){
   if(!solicitacaoEmDetalhe)return;var aprovando=status==="APROVADO";
-  confirmarAcaoSistema({titulo:aprovando?"Aprovar solicitação":"Rejeitar solicitação",mensagem:(aprovando?"Aprovar":"Rejeitar")+" esta solicitação de acesso?"+(aprovando&&escoposAprovacaoEdicao.length?" ("+escoposAprovacaoEdicao.length+" escopo(s))":""),textoConfirmar:aprovando?"Aprovar":"Rejeitar",perigo:!aprovando,icone:aprovando?"✓":"!"}).then(function(confirmado){
+  var motivoRejeicao="";
+  if(!aprovando){
+    motivoRejeicao=String(document.getElementById("motivo-rejeicao")?document.getElementById("motivo-rejeicao").value:"").trim();
+    if(!motivoRejeicao){mostrarToast("Informe o motivo da rejeição — ele aparece para o solicitante.","warning");return;}
+  }
+  confirmarAcaoSistema({titulo:aprovando?"Aprovar solicitação":"Rejeitar solicitação",mensagem:(aprovando?"Aprovar":"Rejeitar")+" esta solicitação de acesso?"+(aprovando&&escoposAprovacaoEdicao.length?" ("+escoposAprovacaoEdicao.length+" escopo(s))":"")+(!aprovando?" Motivo: "+motivoRejeicao:""),textoConfirmar:aprovando?"Aprovar":"Rejeitar",perigo:!aprovando,icone:aprovando?"✓":"!"}).then(function(confirmado){
     if(!confirmado||!solicitacaoEmDetalhe)return;
-    var feito=function(resp){if(resp&&resp.sucesso===true){fecharModalSolicitacao();mostrarToast(aprovando?"Solicitação aprovada.":"Solicitação rejeitada.",aprovando?"success":"info");carregarSolicitacoes();}else mostrarToast((resp&&resp.erro)||"Falha ao processar solicitação.","error");};
+    var feito=function(resp){if(resp&&resp.sucesso===true){fecharModalSolicitacao();var m=document.getElementById("motivo-rejeicao");if(m)m.value="";mostrarToast(aprovando?"Solicitação aprovada.":"Solicitação rejeitada.",aprovando?"success":"info");carregarSolicitacoes();}else mostrarToast((resp&&resp.erro)||"Falha ao processar solicitação.","error");};
     var falha=function(erro){mostrarToast((erro&&erro.message)||"Falha de comunicação.","error");};
     if(aprovando)API.aprovarSolicitacao(solicitacaoEmDetalhe.id,escoposAprovacaoEdicao,feito,falha);
-    else API.rejeitarSolicitacao(solicitacaoEmDetalhe.id,feito,falha);
+    else API.rejeitarSolicitacao(solicitacaoEmDetalhe.id,motivoRejeicao,feito,falha);
   });
 }
 function aprovarSolicitacaoAtual(){decidirSolicitacao("APROVADO");}

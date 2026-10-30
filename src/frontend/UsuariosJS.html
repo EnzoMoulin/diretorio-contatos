@@ -52,20 +52,26 @@ function renderizarUsuarios(lista) {
   aplicarFiltroUsuarios();
 }
 function normalizarBuscaUsuarios(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+function formatarUltimaAtividade(ts){
+  if(!ts) return "—";
+  try { return new Date(Number(ts)).toLocaleDateString("pt-BR"); } catch (e) { return "—"; }
+}
 function aplicarFiltroUsuarios(){
   var termo = normalizarBuscaUsuarios(document.getElementById("filtro-usuarios") ? document.getElementById("filtro-usuarios").value : "");
   var lista = listaUsuariosAtual.filter(function(usuario){
     if(!termo) return true;
     return normalizarBuscaUsuarios(usuario.nome).indexOf(termo) >= 0 || normalizarBuscaUsuarios(usuario.email).indexOf(termo) >= 0;
   });
+  lista.sort(function(a, b){ return (a.ultimaAtividade || 0) - (b.ultimaAtividade || 0); });
   var tbody = document.getElementById("corpo-tabela-usuarios"); if (!tbody) return; tbody.textContent = "";
-  if (!lista.length) { var tr0 = document.createElement("tr"), td0 = document.createElement("td"); td0.colSpan = 4; td0.textContent = normalizarBuscaUsuarios(document.getElementById("filtro-usuarios") ? document.getElementById("filtro-usuarios").value : "") ? "Nenhum usuário para este filtro." : "Nenhum usuário cadastrado."; tr0.appendChild(td0); tbody.appendChild(tr0); return; }
+  if (!lista.length) { var tr0 = document.createElement("tr"), td0 = document.createElement("td"); td0.colSpan = 5; td0.textContent = normalizarBuscaUsuarios(document.getElementById("filtro-usuarios") ? document.getElementById("filtro-usuarios").value : "") ? "Nenhum usuário para este filtro." : "Nenhum usuário cadastrado."; tr0.appendChild(td0); tbody.appendChild(tr0); return; }
   lista.forEach(function(usuario) {
     var tr = document.createElement("tr"); tr.tabIndex = 0; tr.style.cursor = "pointer"; tr.title = "Clique para gerenciar este usuário";
     function celula(texto) { var td = document.createElement("td"); td.textContent = texto || "-"; tr.appendChild(td); }
     celula(usuario.nome); celula(usuario.email);
     celula(usuario.nivel === 1 ? "Gestor de Conteúdo" : "Administrador");
     celula(usuario.ativo === true ? "Sim" : "Não");
+    celula(formatarUltimaAtividade(usuario.ultimaAtividade));
     tr.onclick = function() { abrirModalEditarUsuario(usuario); };
     tr.onkeydown = function(evento) { if (evento.key === "Enter" || evento.key === " ") { evento.preventDefault(); abrirModalEditarUsuario(usuario); } };
     tbody.appendChild(tr);
