@@ -597,6 +597,10 @@
       '" data-access-id="' + esc(id) + '">Solicitar acesso</button>';
   }
 
+  function botaoGestao(tipo, id) {
+    var nav = tipo === "FORUM" ? 'data-forum="' + esc(id) + '"' : 'data-no="' + esc(id) + '"';
+    return '<button type="button" class="fc-btn" ' + nav + '>Ir para gestão</button>';
+  }
   function vincularSolicitacoes() {
     document.querySelectorAll("[data-access-form]").forEach(function (botao) {
       if (botao.dataset.formLigado) return; botao.dataset.formLigado = "1";
@@ -1057,6 +1061,7 @@
           badgeQuantidade(qtdSetores(f.nos || []), "Setor", "Setores") +
           badgeQuantidade(f.qtdContatos, "Contato", "Contatos") + "</div>" +
           (podeForum ? "" : botaoSolicitar("FORUM", f.id)) +
+          (ehGestor() && acesso ? botaoGestao("FORUM", f.id) : "") +
           "</div>";
       }).join("") + "</div>" + barraNavegacaoInferior("Comarcas");
 
@@ -1134,7 +1139,8 @@
       '<div class="fc-meta"><span class="fc-pill fc-pill-type">' + esc(tipo) + "</span>" +
       badgeQuantidade(qtdSetores(no.filhos || []), "Setor", "Setores") +
       badgeQuantidade(no.qtdContatos, "Contato", "Contatos") + "</div>" +
-      (pode ? "" : botaoSolicitar(tipoEscopo, no.id)) + "</div>";
+      (pode ? "" : botaoSolicitar(tipoEscopo, no.id)) +
+      (ehGestor() && acesso ? botaoGestao(tipoEscopo, no.id) : "") + "</div>";
   }
 
   function renderForum() {

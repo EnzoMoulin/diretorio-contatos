@@ -108,6 +108,13 @@ function aplicarUsuarioServidor(dados, mostrarAlertas) {
   atualizarInterfaceUsuario();
   try { atualizarIdentidadeFormularioAcesso(); } catch (erro) {}
   try { carregarUnidadesFormularioAcesso(); } catch (erro) {}
+  try {
+    if (window.__pedLocalPendente && dados && dados.identificado === true) {
+      var pend = window.__pedLocalPendente; window.__pedLocalPendente = null;
+      setTimeout(function () { solicitarLocalComPreselecao(pend.tipo, pend.id); }, 600);
+    }
+  } catch (ePend2) {}
+  try { atualizarAvisoSemEscopo(); } catch (eAviso) {}
 
   if (mostrarAlertas && dados.estadoAcesso === "CONTA_DESATIVADA") {
     mostrarToast("Sua conta administrativa está desativada. Procure o Administrador.", "warning");
@@ -158,7 +165,11 @@ function solicitarLocalComPreselecao(tipo, id) {
   try {
     identificado = (typeof usuarioAtual !== "undefined") && !!usuarioAtual && usuarioAtual.identificado === true;
   } catch (eIdent) {}
-  if (!identificado) { abrirModalSemAcesso(); return; }
+  if (!identificado) {
+    try { window.__pedLocalPendente = { tipo: tipo, id: id }; } catch (ePend) {}
+    abrirModalSemAcesso(); return;
+  }
+  try { window.__pedLocalPendente = null; } catch (eLimpa) {}
   abrirFormularioAcesso("locais");
   var tentativas = 0;
   (function aplicarPreselecao() {
@@ -424,7 +435,12 @@ function atualizarInterfaceUsuario() {
   if (btnAcesso && textoAcesso) {
     btnAcesso.classList.toggle("btn-sair", logado);
     if (window.EH_CONTEXTO_ADMIN !== true) {
-      btnAcesso.classList.add("hidden");
+      btnAcesso.classList.remove("hidden");
+      configurarBotaoAcesso(btnAcesso, textoAcesso, {
+        texto: "Entrar no acesso administrativo",
+        classe: "primary",
+        acao: entrarAreaAdministrativa
+      });
     } else {
       btnAcesso.classList.remove("hidden");
       if (logado) {
@@ -441,7 +457,7 @@ function atualizarInterfaceUsuario() {
         });
       } else {
         configurarBotaoAcesso(btnAcesso, textoAcesso, {
-          texto: "Acesso administrativo",
+          texto: "Entrar no acesso administrativo",
           classe: "primary",
           acao: abrirModalSemAcesso
         });
@@ -565,9 +581,10 @@ function atualizarInterfaceUsuario() {
 
   const btnSolicitarAcesso = document.getElementById("btn-solicitar-acesso");
   if (btnSolicitarAcesso) {
-    btnSolicitarAcesso.classList.toggle("hidden", !(
-      window.EH_CONTEXTO_ADMIN === true && !usuario.cadastrado && usuario.podeSolicitarAcesso === true
-    ));
+    var mostrarSolicitar = window.EH_CONTEXTO_ADMIN !== true
+      ? !logado
+      : (!usuario.cadastrado && usuario.podeSolicitarAcesso === true);
+    btnSolicitarAcesso.classList.toggle("hidden", !mostrarSolicitar);
   }
 
   const podePedirLocais = usuario.cadastrado === true &&
@@ -681,6 +698,33 @@ function atualizarInterfaceUsuario() {
     );
   }
   }catch(e){}
+  try { atualizarAvisoSemEscopo(); } catch (eAv) {}
+}
+
+function atualizarAvisoSemEscopo() {
+  var vista = document.getElementById("consulta-telefones-view");
+  if (!vista) return;
+  var aviso = document.getElementById("aviso-sem-escopo");
+  if (!aviso) {
+    aviso = document.createElement("div");
+    aviso.id = "aviso-sem-escopo";
+    aviso.className = "hidden";
+    aviso.style.cssText = "margin:0 0 10px;padding:10px 14px;border:1px solid #fcd34d;background:#fffbeb;border-radius:10px;font-size:13px;color:#92400e;display:flex;gap:10px;align-items:center;flex-wrap:wrap";
+    aviso.innerHTML = '<span>Você está logado mas ainda não tem acesso a nenhuma localidade.</span>';
+    var btn = document.createElement("button");
+    btn.type = "button"; btn.className = "btn btn-primary"; btn.textContent = "Solicitar acesso a localidade";
+    btn.onclick = function () { abrirFormularioAcesso("locais"); };
+    aviso.appendChild(btn);
+    vista.insertBefore(aviso, vista.firstChild);
+  }
+  var mostrar = false;
+  try {
+    mostrar = window.EH_CONTEXTO_ADMIN === true &&
+      typeof usuarioAtual !== "undefined" && usuarioAtual && usuarioAtual.logado === true &&
+      String(usuarioAtual.perfil || "").toUpperCase() === "GESTOR_CONTEUDO" &&
+      (!Array.isArray(usuarioAtual.nos) || !usuarioAtual.nos.length);
+  } catch (eMostra) {}
+  aviso.classList.toggle("hidden", !mostrar);
 }
 
 function configurarBotaoAcesso(
