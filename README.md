@@ -33,6 +33,25 @@ Padrões: leitura em lote (`getValues`/`setValues`, sem I/O em loop), locks em
 read-modify-write, cache de referência com TTL e invalidação, autorização
 sempre no servidor, payloads mínimos e JSON-serializáveis.
 
+## Evolução v1 → v2 → v3
+Mesmo produto, três fases de maturidade — a interface e as regras de negócio
+são as mesmas; o que evolui é a fundação técnica:
+
+| Aspecto | v1 — MVP (este repo) | v2 — reescrita ([diretorio-contatos-v2](https://github.com/EnzoMoulin/diretorio-contatos-v2)) | v3 — direção |
+|---|---|---|---|
+| Runtime + dados | Apps Script + Sheets (planilha como banco, sem FKs) | Python stdlib + SQLite (FKs, zero dependências) | Migrações versionadas, Postgres opcional |
+| Concorrência | `LockService` por execução | `ThreadingHTTPServer` + lock em escrita | Servidor ASGI, pool de conexões |
+| Busca | Substring no frontend | FTS5 no servidor + autocomplete com highlight | Ranking por relevância, tolerância a erro de digitação |
+| Auth | Sessão Google + planilha | Google OAuth + login local (só dev, flag `LOCAL_LOGIN`) com PBKDF2 | Expiração de sessão, papéis granulares |
+| Backup | Versionamento nativo da planilha | `VACUUM INTO` com download no admin | Rotina agendada com retenção |
+| Cache | `CacheService` com TTL | `lru_cache` na hierarquia (invalidado em escrita) | Cache por escopo de usuário |
+| Saúde dos dados | Validador manual de integridade | Dashboard: alterações 30d + obsoletos 180d | Alertas automáticos de obsolescência |
+| Testes | Sem testes automatizados | 14 testes (`unittest`, banco temporário) | CI rodando a suíte a cada push |
+
+Por que três fases em vez de reescrever direto: o v1 validou o produto a custo
+zero dentro do ecossistema onde os dados viviam; o v2 prova a mesma arquitetura
+sem dependência de fornecedor; o v3 endurece para escala.
+
 ## Como rodar (demo)
 1. Crie um Apps Script + uma planilha Google novos (conta pessoal).
 2. Copie `.clasp.json.example` para `.clasp.json` com seu `scriptId` (nunca commite o real).
