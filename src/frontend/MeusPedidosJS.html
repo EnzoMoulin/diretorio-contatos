@@ -28,7 +28,7 @@ function carregarMeusPedidos() {
       var pill = document.createElement("span"); pill.className = statusPedidoClasse(p.status); pill.textContent = p.status || "-";
       tdS.appendChild(pill); tr.appendChild(tdS);
       celula(p.nivelTexto);
-      celula((p.escopos || []).map(function(e) { return e.tipo + ":" + e.id; }).join(", "));
+      celula((p.escopos || []).map(function(e) { return (e.nome && e.nome !== e.id ? e.nome + " (" + e.tipo + ":" + e.id + ")" : e.tipo + ":" + e.id); }).join(", "));
       celula(p.status === "REJEITADO" ? (p.motivoRejeicao || "-") : "-");
       tbody.appendChild(tr);
     });

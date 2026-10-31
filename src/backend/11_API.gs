@@ -1319,6 +1319,11 @@ function listarMinhasSolicitacoes() {
     const sheet = DB.solicitacoesAcesso();
     const dados = sheet.getDataRange().getValues();
     const indices = indicesSolicitacao(dados[0] || []);
+    let nomesEscopo = {};
+    try {
+      const catalogo = montarCatalogoEscoposAcesso();
+      nomesEscopo = catalogo.porChave || {};
+    } catch (eCat) {}
     const lista = [];
     for (let i = 1; i < dados.length; i++) {
       if (normalizarEmail(dados[i][indices.EMAIL]) !== emailSessao) continue;
@@ -1331,7 +1336,10 @@ function listarMinhasSolicitacoes() {
         status: String(dados[i][indices.STATUS] || "").trim().toUpperCase(),
         nivel: nivel,
         nivelTexto: nivel === 2 ? "Administrador" : (nivel === 1 ? "Gestor de Conteúdo" : "Cadastro"),
-        escopos: (escoposDaSolicitacao(dados[i], indices) || []).map(function(e) { return { tipo: e.tipo, id: e.id }; }),
+        escopos: (escoposDaSolicitacao(dados[i], indices) || []).map(function(e) {
+          const ref = nomesEscopo[e.tipo + ":" + e.id];
+          return { tipo: e.tipo, id: e.id, nome: ref ? (ref.caminhoTexto || ref.nome || e.id) : e.id };
+        }),
         motivoRejeicao: indices.MOTIVO_REJEICAO !== undefined ? textoSeguro(dados[i][indices.MOTIVO_REJEICAO]) : ""
       });
     }
